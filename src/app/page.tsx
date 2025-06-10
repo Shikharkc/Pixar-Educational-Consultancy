@@ -1,13 +1,63 @@
+
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import SectionTitle from '@/components/ui/section-title';
-import { ArrowRight, CheckCircle, Star } from 'lucide-react';
-import { testimonials, services } from '@/lib/data';
+import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIcon, Info, Search } from 'lucide-react';
+import { testimonials, services, countryData, fieldsOfStudy } from '@/lib/data';
 import type { Testimonial, Service } from '@/lib/data';
+import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { pathwayPlanner, type PathwayPlannerInput, type PathwayPlannerOutput } from '@/ai/flows/pathway-planner';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+const pathwayFormSchema = z.object({
+  country: z.string().min(1, "Please select a country."),
+  fieldOfStudy: z.string().min(1, "Please select a field of study."),
+});
+
+type PathwayFormValues = z.infer<typeof pathwayFormSchema>;
 
 export default function HomePage() {
+  const [isLoadingPathway, setIsLoadingPathway] = useState(false);
+  const [pathwayError, setPathwayError] = useState<string | null>(null);
+  const [pathwayResult, setPathwayResult] = useState<PathwayPlannerOutput | null>(null);
+
+  const pathwayForm = useForm<PathwayFormValues>({
+    resolver: zodResolver(pathwayFormSchema),
+    defaultValues: {
+      country: '',
+      fieldOfStudy: '',
+    },
+  });
+
+  async function onPathwaySubmit(values: PathwayFormValues) {
+    setIsLoadingPathway(true);
+    setPathwayError(null);
+    setPathwayResult(null);
+
+    try {
+      const aiInput: PathwayPlannerInput = {
+        country: values.country,
+        fieldOfStudy: values.fieldOfStudy,
+      };
+      const aiResult = await pathwayPlanner(aiInput);
+      setPathwayResult(aiResult);
+    } catch (e) {
+      setPathwayError(e instanceof Error ? e.message : 'An unexpected error occurred.');
+      console.error(e);
+    } finally {
+      setIsLoadingPathway(false);
+    }
+  }
+
   return (
     <div className="space-y-16 md:space-y-24">
       {/* Hero Section */}
@@ -32,6 +82,124 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Pathway Quick Search Section */}
+      <section>
+        <SectionTitle title="Pathway Quick Search" subtitle="Find universities matching your interests instantly." />
+        <div className="grid md:grid-cols-3 gap-8 items-start">
+          <Card className="md:col-span-1 shadow-xl bg-card">
+            <CardHeader>
+              <CardTitle className="font-headline text-primary flex items-center"><Search className="mr-2 h-6 w-6"/>Find Your University</CardTitle>
+              <CardDescription>Select a country and field of study.</CardDescription>
+            </CardHeader>
+            <Form {...pathwayForm}>
+              <form onSubmit={pathwayForm.handleSubmit(onPathwaySubmit)}>
+                <CardContent className="space-y-6">
+                  <FormField
+                    control={pathwayForm.control}
+                    name="country"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center"><MapPin className="mr-2 h-4 w-4 text-accent"/>Country</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger><SelectValue placeholder="Select a country" /></SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {countryData.map(country => (
+                              <SelectItem key={country.id} value={country.name}>{country.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={pathwayForm.control}
+                    name="fieldOfStudy"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center"><BookOpen className="mr-2 h-4 w-4 text-accent"/>Field of Study</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger><SelectValue placeholder="Select a field" /></SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {fieldsOfStudy.map(fos => (
+                              <SelectItem key={fos} value={fos}>{fos}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </CardContent>
+                <CardFooter>
+                  <Button type="submit" disabled={isLoadingPathway} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                    {isLoadingPathway ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                    Get Suggestions
+                  </Button>
+                </CardFooter>
+              </form>
+            </Form>
+          </Card>
+
+          <div className="md:col-span-2">
+            {isLoadingPathway && (
+              <div className="flex justify-center items-center h-64">
+                <Loader2 className="h-12 w-12 text-primary animate-spin" />
+              </div>
+            )}
+            {pathwayError && (
+              <Alert variant="destructive" className="bg-card">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{pathwayError}</AlertDescription>
+              </Alert>
+            )}
+            {pathwayResult && !isLoadingPathway && (
+              <Card className="shadow-xl bg-card">
+                <CardHeader>
+                  <CardTitle className="font-headline text-accent flex items-center">
+                    <Sparkles className="mr-2 h-6 w-6" /> University Suggestions
+                  </CardTitle>
+                  <CardDescription>
+                    Based on your selection of {pathwayForm.getValues('country')} and {pathwayForm.getValues('fieldOfStudy')}.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {pathwayResult.universitySuggestions && pathwayResult.universitySuggestions.length > 0 ? (
+                    <ul className="space-y-4">
+                      {pathwayResult.universitySuggestions.map((uni, index) => (
+                        <li key={index} className="p-4 border rounded-lg bg-background/50 hover:shadow-md transition-shadow">
+                          <h4 className="font-semibold text-primary flex items-center mb-1">
+                            <UniversityIcon className="mr-2 h-5 w-5 text-accent" />
+                            {uni.name}
+                          </h4>
+                          <p className="text-sm text-foreground/80 ml-7">Category: {uni.category}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-foreground/70 text-center py-8">No specific university suggestions found for your criteria. Try broadening your search or contact us for personalized advice!</p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+             {!pathwayResult && !isLoadingPathway && !pathwayError && (
+                <Card className="shadow-xl bg-card md:col-span-2 flex flex-col items-center justify-center min-h-[300px]">
+                    <CardContent className="text-center">
+                        <Search className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                        <p className="text-muted-foreground">Your university suggestions will appear here.</p>
+                    </CardContent>
+                </Card>
+            )}
+          </div>
+        </div>
+      </section>
+
 
       {/* Why Choose Us Section */}
       <section>
