@@ -2,6 +2,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFormContext as useFormContextHook } from 'react-hook-form'; // Renamed to avoid conflict
 import { z } from 'zod';
@@ -21,7 +22,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { englishTestAdvisor, type EnglishTestAdvisorInput, type EnglishTestAdvisorOutput } from '@/ai/flows/english-test-advisor';
 import { generateDocumentChecklist, type DocumentChecklistInput, type DocumentChecklistOutput } from '@/ai/flows/document-checklist-flow';
 
-import { Loader2, Sparkles, Info, FileText, Download, AlertCircle, BookOpenText, ListChecks } from 'lucide-react';
+import { Loader2, Sparkles, Info, FileText, Download, AlertCircle, BookOpenText, ListChecks, MessageSquare } from 'lucide-react';
 
 // Schemas for English Test Advisor
 const englishTestFormSchema = z.object({
@@ -282,6 +283,13 @@ export default function AiAssistantsPage() {
               <CardContent className="space-y-4">
                 <div><h3 className="font-semibold text-lg text-primary">Recommended Test:</h3><p className="text-foreground/90">{englishTestResult.testRecommendation}</p></div>
                 <div><h3 className="font-semibold text-lg text-primary">Reasoning:</h3><p className="text-foreground/90 whitespace-pre-line">{englishTestResult.reasoning}</p></div>
+                <div className="pt-4 text-center">
+                    <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+                        <Link href="/contact">
+                            <MessageSquare className="mr-2 h-5 w-5" /> Contact an Advisor
+                        </Link>
+                    </Button>
+                </div>
               </CardContent>
             </Card>
           )}
@@ -429,3 +437,4 @@ export default function AiAssistantsPage() {
     </div>
   );
 }
+

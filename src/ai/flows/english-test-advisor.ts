@@ -1,3 +1,4 @@
+
 // src/ai/flows/english-test-advisor.ts
 'use server';
 
@@ -38,12 +39,12 @@ const EnglishTestAdvisorOutputSchema = z.object({
   testRecommendation: z
     .string()
     .describe(
-      'A personalized recommendation for an English proficiency test based on the input provided.'
+      'A concise and professional recommendation for an English proficiency test (e.g., IELTS Academic, TOEFL iBT, PTE Academic, Duolingo English Test).'
     ),
   reasoning: z
     .string()
     .describe(
-      'The reasoning behind the recommendation, considering the level, timeline, and budget.'
+      'The reasoning behind the recommendation, in a mix of English and simple Nepali. It should explain why the test is suitable based on level, timeline, budget, and purpose. Also, subtly mention that Pixar Educational Consultancy offers excellent preparation classes and that personalized advice is available if they contact an advisor.'
     ),
 });
 export type EnglishTestAdvisorOutput = z.infer<typeof EnglishTestAdvisorOutputSchema>;
@@ -58,20 +59,22 @@ const prompt = ai.definePrompt({
   name: 'englishTestAdvisorPrompt',
   input: {schema: EnglishTestAdvisorInputSchema},
   output: {schema: EnglishTestAdvisorOutputSchema},
-  prompt: `You are an expert advisor on English proficiency tests. Based on the student's current level, timeline, and budget, recommend the most suitable test (IELTS, PTE, TOEFL, Duolingo, etc.) and provide a reasoning for the recommendation.
+  prompt: `You are an expert advisor at Pixar Educational Consultancy, specializing in English proficiency tests for Nepali students.
+Based on the student's current level, timeline, budget, and purpose, provide a concise and professional recommendation for the most suitable English proficiency test (e.g., IELTS Academic, TOEFL iBT, PTE Academic, Duolingo English Test).
 
 Student Level: {{{currentLevel}}}
 Timeline: {{{timeline}}}
 Budget: {{{budget}}}
 Purpose: {{{purpose}}}
 
-Consider the following factors when making your recommendation:
-* Test acceptance by universities and institutions for their intended purpose.
-* Test format and difficulty level.
-* Test availability and cost.
-* Student's preferred test format.
+For the 'reasoning' field:
+1.  Explain your recommendation in a mix of English and simple Nepali. For example, you can state a point in English and then clarify or elaborate in Nepali (e.g., "This test is widely accepted (यो परीक्षा धेरै ठाउँमा मान्य छ)").
+2.  Consider factors like test acceptance for their purpose, format, difficulty, availability, and cost.
+3.  Subtly weave in that Pixar Educational Consultancy offers excellent preparation classes for these English tests and that students can get more personalized advice by contacting an advisor. For example: "For dedicated preparation (राम्रो तयारीको लागि), Pixar Educational Consultancy provides excellent classes. For more detailed guidance (थप जानकारीको लागि), you can contact one of our advisors."
+4.  Keep the overall tone helpful, professional, and encouraging.
 
-Recommendation:`,
+Provide only the testRecommendation and reasoning.
+`,
 });
 
 const englishTestAdvisorFlow = ai.defineFlow(
@@ -85,3 +88,4 @@ const englishTestAdvisorFlow = ai.defineFlow(
     return output!;
   }
 );
+
