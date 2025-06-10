@@ -1,23 +1,21 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { format } from 'date-fns';
+import { format, addDays, subDays, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, addWeeks, subWeeks, parse, isValid } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import SectionTitle from '@/components/ui/section-title';
 import { useToast } from '@/hooks/use-toast';
-import { CalendarIcon, Loader2, Send } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, Send } from 'lucide-react';
 import { appointmentServices, appointmentStaff, appointmentTimeSlots } from '@/lib/data';
 
 const appointmentFormSchema = z.object({
@@ -36,20 +34,16 @@ const appointmentFormSchema = z.object({
 
 type AppointmentFormValues = z.infer<typeof appointmentFormSchema>;
 
-// Mock server action
 async function submitAppointmentForm(data: AppointmentFormValues): Promise<{ success: boolean; message: string }> {
   console.log("Appointment Form data submitted:", data);
-  // Simulate API call
   await new Promise(resolve => setTimeout(resolve, 1500));
-  // Simulate success for demonstration
   return { success: true, message: "Your appointment request has been submitted! We'll contact you shortly to confirm." };
 }
-
 
 export default function AppointmentBookingPage() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [displayWeekStartDate, setDisplayWeekStartDate] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
 
   const form = useForm<AppointmentFormValues>({
     resolver: zodResolver(appointmentFormSchema),
@@ -59,24 +53,94 @@ export default function AppointmentBookingPage() {
       phone: '',
       service: '',
       preferredStaff: '',
+      preferredDate: undefined,
       preferredTime: '',
       notes: '',
     },
   });
 
+  const selectedDate = form.watch('preferredDate');
+  const selectedTime = form.watch('preferredTime');
+
+  useEffect(() => {
+    if (selectedDate) {
+      setDisplayWeekStartDate(startOfWeek(selectedDate, { weekStartsOn: 1 }));
+    } else {
+      // Set to current week's start if no date is selected or if it becomes undefined
+      const today = new Date();
+      if (!selectedDate || !isSameDay(startOfWeek(selectedDate, { weekStartsOn: 1 }), displayWeekStartDate)) {
+        setDisplayWeekStartDate(startOfWeek(today, { weekStartsOn: 1 }));
+      }
+    }
+  }, [selectedDate]);
+
+
+  const weekDays = eachDayOfInterval({
+    start: displayWeekStartDate,
+    end: endOfWeek(displayWeekStartDate, { weekStartsOn: 1 }),
+  });
+
+  const handleDateSelect = (date: Date) => {
+    form.setValue('preferredDate', date, { shouldValidate: true });
+  };
+
+  const handleTimeSelect = (timeSlot: string) => {
+    form.setValue('preferredTime', timeSlot, { shouldValidate: true });
+  };
+
+  const goToPreviousWeek = () => {
+    setDisplayWeekStartDate(subWeeks(displayWeekStartDate, 1));
+  };
+
+  const goToNextWeek = () => {
+    setDisplayWeekStartDate(addWeeks(displayWeekStartDate, 1));
+  };
+  
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Normalize today to the start of the day for comparison
+
+  const morningSlots = appointmentTimeSlots.filter(slot => {
+    const startTimeString = slot.split(' - ')[0];
+    const [time, modifier] = startTimeString.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    if (modifier === 'PM' && hours < 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0; // Midnight case
+    return hours < 12;
+  });
+
+  const afternoonSlots = appointmentTimeSlots.filter(slot => {
+    const startTimeString = slot.split(' - ')[0];
+    const [time, modifier] = startTimeString.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+    if (modifier === 'PM' && hours < 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
+    return hours >= 12;
+  });
+
+
   async function onSubmit(values: AppointmentFormValues) {
     setIsSubmitting(true);
     try {
       const result = await submitAppointmentForm(values);
-
       if (result.success) {
         toast({
           title: "Request Submitted!",
           description: result.message,
           variant: "default",
         });
-        form.reset();
-        setSelectedDate(undefined); // Reset date picker
+        form.reset({ // Reset form to initial default values
+            name: '',
+            email: '',
+            phone: '',
+            service: '',
+            preferredStaff: '',
+            preferredDate: undefined, // Explicitly set date to undefined
+            preferredTime: '',
+            notes: '',
+        });
+        // After resetting form, ensure displayWeekStartDate is also reset
+        setDisplayWeekStartDate(startOfWeek(new Date(), { weekStartsOn: 1 }));
+
       } else {
         toast({
           title: "Error",
@@ -151,7 +215,7 @@ export default function AppointmentBookingPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Service Required</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Select a service" /></SelectTrigger></FormControl>
                         <SelectContent>
                           {appointmentServices.map(service => (
@@ -169,7 +233,7 @@ export default function AppointmentBookingPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Preferred Staff Member</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl><SelectTrigger><SelectValue placeholder="Select a staff member" /></SelectTrigger></FormControl>
                         <SelectContent>
                           {appointmentStaff.map(staff => (
@@ -194,66 +258,115 @@ export default function AppointmentBookingPage() {
                 />
               </div>
 
-              {/* Column 2: Date & Time */}
+              {/* Column 2: Date & Time Selection */}
               <div className="space-y-6">
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-semibold text-foreground">
+                    {selectedDate ? format(selectedDate, "EEEE, MMMM d") : "Select a Date"}
+                  </h3>
+                </div>
+                
                 <FormField
                   control={form.control}
                   name="preferredDate"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Preferred Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={(date) => {
-                              field.onChange(date);
-                              setSelectedDate(date);
-                            }}
-                            disabled={(date) =>
-                              date < new Date(new Date().setHours(0,0,0,0)) // Disable past dates
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
+                    <FormItem>
+                      <FormLabel className="sr-only">Preferred Date</FormLabel>
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <Button variant="outline" size="icon" onClick={goToPreviousWeek} type="button">
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          <div className="font-medium text-primary">
+                            {format(displayWeekStartDate, "MMMM yyyy")}
+                          </div>
+                          <Button variant="outline" size="icon" onClick={goToNextWeek} type="button">
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-7 gap-1">
+                          {weekDays.map((day) => {
+                             const isPastDay = day < today;
+                             return (
+                                <Button
+                                  key={day.toString()}
+                                  variant={isSameDay(day, selectedDate || new Date(0)) ? "default" : "outline"}
+                                  size="sm"
+                                  onClick={() => !isPastDay && handleDateSelect(day)}
+                                  disabled={isPastDay}
+                                  className={cn(
+                                    "flex flex-col h-auto p-2",
+                                    isPastDay && "text-muted-foreground opacity-50 cursor-not-allowed",
+                                    !isPastDay && isSameDay(day, selectedDate || new Date(0)) && "bg-primary text-primary-foreground",
+                                    !isPastDay && !isSameDay(day, selectedDate || new Date(0)) && "hover:bg-accent hover:text-accent-foreground"
+                                  )}
+                                  type="button"
+                                >
+                                  <span className="text-xs">{format(day, "EEE")}</span>
+                                  <span>{format(day, "d")}</span>
+                                </Button>
+                             );
+                          })}
+                        </div>
+                      </div>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+
                 <FormField
                   control={form.control}
                   name="preferredTime"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Preferred Time Slot</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Select a time slot" /></SelectTrigger></FormControl>
-                        <SelectContent>
-                          {appointmentTimeSlots.map(slot => (
-                            <SelectItem key={slot} value={slot}>{slot}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormLabel className="sr-only">Preferred Time Slot</FormLabel>
+                        <div className="space-y-4">
+                        {selectedDate ? (
+                        <>
+                          {morningSlots.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium text-muted-foreground mb-2">Morning</h4>
+                              <div className="grid grid-cols-3 gap-2">
+                                {morningSlots.map((slot) => (
+                                  <Button
+                                    key={slot}
+                                    variant={selectedTime === slot ? "default" : "outline"}
+                                    onClick={() => handleTimeSelect(slot)}
+                                    className={cn(selectedTime === slot && "bg-primary text-primary-foreground")}
+                                    type="button"
+                                  >
+                                    {slot.split(' - ')[0]}
+                                  </Button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {afternoonSlots.length > 0 && (
+                            <div>
+                              <h4 className="text-sm font-medium text-muted-foreground mb-2">Afternoon</h4>
+                              <div className="grid grid-cols-3 gap-2">
+                                {afternoonSlots.map((slot) => (
+                                  <Button
+                                    key={slot}
+                                    variant={selectedTime === slot ? "default" : "outline"}
+                                    onClick={() => handleTimeSelect(slot)}
+                                    className={cn(selectedTime === slot && "bg-primary text-primary-foreground")}
+                                    type="button"
+                                  >
+                                    {slot.split(' - ')[0]}
+                                  </Button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                           {morningSlots.length === 0 && afternoonSlots.length === 0 && (
+                                <p className="text-sm text-muted-foreground text-center py-4">No time slots available for this day.</p>
+                           )}
+                        </>
+                        ) : (
+                           <p className="text-sm text-muted-foreground text-center py-4">Please select a date to see available time slots.</p>
+                        )}
+                        </div>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -272,5 +385,3 @@ export default function AppointmentBookingPage() {
     </div>
   );
 }
-
-    
