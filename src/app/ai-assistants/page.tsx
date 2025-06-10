@@ -261,14 +261,22 @@ export default function AiAssistantsPage() {
               </form>
             </Form>
           </Card>
-          {englishTestError && (
+          {isEnglishTestLoading && (
+            <Card className="max-w-2xl mx-auto mt-8 shadow-xl bg-card">
+              <CardContent className="p-10 text-center">
+                <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto mb-4" />
+                <p className="text-muted-foreground">Generating your recommendation...</p>
+              </CardContent>
+            </Card>
+          )}
+          {englishTestError && !isEnglishTestLoading && (
             <Alert variant="destructive" className="max-w-2xl mx-auto mt-6">
               <Info className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{englishTestError}</AlertDescription>
             </Alert>
           )}
-          {englishTestResult && (
+          {englishTestResult && !isEnglishTestLoading && (
             <Card className="max-w-2xl mx-auto mt-8 shadow-xl bg-gradient-to-br from-accent/10 to-background">
               <CardHeader><CardTitle className="font-headline text-accent flex items-center"><Sparkles className="mr-2 h-6 w-6" /> Your Personalized Recommendation</CardTitle></CardHeader>
               <CardContent className="space-y-4">
@@ -347,14 +355,22 @@ export default function AiAssistantsPage() {
               The checklist provided here includes commonly required documents. Additional documents may be necessary based on your specific academic profile, chosen institution, and personal circumstances. For a comprehensive and personalized document list, we highly recommend visiting our office or contacting us directly.
             </AlertDescription>
           </Alert>
-          {docChecklistError && (
+          {isDocChecklistLoading && (
+            <Card className="max-w-3xl mx-auto mt-8 shadow-xl bg-card">
+              <CardContent className="p-10 text-center">
+                <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto mb-4" />
+                <p className="text-muted-foreground">Generating your checklist...</p>
+              </CardContent>
+            </Card>
+          )}
+          {docChecklistError && !isDocChecklistLoading && (
             <Alert variant="destructive" className="max-w-2xl mx-auto mt-6">
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Error</AlertTitle>
               <AlertDescription>{docChecklistError}</AlertDescription>
             </Alert>
           )}
-          {docChecklistResult && (
+          {docChecklistResult && !isDocChecklistLoading && (
             <Card className="max-w-3xl mx-auto mt-8 shadow-xl bg-gradient-to-br from-accent/10 to-background">
               <CardHeader className="flex flex-row justify-between items-center">
                 <div>
@@ -413,5 +429,3 @@ export default function AiAssistantsPage() {
     </div>
   );
 }
-
-    
