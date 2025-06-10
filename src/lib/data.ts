@@ -1,4 +1,4 @@
-import { Award, Briefcase, Lightbulb, Users, MapPin, Landmark, TrendingUp, Globe } from 'lucide-react';
+import { Award, Briefcase, Lightbulb, Users, MapPin, Landmark, TrendingUp, Globe, CalendarPlus, FileText, BookOpen, University as UniversityIcon, CheckCircle, Building, Heart, Handshake, Goal, MessageSquare, Search, Wand2, ExternalLink, Home, Info } from 'lucide-react';
 import type { ReactElement } from 'react';
 
 export interface Testimonial {
@@ -332,3 +332,65 @@ export const fieldsOfStudy: string[] = [
   "Veterinary Medicine",
   "Zoology",
 ];
+
+// Data for Appointment Booking
+export const appointmentServices = [
+  { value: 'ielts_class_inquiry', label: 'IELTS Class Inquiry' },
+  { value: 'pte_class_inquiry', label: 'PTE Class Inquiry' },
+  { value: 'general_consultation', label: 'General Education Consultation' },
+  { value: 'university_application_assistance', label: 'University Application Assistance' },
+  { value: 'visa_counseling_usa', label: 'Visa Counseling (USA)' },
+  { value: 'visa_counseling_australia', label: 'Visa Counseling (Australia)' },
+  { value: 'visa_counseling_uk', label: 'Visa Counseling (UK)' },
+  { value: 'visa_counseling_europe', label: 'Visa Counseling (Europe)' },
+  { value: 'visa_counseling_new_zealand', label: 'Visa Counseling (New Zealand)' },
+  { value: 'pre_departure_briefing', label: 'Pre-Departure Briefing' },
+  { value: 'career_counseling', label: 'Career Counseling' },
+  { value: 'other', label: 'Other (Please specify in notes)' },
+];
+
+export const appointmentStaff = [
+  { value: 'pradeep_khadka', label: 'Pradeep Khadka (CEO)' },
+  { value: 'pawan_acharye', label: 'Pawan Acharye' },
+  { value: 'any_available', label: 'Any Available Advisor' },
+];
+
+export const appointmentTimeSlots = [
+  '09:00 AM - 10:00 AM',
+  '10:00 AM - 11:00 AM',
+  '11:00 AM - 12:00 PM',
+  '12:00 PM - 01:00 PM',
+  '01:00 PM - 02:00 PM',
+  '02:00 PM - 03:00 PM',
+  '03:00 PM - 04:00 PM',
+  '04:00 PM - 05:00 PM',
+];
+
+// Consolidating all icon exports from lucide-react that are used across the app
+export {
+  Award,
+  Briefcase,
+  Lightbulb,
+  Users,
+  MapPin,
+  Landmark,
+  TrendingUp,
+  Globe,
+  CalendarPlus,
+  FileText,
+  BookOpen,
+  UniversityIcon,
+  CheckCircle,
+  Building,
+  Heart,
+  Handshake,
+  Goal,
+  MessageSquare,
+  Search,
+  Wand2,
+  ExternalLink,
+  Home,
+  Info
+};
+
+    

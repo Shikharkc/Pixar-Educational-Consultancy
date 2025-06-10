@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Home, Info, Briefcase, MapPin, GraduationCap, Mail, ChevronDown, Menu, Wand2 } from 'lucide-react'; // Added Wand2
+import { Home, Info, Briefcase, MapPin, GraduationCap, Mail, ChevronDown, Menu, Wand2, CalendarPlus } from 'lucide-react'; // Added CalendarPlus
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -27,7 +27,8 @@ const navItems = [
       { href: '/countries/new-zealand', label: 'New Zealand', icon: MapPin },
     ],
   },
-  { href: '/ai-assistants', label: 'AI Assistants', icon: Wand2 }, // Changed
+  { href: '/ai-assistants', label: 'AI Assistants', icon: Wand2 },
+  { href: '/book-appointment', label: 'Book Appointment', icon: CalendarPlus }, // New Item
   { href: '/contact', label: 'Contact Us', icon: Mail },
 ];
 
