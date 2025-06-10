@@ -51,6 +51,10 @@ export default function HomePage() {
   const [currentTaglineText, setCurrentTaglineText] = useState(taglines[0]);
   const [isTaglineVisible, setIsTaglineVisible] = useState(false);
 
+  const [showResultsArea, setShowResultsArea] = useState(false);
+  const [resultsContainerAnimatedIn, setResultsContainerAnimatedIn] = useState(false);
+
+
   useEffect(() => {
     const timer = setTimeout(() => setHeroAnimated(true), 100);
     return () => clearTimeout(timer);
@@ -92,10 +96,17 @@ export default function HomePage() {
   });
 
   async function onPathwaySubmit(values: PathwayFormValues) {
-    setIsLoadingPathway(true);
-    setPathwayError(null);
     setPathwayResult(null);
+    setPathwayError(null);
+    setIsLoadingPathway(true);
 
+    if (!showResultsArea) {
+        setShowResultsArea(true); 
+        requestAnimationFrame(() => {
+            setResultsContainerAnimatedIn(true);
+        });
+    }
+    
     try {
       const aiInput: PathwayPlannerInput = {
         country: values.country,
@@ -163,9 +174,15 @@ export default function HomePage() {
       {/* Pathway Quick Search Section */}
       <section>
         <SectionTitle title="Pathway Quick Search" subtitle="Find universities matching your interests instantly." />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          <div className="md:col-span-1 flex flex-col">
-            <Card className="shadow-xl bg-card flex flex-col flex-grow">
+        <div className={cn(
+            "grid grid-cols-1 gap-8 items-start",
+            showResultsArea ? "md:grid-cols-3" : "md:justify-items-center"
+        )}>
+          <div className={cn(
+            "flex flex-col w-full",
+            showResultsArea ? "md:col-span-1" : "md:max-w-2xl"
+           )}>
+            <Card className="shadow-xl bg-card flex flex-col flex-grow w-full">
               <CardHeader>
                 <CardTitle className="font-headline text-primary flex items-center"><Search className="mr-2 h-6 w-6"/>Find Your University</CardTitle>
                 <CardDescription>Select a country and field of study.</CardDescription>
@@ -225,64 +242,71 @@ export default function HomePage() {
             </Card>
           </div>
 
-          <div className="md:col-span-2 flex flex-col">
-            {isLoadingPathway && (
-              <Card className="shadow-xl bg-card flex flex-col items-center justify-center flex-grow min-h-[200px] p-6">
-                <Loader2 className="h-12 w-12 text-primary animate-spin" />
-                 <p className="text-muted-foreground mt-2">Finding universities...</p>
-              </Card>
-            )}
-            {pathwayError && (
-              <Alert variant="destructive" className="bg-card">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{pathwayError}</AlertDescription>
-              </Alert>
-            )}
-            {pathwayResult && !isLoadingPathway && (
-              <Card className="shadow-xl bg-card flex flex-col flex-grow">
-                <CardHeader>
-                  <CardTitle className="font-headline text-accent flex items-center">
-                    <Sparkles className="mr-2 h-6 w-6" /> University Suggestions
-                  </CardTitle>
-                  <CardDescription>
-                    Based on your selection of {pathwayForm.getValues('country')} and {pathwayForm.getValues('fieldOfStudy')}.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="overflow-y-auto space-y-4 max-h-96 md:max-h-[450px] p-6 flex-1">
-                  {pathwayResult.universitySuggestions && pathwayResult.universitySuggestions.length > 0 ? (
-                    <ul className="space-y-4">
-                      {pathwayResult.universitySuggestions.map((uni, index) => (
-                        <li key={index} className="p-4 border rounded-lg bg-background/50 hover:shadow-md transition-shadow">
-                          <h4 className="font-semibold text-primary flex items-center mb-1">
-                            <UniversityIcon className="mr-2 h-5 w-5 text-accent" />
-                            {uni.website ? (
-                              <a href={uni.website} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center">
-                                {uni.name} <ExternalLink className="ml-1.5 h-4 w-4 text-muted-foreground" />
-                              </a>
-                            ) : (
-                              uni.name
-                            )}
-                          </h4>
-                          <p className="text-sm text-foreground/80 ml-7">Category: {uni.category}</p>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p className="text-foreground/70 text-center py-8">No specific university suggestions found for your criteria. Try broadening your search or contact us for personalized advice!</p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-             {!pathwayResult && !isLoadingPathway && !pathwayError && (
-                <Card className="shadow-xl bg-card flex flex-col items-center justify-center flex-grow min-h-[200px]">
-                    <CardContent className="text-center p-6">
-                        <Search className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4" />
-                        <p className="text-muted-foreground">Your university suggestions will appear here.</p>
+          {showResultsArea && (
+            <div className={cn(
+                "md:col-span-2 flex flex-col",
+                "transition-all duration-700 ease-out",
+                resultsContainerAnimatedIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
+            )}>
+                {isLoadingPathway && (
+                <Card className="shadow-xl bg-card flex flex-col items-center justify-center flex-grow min-h-[200px] p-6">
+                    <Loader2 className="h-12 w-12 text-primary animate-spin" />
+                    <p className="text-muted-foreground mt-2">Finding universities...</p>
+                </Card>
+                )}
+                {pathwayError && !isLoadingPathway && (
+                <Alert variant="destructive" className="bg-card">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>{pathwayError}</AlertDescription>
+                </Alert>
+                )}
+                {pathwayResult && !isLoadingPathway && (
+                <Card className="shadow-xl bg-card flex flex-col flex-grow">
+                    <CardHeader>
+                    <CardTitle className="font-headline text-accent flex items-center">
+                        <Sparkles className="mr-2 h-6 w-6" /> University Suggestions
+                    </CardTitle>
+                    <CardDescription>
+                        Based on your selection of {pathwayForm.getValues('country')} and {pathwayForm.getValues('fieldOfStudy')}.
+                    </CardDescription>
+                    </CardHeader>
+                    <CardContent className="overflow-y-auto space-y-4 max-h-96 md:max-h-[450px] p-6 flex-1">
+                    {pathwayResult.universitySuggestions && pathwayResult.universitySuggestions.length > 0 ? (
+                        <ul className="space-y-4">
+                        {pathwayResult.universitySuggestions.map((uni, index) => (
+                            <li key={index} className="p-4 border rounded-lg bg-background/50 hover:shadow-md transition-shadow">
+                            <h4 className="font-semibold text-primary flex items-center mb-1">
+                                <UniversityIcon className="mr-2 h-5 w-5 text-accent" />
+                                {uni.website ? (
+                                <a href={uni.website} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center">
+                                    {uni.name} <ExternalLink className="ml-1.5 h-4 w-4 text-muted-foreground" />
+                                </a>
+                                ) : (
+                                uni.name
+                                )}
+                            </h4>
+                            <p className="text-sm text-foreground/80 ml-7">Category: {uni.category}</p>
+                            </li>
+                        ))}
+                        </ul>
+                    ) : (
+                        <p className="text-foreground/70 text-center py-8">No specific university suggestions found for your criteria. Try broadening your search or contact us for personalized advice!</p>
+                    )}
                     </CardContent>
                 </Card>
-            )}
-          </div>
+                )}
+                {/* This placeholder is for when the results area is visible, but nothing is loading, no error, no results. */}
+                {!isLoadingPathway && !pathwayError && !pathwayResult && (
+                    <Card className="shadow-xl bg-card flex flex-col items-center justify-center flex-grow min-h-[200px]">
+                        <CardContent className="text-center p-6">
+                            <Search className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4" />
+                            <p className="text-muted-foreground">Your university suggestions will appear here.</p>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
+          )}
         </div>
       </section>
 
