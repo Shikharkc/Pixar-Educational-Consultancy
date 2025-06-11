@@ -145,30 +145,66 @@ export default function AiAssistantsPage() {
     if (!docChecklistResult || !docChecklistResult.checklist) return;
     const userName = docChecklistForm.getValues('userName');
     const doc = new jsPDF();
+    const logoSrc = '/logo.png'; // Ensure 'logo.png' is in your /public folder
+
+    // Function to add elements to each page (watermark, header)
+    const addPageElementsAndWatermark = () => {
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+
+      // 1. Add Watermark (centered) - Drawn first to be in the background
+      // For best results, logo.png should be semi-transparent.
+      const watermarkWidth = 80; // mm
+      const watermarkHeight = 80; // mm (adjust as needed, or calculate aspect ratio)
+      const watermarkX = (pageWidth - watermarkWidth) / 2;
+      const watermarkY = (pageHeight - watermarkHeight) / 2;
+      
+      try {
+        // Note: For client-side PDF generation with images from URLs,
+        // pre-loading or Base64 conversion is most reliable.
+        // This attempts direct use of the public path.
+        doc.addImage(logoSrc, 'PNG', watermarkX, watermarkY, watermarkWidth, watermarkHeight, undefined, 'FAST');
+      } catch (e) {
+        console.warn("Watermark image could not be added. Ensure " + logoSrc + " exists in /public. Error: ", e);
+        // Fallback: maybe draw a placeholder text if image fails, or do nothing
+        doc.setFontSize(10);
+        doc.setTextColor(200, 200, 200); // Light grey for placeholder
+        doc.text("Pixar Edu", pageWidth / 2, pageHeight / 2, { align: 'center', angle: 45 });
+        doc.setTextColor(0, 0, 0); // Reset text color
+      }
+
+      // 2. Header Content (Company Name, Website) - Drawn after watermark
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'bold');
+      doc.text("Pixar Educational Consultancy", pageWidth / 2, 15, { align: 'center' });
+      
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.textWithLink("www.pixaredu.com", pageWidth / 2, 23, { align: 'center', url: 'https://www.pixaredu.com' });
+      
+      // Line Separator
+      doc.setLineWidth(0.5);
+      doc.line(14, 30, pageWidth - 14, 30); // from x1, y1, to x2, y2
+    };
+
+    let currentY = 35; // Initial Y position after header elements for the first page
+
+    const startNewPage = () => {
+      doc.addPage();
+      addPageElementsAndWatermark();
+      currentY = 35; // Reset Y for new page content
+    };
+
+    // Add elements to the first page
+    addPageElementsAndWatermark();
     
-    let currentY = 15;
-
-    // Header with Logo Placeholder and Website
-    doc.setFontSize(20);
-    doc.setFont('helvetica', 'bold');
-    doc.text("Pixar Educational Consultancy", 105, currentY, { align: 'center' });
-    currentY += 8;
-    
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.textWithLink("www.pixaredu.com", 105, currentY, { align: 'center', url: 'https://www.pixaredu.com' });
-    currentY += 10;
-
-    // Line Separator
-    doc.setLineWidth(0.5);
-    doc.line(14, currentY, 196, currentY);
-    currentY += 10;
-
+    // Personalized Title
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
-    doc.text(`Document Checklist for ${userName}`, 105, currentY, { align: 'center' });
+    doc.text(`Document Checklist for ${userName}`, doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
     currentY += 10;
     
+    // Education Level and Desired Country
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text(`Education Level: ${docChecklistForm.getValues('educationLevel')}`, 14, currentY);
@@ -176,48 +212,76 @@ export default function AiAssistantsPage() {
     doc.text(`Desired Country: ${docChecklistForm.getValues('desiredCountry')}`, 14, currentY);
     currentY += 10;
     
+    // Checklist Section Title
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text("Document Checklist:", 14, currentY);
     currentY += 7;
 
+    // Checklist Items
     docChecklistResult.checklist.forEach((item, index) => {
-      if (currentY > 270) { 
-        doc.addPage();
-        currentY = 15;
-        // Re-add header on new page if needed
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      
+      const itemNumberText = `${index + 1}. `;
+      const englishNameText = item.englishName;
+      const fullItemText = itemNumberText + englishNameText;
+      
+      // Calculate height for item name
+      const itemNameLines = doc.splitTextToSize(fullItemText, doc.internal.pageSize.getWidth() - 28); // 14mm margin each side
+      const itemNameHeight = itemNameLines.length * 4.5; // Approximate height per line
+
+      // Calculate height for description
+      const descriptionLines = doc.splitTextToSize(`   Description: ${item.description}`, doc.internal.pageSize.getWidth() - 32); // Slightly more indented
+      const descriptionHeight = descriptionLines.length * 4.5; // Approximate height per line
+      
+      const totalItemHeight = itemNameHeight + descriptionHeight + 3; // +3 for spacing
+
+      if (currentY + totalItemHeight > doc.internal.pageSize.getHeight() - 20) { // 20mm bottom margin
+        startNewPage();
+        // Optionally, re-add "Document Checklist (Continued)"
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.text("Document Checklist (Continued):", 14, currentY);
         currentY += 7;
       }
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text(`${index + 1}. ${item.englishName}`, 14, currentY);
-      currentY += 5;
       
-      // Descriptions can be long, so split them
-      const splitDescription = doc.splitTextToSize(`   Description: ${item.description}`, 180); // 180 is approx width in mm for text
-      doc.text(splitDescription, 14, currentY);
-      currentY += (splitDescription.length * 4) + 3; // Adjust spacing based on number of lines
+      doc.text(itemNameLines, 14, currentY);
+      currentY += itemNameHeight;
+      
+      doc.text(descriptionLines, 14, currentY); // Description text
+      currentY += descriptionHeight + 3; // Add some space after each item
     });
     
+    // Notes Section (if any)
     if (docChecklistResult.notes) {
-      if (currentY > 250) { // Check if notes will fit
-        doc.addPage();
-        currentY = 15;
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      const notesTitle = "Important Notes & Advice:";
+      const notesTitleHeight = 7;
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      const notesLines = doc.splitTextToSize(docChecklistResult.notes, doc.internal.pageSize.getWidth() - 28);
+      const notesBodyHeight = notesLines.length * 4.5;
+      const totalNotesHeight = notesTitleHeight + notesBodyHeight;
+
+      if (currentY + totalNotesHeight > doc.internal.pageSize.getHeight() - 20) { // 20mm bottom margin
+        startNewPage();
       }
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
-      doc.text("Important Notes & Advice:", 14, currentY);
-      currentY += 7;
+      doc.text(notesTitle, 14, currentY);
+      currentY += notesTitleHeight;
+      
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      const splitNotes = doc.splitTextToSize(docChecklistResult.notes, 180);
-      doc.text(splitNotes, 14, currentY);
+      doc.text(notesLines, 14, currentY);
     }
+    
     doc.save(`document_checklist_${userName.replace(/\s+/g, '_')}.pdf`);
   };
+
 
   return (
     <div className="space-y-12">
@@ -554,7 +618,7 @@ export default function AiAssistantsPage() {
                         <Info className="h-4 w-4" />
                         <AlertTitle>PDF Generation Note</AlertTitle>
                         <AlertDescription>
-                          Nepali names for documents are shown below for web view but will be excluded from the PDF. Other Nepali text in descriptions (if any) might not render correctly in the PDF due to font limitations.
+                          Nepali names for documents are shown below for web view but will be excluded from the PDF. Other Nepali text in descriptions (if any) might not render correctly in the PDF due to font limitations. Ensure your logo is at `public/logo.png` for the PDF watermark.
                         </AlertDescription>
                       </Alert>
                       <div className="overflow-x-auto">
