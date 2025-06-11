@@ -18,11 +18,12 @@ import SectionTitle from '@/components/ui/section-title';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from '@/components/ui/badge';
 
 import { englishTestAdvisor, type EnglishTestAdvisorInput, type EnglishTestAdvisorOutput } from '@/ai/flows/english-test-advisor';
 import { generateDocumentChecklist, type DocumentChecklistInput, type DocumentChecklistOutput } from '@/ai/flows/document-checklist-flow';
 
-import { Loader2, Sparkles, Info, FileText, Download, AlertCircle, BookOpenText, ListChecks, MessageSquare } from 'lucide-react';
+import { Loader2, Sparkles, Info, FileText, Download, AlertCircle, BookOpenText, ListChecks, MessageSquare, HelpCircle, CheckCircle as CheckCircleIcon } from 'lucide-react';
 
 // Schemas for English Test Advisor
 const englishTestFormSchema = z.object({
@@ -47,6 +48,14 @@ const selectableCountries = [
   { name: 'New Zealand', value: 'New Zealand' },
   { name: 'Europe', value: 'Europe' },
 ];
+
+const testComparisonData = [
+  { name: "IELTS Academic", cost: "~$250 USD", typicalDuration: "2h 45m", acceptance: "Very High (Academia, Immigration globally)", format: "Paper or Computer", resultTime: "3-13 days", keyFeatures: ["Face-to-face speaking test option", "Widely available test centers"] },
+  { name: "TOEFL iBT", cost: "~$245 USD", typicalDuration: "~3 hours", acceptance: "Very High (Especially US Academia)", format: "Computer-based", resultTime: "4-8 days", keyFeatures: ["Strong academic focus", "Integrated tasks simulating university environment"] },
+  { name: "PTE Academic", cost: "~$220 USD", typicalDuration: "2 hours", acceptance: "High (Academia, Immigration in Australia, NZ, UK)", format: "Computer-based, AI scored", resultTime: "Typically 2-5 days", keyFeatures: ["Fast results", "Fully computer-scored including speaking"] },
+  { name: "Duolingo English Test", cost: "~$59 USD", typicalDuration: "~1 hour (including setup)", acceptance: "Growing (Many US universities, some others)", format: "Computer-adaptive, at-home", resultTime: "Within 2 days", keyFeatures: ["Affordable and accessible", "Can be taken online anytime"] }
+];
+
 
 export default function AiAssistantsPage() {
   // State for English Test Advisor
@@ -278,20 +287,77 @@ export default function AiAssistantsPage() {
             </Alert>
           )}
           {englishTestResult && !isEnglishTestLoading && (
-            <Card className="max-w-2xl mx-auto mt-8 shadow-xl bg-gradient-to-br from-accent/10 to-background">
-              <CardHeader><CardTitle className="font-headline text-accent flex items-center"><Sparkles className="mr-2 h-6 w-6" /> Your Personalized Recommendation</CardTitle></CardHeader>
-              <CardContent className="space-y-4">
-                <div><h3 className="font-semibold text-lg text-primary">Recommended Test:</h3><p className="text-foreground/90">{englishTestResult.testRecommendation}</p></div>
-                <div><h3 className="font-semibold text-lg text-primary">Reasoning:</h3><p className="text-foreground/90 whitespace-pre-line">{englishTestResult.reasoning}</p></div>
-                <div className="pt-4 text-center">
-                    <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-                        <Link href="/contact">
-                            <MessageSquare className="mr-2 h-5 w-5" /> Contact an Advisor
-                        </Link>
-                    </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <div className="max-w-2xl mx-auto mt-8 space-y-6">
+              <Card className="shadow-xl bg-gradient-to-br from-accent/10 to-background">
+                <CardHeader>
+                  <CardTitle className="font-headline text-accent flex items-center"><Sparkles className="mr-2 h-6 w-6" /> Your Personalized Recommendation</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="font-semibold text-lg text-primary">Recommended Test:</h3>
+                    <p className="text-foreground/90 text-xl font-medium">{englishTestResult.testRecommendation}</p>
+                  </div>
+                  {englishTestResult.badges && englishTestResult.badges.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {englishTestResult.badges.map((badge, index) => (
+                        <Badge key={index} variant="secondary" className="text-sm">
+                          <CheckCircleIcon className="mr-1.5 h-4 w-4 text-green-500" />
+                          {badge}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="font-semibold text-lg text-primary">Reasoning:</h3>
+                    <p className="text-foreground/90 whitespace-pre-line">{englishTestResult.reasoning}</p>
+                  </div>
+                  <div className="pt-4 text-center">
+                      <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
+                          <Link href="/contact">
+                              <MessageSquare className="mr-2 h-5 w-5" /> Want help preparing or booking your test? Talk to our experts!
+                          </Link>
+                      </Button>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-xl bg-card">
+                <CardHeader>
+                    <CardTitle className="font-headline text-primary flex items-center"><HelpCircle className="mr-2 h-6 w-6" /> Compare Test Types</CardTitle>
+                    <CardDescription>General comparison of popular English proficiency tests.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Test Name</TableHead>
+                                    <TableHead>Typical Cost (USD)</TableHead>
+                                    <TableHead>Duration</TableHead>
+                                    <TableHead>Acceptance</TableHead>
+                                    <TableHead>Format</TableHead>
+                                    <TableHead>Result Time</TableHead>
+                                    <TableHead>Key Features</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {testComparisonData.map((test) => (
+                                    <TableRow key={test.name}>
+                                        <TableCell className="font-medium">{test.name}</TableCell>
+                                        <TableCell>{test.cost}</TableCell>
+                                        <TableCell>{test.typicalDuration}</TableCell>
+                                        <TableCell>{test.acceptance}</TableCell>
+                                        <TableCell>{test.format}</TableCell>
+                                        <TableCell>{test.resultTime}</TableCell>
+                                        <TableCell className="text-xs">{test.keyFeatures.join(', ')}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </CardContent>
+              </Card>
+            </div>
           )}
         </TabsContent>
 
