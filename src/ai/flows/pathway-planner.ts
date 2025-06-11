@@ -32,10 +32,12 @@ const UniversitySuggestionSchema = z.object({
   website: z.string().describe("The official website URL of the university."),
   programDuration: z.string().describe("The typical duration for a relevant program in the field of study, e.g., '3-4 years', '18 months', '2 years full-time'."),
   type: z.enum(["Public", "Private", "Unknown"]).describe("The type of university (Public, Private, or Unknown)."),
+  location: z.string().describe("The city and state/region of the university (e.g., 'Cambridge, MA', 'Sydney, NSW')."),
   tuitionCategory: z.enum(["Affordable", "Mid-Range", "Premium", "Varies", "Unknown"]).describe("A category for the estimated annual tuition. Affordable: typically <$15,000 USD/year or equivalent. Mid-Range: $15,000-$30,000 USD/year or equivalent. Premium: >$30,000 USD/year or equivalent. Use 'Varies' if it's highly variable or 'Unknown' if not determinable."),
-  rawTuitionInfo: z.string().optional().describe("Optional: More detailed textual information about tuition fees, e.g., 'Approximately $10,000 - $14,000 per year for international students'."),
+  tuitionFeeRange: z.string().optional().describe("Estimated annual tuition fee range if available, e.g., '$10,000 - $15,000 USD', '€8,000 - €12,000'. Keep this concise."),
   scholarshipLevel: z.enum(["High", "Medium", "Low", "None", "Varies", "Unknown"]).describe("General availability or level of scholarships (High: many options often available; Medium: some options; Low: few options; None: typically no scholarships; Varies; Unknown)."),
-  rawScholarshipInfo: z.string().optional().describe("Optional: More detailed textual information about scholarship availability, e.g., 'Merit-based scholarships up to 50% available for eligible students'."),
+  rawScholarshipInfo: z.string().optional().describe("Optional: Very concise textual information about scholarship availability, e.g., 'Merit-based scholarships available'. Limit to one short phrase."),
+  englishTestRequirements: z.string().optional().describe("Typical English proficiency test scores required (e.g., 'IELTS: 6.5+', 'TOEFL iBT: 90+'). Keep this concise."),
 });
 
 const PathwayPlannerOutputSchema = z.object({
@@ -67,21 +69,23 @@ const pathwayPlannerPrompt = ai.definePrompt({
   4.  'website': The official website URL. Ensure it's a full, valid URL.
   5.  'programDuration': The typical duration for a relevant program in the specified field of study AT THE TARGET EDUCATION LEVEL (e.g., "3-4 years for Bachelor's", "18 months for Master's", "2 years full-time for Master's").
   6.  'type': The type of university - "Public", "Private", or "Unknown".
-  7.  'tuitionCategory': Categorize the estimated annual tuition for programs at the target education level:
+  7.  'location': The city and state/region of the university (e.g., "Cambridge, MA", "Sydney, NSW").
+  8.  'tuitionCategory': Categorize the estimated annual tuition for programs at the target education level:
       - "Affordable": Typically less than $15,000 USD per year (or local equivalent).
       - "Mid-Range": Typically $15,000 - $30,000 USD per year (or local equivalent).
       - "Premium": Typically more than $30,000 USD per year (or local equivalent).
       - "Varies": If tuition is highly variable across programs or student types.
       - "Unknown": If information is not readily available.
-  8.  'rawTuitionInfo': (Optional) A short sentence with more specific tuition details if available, like "Around 12,000 EUR/year for international Master's students."
-  9.  'scholarshipLevel': Categorize scholarship availability for students at the target education level:
+  9.  'tuitionFeeRange': (Optional) A CONCISE estimated annual tuition fee range if available, e.g., "$10,000 - $15,000 USD", "€8,000 - €12,000".
+  10. 'scholarshipLevel': Categorize scholarship availability for students at the target education level:
       - "High": Many scholarships generally available.
       - "Medium": Some scholarships available.
       - "Low": Few scholarships available.
       - "None": Generally no scholarships.
       - "Varies": Highly variable.
       - "Unknown": If information is not readily available.
-  10. 'rawScholarshipInfo': (Optional) A short sentence about scholarship details, like "Offers merit and need-based aid for graduate programs."
+  11. 'rawScholarshipInfo': (Optional) A VERY short, concise phrase about scholarship details if available, like "Merit-based aid available."
+  12. 'englishTestRequirements': (Optional) CONCISE typical English proficiency test scores required (e.g., "IELTS: 6.5+", "TOEFL iBT: 90+").
 
   Only list universities located within the specified country. Ensure the website is a direct link to the university.
   Provide a diverse list if possible, aiming for as many relevant suggestions as you can find for the given criteria.
@@ -106,4 +110,3 @@ const pathwayPlannerFlow = ai.defineFlow(
     return output!;
   }
 );
-

@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import SectionTitle from '@/components/ui/section-title';
-import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info, Search, ExternalLink, Wand2, Briefcase, DollarSign, Award as AwardIconLucideComp } from 'lucide-react';
+import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info, Search, ExternalLink, Wand2, Briefcase, DollarSign, Award as AwardIconLucideComp, ClipboardCheck } from 'lucide-react';
 import { testimonials, services, fieldsOfStudy, gpaScaleOptions, educationLevelOptions } from '@/lib/data'; 
 import type { Testimonial, Service } from '@/lib/data';
 import { useState, useEffect, useMemo } from 'react';
@@ -178,13 +178,13 @@ export default function HomePage() {
   }, [pathwayResult, filterType, sortOrder, filterTuitionCategory, filterScholarshipLevel]);
   
   const renderPathwayForm = () => (
-    <Card className={cn("shadow-xl bg-card w-full", !showResultsArea ? "md:max-w-3xl" : "")}>
+    <Card className={cn("shadow-xl bg-card w-full", !showResultsArea ? "md:max-w-3xl mx-auto" : "")}>
       <CardHeader>
         <CardTitle className="font-headline text-primary flex items-center">
-          <Search className="mr-2 h-6 w-6"/> {!showResultsArea ? "Plan Your Study Pathway" : "Refine Your Search"}
+          <Search className="mr-2 h-6 w-6"/> Plan Your Study Pathway
         </CardTitle>
         <CardDescription>
-          {!showResultsArea ? "Tell us your preferences to discover suitable university options." : "Adjust your selections or try new ones."}
+          Tell us your preferences to discover suitable university options.
         </CardDescription>
       </CardHeader>
       <Form {...pathwayForm}>
@@ -329,7 +329,7 @@ export default function HomePage() {
         )}>
           <div className={cn(
             "w-full", 
-            !showResultsArea ? "flex justify-center" : "md:col-span-1"
+            showResultsArea ? "md:col-span-1" : "" 
            )}>
             {renderPathwayForm()}
           </div>
@@ -419,13 +419,24 @@ export default function HomePage() {
                                         <p className="text-xs text-muted-foreground mb-2 ml-7">{uni.category}</p>
                                         
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm mb-3">
+                                            <div className="flex items-center" title="University Location"><MapPin className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">{uni.location}</span></div>
                                             <div className="flex items-center" title="University Type"><Briefcase className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">Type: {uni.type}</span></div>
                                             <div className="flex items-center" title="Program Duration"><BookOpen className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">Duration: {uni.programDuration}</span></div>
-                                            <div className="flex items-center" title="Tuition Category"><DollarSign className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">Tuition: {uni.tuitionCategory}</span></div>
-                                            <div className="flex items-center" title="Scholarship Level"><AwardIconLucideComp className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">Scholarships: {uni.scholarshipLevel}</span></div>
+                                            <div className="flex items-center" title="Tuition Category & Range">
+                                                <DollarSign className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
+                                                <span className="text-foreground/80">Tuition: {uni.tuitionCategory} {uni.tuitionFeeRange && `(${uni.tuitionFeeRange})`}</span>
+                                            </div>
+                                            <div className="flex items-center" title="Scholarship Level & Info">
+                                                <AwardIconLucideComp className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
+                                                <span className="text-foreground/80">Scholarships: {uni.scholarshipLevel} {uni.rawScholarshipInfo && `(${uni.rawScholarshipInfo})`}</span>
+                                            </div>
+                                            {uni.englishTestRequirements && (
+                                                <div className="flex items-center sm:col-span-2" title="English Test Requirements">
+                                                    <ClipboardCheck className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
+                                                    <span className="text-foreground/80">English Tests: {uni.englishTestRequirements}</span>
+                                                </div>
+                                            )}
                                         </div>
-                                        {uni.rawTuitionInfo && <p className="text-xs text-foreground/70 mb-1 italic">Tuition Note: {uni.rawTuitionInfo}</p>}
-                                        {uni.rawScholarshipInfo && <p className="text-xs text-foreground/70 mb-1 italic">Scholarship Note: {uni.rawScholarshipInfo}</p>}
                                     </div>
                                 </div>
                                 <div className="mt-3 text-right">
