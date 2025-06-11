@@ -1,3 +1,4 @@
+
 // src/ai/flows/pathway-planner.ts
 'use server';
 
@@ -22,13 +23,24 @@ const PathwayPlannerInputSchema = z.object({
 
 export type PathwayPlannerInput = z.infer<typeof PathwayPlannerInputSchema>;
 
+const UniversitySuggestionSchema = z.object({
+  name: z.string().describe("The name of the suggested university."),
+  category: z.string().describe("The main category or specialization of the university (e.g., Engineering, Arts, Business)."),
+  logoDataAiHint: z.string().optional().describe("A 1-2 word hint for the university's logo for placeholder generation (e.g., 'university shield', 'modern building')."),
+  website: z.string().describe("The official website URL of the university. Ensure it is a valid URL."),
+  programDuration: z.string().describe("The typical duration for a relevant program in the field of study, e.g., '3-4 years', '18 months', '2 years full-time'."),
+  type: z.enum(["Public", "Private", "Unknown"]).describe("The type of university (Public, Private, or Unknown)."),
+  tuitionCategory: z.enum(["Affordable", "Mid-Range", "Premium", "Varies", "Unknown"]).describe("A category for the estimated annual tuition. Affordable: typically <$15,000 USD/year or equivalent. Mid-Range: $15,000-$30,000 USD/year or equivalent. Premium: >$30,000 USD/year or equivalent. Use 'Varies' if it's highly variable or 'Unknown' if not determinable."),
+  rawTuitionInfo: z.string().optional().describe("Optional: More detailed textual information about tuition fees, e.g., 'Approximately $10,000 - $14,000 per year for international students'."),
+  scholarshipLevel: z.enum(["High", "Medium", "Low", "None", "Varies", "Unknown"]).describe("General availability or level of scholarships (High: many options often available; Medium: some options; Low: few options; None: typically no scholarships; Varies; Unknown)."),
+  rawScholarshipInfo: z.string().optional().describe("Optional: More detailed textual information about scholarship availability, e.g., 'Merit-based scholarships up to 50% available for eligible students'."),
+});
+
 const PathwayPlannerOutputSchema = z.object({
   universitySuggestions: z
-    .array(z.object({
-      name: z.string().describe("The name of the suggested university."),
-      category: z.string().describe("The main category or specialization of the university (e.g., Engineering, Arts, Business).")
-    }))
-    .describe('A list of suggested universities with their names and main categories, relevant to the chosen country and field of study.'),
+    .array(UniversitySuggestionSchema)
+    .describe('A list of suggested universities with their details, relevant to the chosen country and field of study.'),
+  searchSummary: z.string().optional().describe("A brief summary of the search results or any general advice based on the query. For example, 'Here are some leading Engineering universities in the USA known for strong research programs.'"),
 });
 
 export type PathwayPlannerOutput = z.infer<typeof PathwayPlannerOutputSchema>;
@@ -42,12 +54,38 @@ const pathwayPlannerPrompt = ai.definePrompt({
   input: {schema: PathwayPlannerInputSchema},
   output: {schema: PathwayPlannerOutputSchema},
   prompt: `You are an expert educational consultant. A student is seeking university suggestions.
-  Based on their desired country and field of study, provide a list of university suggestions.
-  Each suggestion must include the university name and its primary category or area of specialization relevant to the field of study.
-  Only list universities located within the specified country.
+  Based on their desired country ('{{{country}}}') and field of study ('{{{fieldOfStudy}}}'), provide a list of university suggestions.
 
-  Country: {{{country}}}
-  Field of Study: {{{fieldOfStudy}}}
+  For each university, provide the following details:
+  1.  'name': The official name of the university.
+  2.  'category': The main academic category or specialization of the university relevant to the field of study (e.g., Engineering, Arts, Business, Technology, Health Sciences).
+  3.  'logoDataAiHint': A very short (1-2 words) hint for a placeholder logo, like "university shield" or "modern building".
+  4.  'website': The official website URL. Ensure it's a full, valid URL.
+  5.  'programDuration': The typical duration for a relevant program in the specified field of study (e.g., "3-4 years", "18 months", "2 years full-time").
+  6.  'type': The type of university - "Public", "Private", or "Unknown".
+  7.  'tuitionCategory': Categorize the estimated annual tuition:
+      - "Affordable": Typically less than $15,000 USD per year (or local equivalent).
+      - "Mid-Range": Typically $15,000 - $30,000 USD per year (or local equivalent).
+      - "Premium": Typically more than $30,000 USD per year (or local equivalent).
+      - "Varies": If tuition is highly variable across programs or student types.
+      - "Unknown": If information is not readily available.
+  8.  'rawTuitionInfo': (Optional) A short sentence with more specific tuition details if available, like "Around 12,000 EUR/year for international students."
+  9.  'scholarshipLevel': Categorize scholarship availability:
+      - "High": Many scholarships generally available.
+      - "Medium": Some scholarships available.
+      - "Low": Few scholarships available.
+      - "None": Generally no scholarships.
+      - "Varies": Highly variable.
+      - "Unknown": If information is not readily available.
+  10. 'rawScholarshipInfo': (Optional) A short sentence about scholarship details, like "Offers merit and need-based aid."
+
+  Only list universities located within the specified country. Ensure the website is a direct link to the university.
+  Provide a diverse list if possible.
+
+  Desired Country: {{{country}}}
+  Desired Field of Study: {{{fieldOfStudy}}}
+
+  Finally, include a brief 'searchSummary' if you have any overarching comments on the results for the given query.
   `,
 });
 
@@ -62,3 +100,4 @@ const pathwayPlannerFlow = ai.defineFlow(
     return output!;
   }
 );
+
