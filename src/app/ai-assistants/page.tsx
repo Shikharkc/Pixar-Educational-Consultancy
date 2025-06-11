@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react'; // Added useEffect for potential future use
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -24,7 +24,7 @@ import { cn } from '@/lib/utils';
 import { englishTestAdvisor, type EnglishTestAdvisorInput, type EnglishTestAdvisorOutput } from '@/ai/flows/english-test-advisor';
 import { generateDocumentChecklist, type DocumentChecklistInput, type DocumentChecklistOutput } from '@/ai/flows/document-checklist-flow';
 
-import { Loader2, Sparkles, Info, FileText, Download, AlertCircle, BookOpenText, ListChecks, MessageSquare, HelpCircle, CheckCircle as CheckCircleIcon } from 'lucide-react';
+import { Loader2, Sparkles, Info, FileText, Download, AlertCircle, BookOpenText, ListChecks, MessageSquare, HelpCircle, CheckCircle as CheckCircleIcon, User } from 'lucide-react';
 
 // Schemas for English Test Advisor
 const englishTestFormSchema = z.object({
@@ -37,6 +37,7 @@ type EnglishTestAdvisorFormValues = z.infer<typeof englishTestFormSchema>;
 
 // Schemas for Document Checklist
 const docChecklistFormSchema = z.object({
+  userName: z.string().min(2, "Please enter your full name.").max(100, "Name is too long."),
   educationLevel: z.string().min(1, "Please select your education level."),
   desiredCountry: z.string().min(1, "Please select your desired country."),
 });
@@ -87,6 +88,7 @@ export default function AiAssistantsPage() {
   const docChecklistForm = useForm<DocumentChecklistFormValues>({
     resolver: zodResolver(docChecklistFormSchema),
     defaultValues: {
+      userName: '',
       educationLevel: '',
       desiredCountry: '',
     },
@@ -125,7 +127,12 @@ export default function AiAssistantsPage() {
     }
     setIsDocChecklistLoading(true);
     try {
-      const aiResult = await generateDocumentChecklist(values);
+      // User name is not sent to the AI flow, it's for PDF personalization only
+      const aiInput: DocumentChecklistInput = {
+        educationLevel: values.educationLevel,
+        desiredCountry: values.desiredCountry,
+      };
+      const aiResult = await generateDocumentChecklist(aiInput);
       setDocChecklistResult(aiResult);
     } catch (e) {
       setDocChecklistError(e instanceof Error ? e.message : 'An unexpected error occurred.');
@@ -136,21 +143,41 @@ export default function AiAssistantsPage() {
 
   const handleDownloadPdf = () => {
     if (!docChecklistResult || !docChecklistResult.checklist) return;
-
+    const userName = docChecklistForm.getValues('userName');
     const doc = new jsPDF();
-    const tableStartY = 20;
-    let currentY = tableStartY;
+    
+    let currentY = 15;
 
-    doc.setFontSize(18);
-    doc.text("Document Checklist", 105, 15, { align: 'center' });
+    // Header with Logo Placeholder and Website
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text("Pixar Educational Consultancy", 105, currentY, { align: 'center' });
+    currentY += 8;
     
     doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.textWithLink("www.pixaredu.com", 105, currentY, { align: 'center', url: 'https://www.pixaredu.com' });
+    currentY += 10;
+
+    // Line Separator
+    doc.setLineWidth(0.5);
+    doc.line(14, currentY, 196, currentY);
+    currentY += 10;
+
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`Document Checklist for ${userName}`, 105, currentY, { align: 'center' });
+    currentY += 10;
+    
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
     doc.text(`Education Level: ${docChecklistForm.getValues('educationLevel')}`, 14, currentY);
     currentY += 6;
     doc.text(`Desired Country: ${docChecklistForm.getValues('desiredCountry')}`, 14, currentY);
     currentY += 10;
     
     doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
     doc.text("Document Checklist:", 14, currentY);
     currentY += 7;
 
@@ -158,34 +185,38 @@ export default function AiAssistantsPage() {
       if (currentY > 270) { 
         doc.addPage();
         currentY = 15;
+        // Re-add header on new page if needed
         doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
         doc.text("Document Checklist (Continued):", 14, currentY);
         currentY += 7;
       }
       doc.setFontSize(10);
-      doc.text(`${index + 1}. English: ${item.englishName}`, 14, currentY);
-      currentY += 5;
-      doc.text(`   Nepali: ${item.nepaliName}`, 14, currentY);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`${index + 1}. ${item.englishName}`, 14, currentY);
       currentY += 5;
       
-      const splitDescription = doc.splitTextToSize(`   Description: ${item.description}`, 180);
+      // Descriptions can be long, so split them
+      const splitDescription = doc.splitTextToSize(`   Description: ${item.description}`, 180); // 180 is approx width in mm for text
       doc.text(splitDescription, 14, currentY);
-      currentY += (splitDescription.length * 4) + 3; 
+      currentY += (splitDescription.length * 4) + 3; // Adjust spacing based on number of lines
     });
     
     if (docChecklistResult.notes) {
-      if (currentY > 250) { 
+      if (currentY > 250) { // Check if notes will fit
         doc.addPage();
         currentY = 15;
       }
       doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
       doc.text("Important Notes & Advice:", 14, currentY);
       currentY += 7;
       doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
       const splitNotes = doc.splitTextToSize(docChecklistResult.notes, 180);
       doc.text(splitNotes, 14, currentY);
     }
-    doc.save('document_checklist.pdf');
+    doc.save(`document_checklist_${userName.replace(/\s+/g, '_')}.pdf`);
   };
 
   return (
@@ -409,11 +440,22 @@ export default function AiAssistantsPage() {
             )}>
               <CardHeader>
                 <CardTitle className="font-headline text-primary flex items-center"><ListChecks className="mr-2 h-6 w-6" />Generate Your Document Checklist</CardTitle>
-                <CardDescription>Provide your details to receive a tailored document list in English and Nepali.</CardDescription>
+                <CardDescription>Provide your details to receive a tailored document list.</CardDescription>
               </CardHeader>
               <Form {...docChecklistForm}>
                 <form onSubmit={docChecklistForm.handleSubmit(onDocChecklistSubmit)}>
                   <CardContent className="space-y-6">
+                    <FormField
+                      control={docChecklistForm.control}
+                      name="userName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center"><User className="mr-2 h-4 w-4 text-accent"/>Full Name</FormLabel>
+                          <FormControl><Input placeholder="e.g., Jane Doe" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <FormField
                       control={docChecklistForm.control}
                       name="educationLevel"
@@ -500,7 +542,7 @@ export default function AiAssistantsPage() {
                   <Card className="shadow-xl bg-gradient-to-br from-accent/10 to-background">
                     <CardHeader className="flex flex-row justify-between items-center">
                       <div>
-                        <CardTitle className="font-headline text-accent flex items-center"><FileText className="mr-2 h-6 w-6" /> Your Document Checklist</CardTitle>
+                        <CardTitle className="font-headline text-accent flex items-center"><FileText className="mr-2 h-6 w-6" /> Document Checklist for {docChecklistForm.getValues('userName')}</CardTitle>
                         <CardDescription>For {docChecklistForm.getValues('educationLevel')} to {docChecklistForm.getValues('desiredCountry')}</CardDescription>
                       </div>
                       <Button onClick={handleDownloadPdf} variant="outline" size="sm" className="ml-auto">
@@ -510,9 +552,9 @@ export default function AiAssistantsPage() {
                     <CardContent className="space-y-6">
                       <Alert>
                         <Info className="h-4 w-4" />
-                        <AlertTitle>Nepali Text in PDF</AlertTitle>
+                        <AlertTitle>PDF Generation Note</AlertTitle>
                         <AlertDescription>
-                          Nepali text may not render correctly in the downloaded PDF due to font limitations. The web view below should display it correctly.
+                          Nepali names for documents are shown below for web view but will be excluded from the PDF. Other Nepali text in descriptions (if any) might not render correctly in the PDF due to font limitations.
                         </AlertDescription>
                       </Alert>
                       <div className="overflow-x-auto">
@@ -558,7 +600,3 @@ export default function AiAssistantsPage() {
     </div>
   );
 }
-
-    
-
-    
