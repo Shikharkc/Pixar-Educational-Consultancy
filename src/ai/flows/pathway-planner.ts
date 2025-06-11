@@ -4,7 +4,7 @@
 
 /**
  * @fileOverview A pathway planner AI agent that suggests universities
- * based on a student's chosen country, desired field of study, and GPA.
+ * based on a student's chosen country, desired field of study, GPA, and target education level.
  *
  * - pathwayPlanner - A function that handles the pathway planning process.
  * - PathwayPlannerInput - The input type for the pathwayPlanner function.
@@ -20,6 +20,7 @@ const PathwayPlannerInputSchema = z.object({
     .describe('The country the student is interested in (e.g., USA, Australia).'),
   fieldOfStudy: z.string().describe('The desired field of study (e.g., computer science, engineering).'),
   gpa: z.string().describe('The student\'s approximate Grade Point Average (GPA) or academic standing (e.g., "4.0", "3.5-3.9", "Percentage-based equivalent"). The AI should consider this when suggesting suitable universities.'),
+  targetEducationLevel: z.string().describe("The target level of education the student is seeking (e.g., Bachelor's Degree, Master's Degree)."),
 });
 
 export type PathwayPlannerInput = z.infer<typeof PathwayPlannerInputSchema>;
@@ -40,8 +41,8 @@ const UniversitySuggestionSchema = z.object({
 const PathwayPlannerOutputSchema = z.object({
   universitySuggestions: z
     .array(UniversitySuggestionSchema)
-    .describe('A list of suggested universities with their details, relevant to the chosen country, field of study, and GPA.'),
-  searchSummary: z.string().optional().describe("A brief summary of the search results or any general advice based on the query. For example, 'Here are some leading Engineering universities in the USA known for strong research programs that might be suitable for a student with a {{{gpa}}} GPA.' Acknowledge the GPA's influence if relevant."),
+    .describe('A list of suggested universities with their details, relevant to the chosen country, field of study, GPA, and target education level.'),
+  searchSummary: z.string().optional().describe("A brief summary of the search results or any general advice based on the query. For example, 'Here are some leading Engineering universities in the USA known for strong research programs that might be suitable for a student with a {{{gpa}}} GPA seeking a {{{targetEducationLevel}}}.' Acknowledge the GPA's and target education level's influence if relevant."),
 });
 
 export type PathwayPlannerOutput = z.infer<typeof PathwayPlannerOutputSchema>;
@@ -55,32 +56,32 @@ const pathwayPlannerPrompt = ai.definePrompt({
   input: {schema: PathwayPlannerInputSchema},
   output: {schema: PathwayPlannerOutputSchema},
   prompt: `You are an expert educational consultant. A student is seeking university suggestions.
-  Based on their desired country ('{{{country}}}'), field of study ('{{{fieldOfStudy}}}'), and GPA ('{{{gpa}}}'), provide a list of university suggestions.
+  Based on their desired country ('{{{country}}}'), field of study ('{{{fieldOfStudy}}}'), GPA ('{{{gpa}}}'), and target education level ('{{{targetEducationLevel}}}'), provide a list of university suggestions.
 
-  Consider the student's GPA ({{{gpa}}}) when suggesting universities. Aim for institutions where a student with this academic standing might generally be competitive. However, still try to provide as many relevant universities as possible for the country and field. If the GPA is low, you might focus on universities with broader admission criteria or pathway programs, if appropriate for the field and country.
+  Consider the student's GPA ({{{gpa}}}) and their target education level ({{{targetEducationLevel}}}) when suggesting universities. Aim for institutions where a student with this academic standing might generally be competitive for programs at their desired level. However, still try to provide as many relevant universities as possible for the country and field. If the GPA is low, you might focus on universities with broader admission criteria or pathway programs, if appropriate for the field, country and target education level.
 
   For each university, provide the following details:
   1.  'name': The official name of the university.
   2.  'category': The main academic category or specialization of the university relevant to the field of study (e.g., Engineering, Arts, Business, Technology, Health Sciences).
   3.  'logoDataAiHint': A very short (1-2 words) hint for a placeholder logo, like "university shield" or "modern building".
   4.  'website': The official website URL. Ensure it's a full, valid URL.
-  5.  'programDuration': The typical duration for a relevant program in the specified field of study (e.g., "3-4 years", "18 months", "2 years full-time").
+  5.  'programDuration': The typical duration for a relevant program in the specified field of study AT THE TARGET EDUCATION LEVEL (e.g., "3-4 years for Bachelor's", "18 months for Master's", "2 years full-time for Master's").
   6.  'type': The type of university - "Public", "Private", or "Unknown".
-  7.  'tuitionCategory': Categorize the estimated annual tuition:
+  7.  'tuitionCategory': Categorize the estimated annual tuition for programs at the target education level:
       - "Affordable": Typically less than $15,000 USD per year (or local equivalent).
       - "Mid-Range": Typically $15,000 - $30,000 USD per year (or local equivalent).
       - "Premium": Typically more than $30,000 USD per year (or local equivalent).
       - "Varies": If tuition is highly variable across programs or student types.
       - "Unknown": If information is not readily available.
-  8.  'rawTuitionInfo': (Optional) A short sentence with more specific tuition details if available, like "Around 12,000 EUR/year for international students."
-  9.  'scholarshipLevel': Categorize scholarship availability:
+  8.  'rawTuitionInfo': (Optional) A short sentence with more specific tuition details if available, like "Around 12,000 EUR/year for international Master's students."
+  9.  'scholarshipLevel': Categorize scholarship availability for students at the target education level:
       - "High": Many scholarships generally available.
       - "Medium": Some scholarships available.
       - "Low": Few scholarships available.
       - "None": Generally no scholarships.
       - "Varies": Highly variable.
       - "Unknown": If information is not readily available.
-  10. 'rawScholarshipInfo': (Optional) A short sentence about scholarship details, like "Offers merit and need-based aid."
+  10. 'rawScholarshipInfo': (Optional) A short sentence about scholarship details, like "Offers merit and need-based aid for graduate programs."
 
   Only list universities located within the specified country. Ensure the website is a direct link to the university.
   Provide a diverse list if possible, aiming for as many relevant suggestions as you can find for the given criteria.
@@ -88,8 +89,9 @@ const pathwayPlannerPrompt = ai.definePrompt({
   Desired Country: {{{country}}}
   Desired Field of Study: {{{fieldOfStudy}}}
   Student's GPA/Academic Standing: {{{gpa}}}
+  Student's Target Education Level: {{{targetEducationLevel}}}
 
-  Finally, include a brief 'searchSummary' if you have any overarching comments on the results for the given query. Acknowledge the GPA's influence on university suitability in your summary if relevant.
+  Finally, include a brief 'searchSummary' if you have any overarching comments on the results for the given query. Acknowledge the GPA's and target education level's influence on university suitability in your summary if relevant.
   `,
 });
 

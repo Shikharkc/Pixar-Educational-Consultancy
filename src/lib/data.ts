@@ -1,5 +1,5 @@
 
-import { Award, Briefcase, Lightbulb, Users, MapPin, Landmark, TrendingUp, Globe, CalendarPlus, FileText, BookOpen, University as UniversityIcon, CheckCircle, Building, Heart, Handshake, Goal, MessageSquare, Search, Wand2, ExternalLink, Home, Info, Award as AwardIcon } from 'lucide-react';
+import { Award, Briefcase, Lightbulb, Users, MapPin, Landmark, TrendingUp, Globe, CalendarPlus, FileText, BookOpen, University as UniversityIcon, CheckCircle, Building, Heart, Handshake, Goal, MessageSquare, Search, Wand2, ExternalLink, Home, Info, Award as AwardIcon, GraduationCap } from 'lucide-react';
 import type { ReactElement } from 'react';
 
 export interface Testimonial {
@@ -385,6 +385,13 @@ export const gpaScaleOptions = [
   { value: "N/A", label: "Not Applicable / Varies" },
 ];
 
+export const educationLevelOptions = [
+  { value: "Associate Degree", label: "Seeking Associate Degree" },
+  { value: "Bachelor's Degree", label: "Seeking Bachelor's Degree" },
+  { value: "Postgraduate Diploma", label: "Seeking Postgraduate Diploma" },
+  { value: "Master's Degree", label: "Seeking Master's Degree" },
+];
+
 
 // Consolidating all icon exports from lucide-react that are used across the app
 export {
@@ -412,6 +419,7 @@ export {
   Home,
   Info,
   AwardIcon,
+  GraduationCap,
 };
 
     

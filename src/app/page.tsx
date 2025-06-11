@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import Image from 'next/image';
@@ -7,8 +6,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import SectionTitle from '@/components/ui/section-title';
-import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIcon, Info, Search, ExternalLink, Wand2, Briefcase, DollarSign, Award as AwardIconLucide } from 'lucide-react'; // Renamed AwardIcon to AwardIconLucide
-import { testimonials, services, fieldsOfStudy, gpaScaleOptions } from '@/lib/data'; // Added gpaScaleOptions
+import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info, Search, ExternalLink, Wand2, Briefcase, DollarSign, Award as AwardIconLucideComp } from 'lucide-react';
+import { testimonials, services, fieldsOfStudy, gpaScaleOptions, educationLevelOptions } from '@/lib/data'; 
 import type { Testimonial, Service } from '@/lib/data';
 import { useState, useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,13 +19,14 @@ import { pathwayPlanner, type PathwayPlannerInput, type PathwayPlannerOutput } f
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from '@/lib/utils';
 import { Label } from '@/components/ui/label';
-import { AwardIcon } from '@/lib/data'; // Using AwardIcon from lib/data which is already used for other academic related icons
+import { AwardIcon, UniversityIcon } from '@/lib/data';
 
 
 const pathwayFormSchema = z.object({
   country: z.string().min(1, "Please select a country."),
   fieldOfStudy: z.string().min(1, "Please select a field of study."),
   gpa: z.string().min(1, "Please select your GPA."),
+  targetEducationLevel: z.string().min(1, "Please select your target education level."),
 });
 
 type PathwayFormValues = z.infer<typeof pathwayFormSchema>;
@@ -47,7 +47,6 @@ const selectableCountriesHomepage = [
   { name: 'Australia', value: 'Australia' },
   { name: 'New Zealand', value: 'New Zealand' },
   { name: 'Europe', value: 'Europe' },
-  // Add more as needed
 ];
 
 const tuitionCategories = ["All", "Affordable", "Mid-Range", "Premium", "Varies", "Unknown"];
@@ -104,6 +103,7 @@ export default function HomePage() {
       country: '',
       fieldOfStudy: '',
       gpa: '',
+      targetEducationLevel: '',
     },
   });
 
@@ -124,6 +124,7 @@ export default function HomePage() {
         country: values.country,
         fieldOfStudy: values.fieldOfStudy,
         gpa: values.gpa,
+        targetEducationLevel: values.targetEducationLevel,
       };
       const aiResult = await pathwayPlanner(aiInput);
       setPathwayResult(aiResult);
@@ -143,7 +144,6 @@ export default function HomePage() {
 
     let universities = [...pathwayResult.universitySuggestions];
 
-    // Filtering
     if (filterType !== 'all') {
       universities = universities.filter(uni => uni.type === filterType);
     }
@@ -154,7 +154,6 @@ export default function HomePage() {
       universities = universities.filter(uni => uni.scholarshipLevel === filterScholarshipLevel);
     }
     
-    // Sorting
     switch (sortOrder) {
       case 'name_asc':
         universities.sort((a, b) => a.name.localeCompare(b.name));
@@ -168,24 +167,118 @@ export default function HomePage() {
       case 'tuition_desc':
         universities.sort((a, b) => (tuitionCategoryOrder[b.tuitionCategory] || 99) - (tuitionCategoryOrder[a.tuitionCategory] || 99));
         break;
-      case 'scholarship_asc': // High to None
+      case 'scholarship_asc': 
         universities.sort((a, b) => (scholarshipLevelOrder[a.scholarshipLevel] || 99) - (scholarshipLevelOrder[b.scholarshipLevel] || 99));
         break;
-      case 'scholarship_desc': // None to High
+      case 'scholarship_desc': 
         universities.sort((a, b) => (scholarshipLevelOrder[b.scholarshipLevel] || 99) - (scholarshipLevelOrder[a.scholarshipLevel] || 99));
         break;
     }
     return universities;
   }, [pathwayResult, filterType, sortOrder, filterTuitionCategory, filterScholarshipLevel]);
   
+  const renderPathwayForm = () => (
+    <Card className={cn("shadow-xl bg-card w-full", !showResultsArea ? "md:max-w-3xl" : "")}>
+      <CardHeader>
+        <CardTitle className="font-headline text-primary flex items-center">
+          <Search className="mr-2 h-6 w-6"/> {!showResultsArea ? "Plan Your Study Pathway" : "Refine Your Search"}
+        </CardTitle>
+        <CardDescription>
+          {!showResultsArea ? "Tell us your preferences to discover suitable university options." : "Adjust your selections or try new ones."}
+        </CardDescription>
+      </CardHeader>
+      <Form {...pathwayForm}>
+        <form onSubmit={pathwayForm.handleSubmit(onPathwaySubmit)}>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+            <FormField
+              control={pathwayForm.control}
+              name="country"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center"><MapPin className="mr-2 h-4 w-4 text-accent"/>Country</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Select a country" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {selectableCountriesHomepage.map(country => (
+                        <SelectItem key={country.value} value={country.value}>{country.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={pathwayForm.control}
+              name="fieldOfStudy"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center"><BookOpen className="mr-2 h-4 w-4 text-accent"/>Field of Study</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Select a field" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {fieldsOfStudy.map(fos => (
+                        <SelectItem key={fos} value={fos}>{fos}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={pathwayForm.control}
+              name="gpa"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center"><AwardIcon className="mr-2 h-4 w-4 text-accent"/>GPA / Academic Standing</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Select GPA" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {gpaScaleOptions.map(gpa => (
+                        <SelectItem key={gpa.value} value={gpa.value}>{gpa.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={pathwayForm.control}
+              name="targetEducationLevel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center"><UniversityIcon className="mr-2 h-4 w-4 text-accent"/>Target Education Level</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Select target level" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {educationLevelOptions.map(level => (
+                        <SelectItem key={level.value} value={level.value}>{level.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </CardContent>
+          <CardFooter>
+            <Button type="submit" disabled={isLoadingPathway} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+              {isLoadingPathway ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+              {showResultsArea ? "Update Suggestions" : "Get Suggestions"}
+            </Button>
+          </CardFooter>
+        </form>
+      </Form>
+    </Card>
+  );
 
   return (
     <div className="space-y-16 md:space-y-24">
       {/* Hero Section */}
- <section className="relative py-20 md:py-32 rounded-lg shadow-xl overflow-hidden" style={{ backgroundImage: 'url("/main.jpg")', backgroundSize: 'cover', backgroundPosition: 'center' }}>
- <div className="absolute inset-0 bg-black opacity-70">
-            {/* Placeholder for a subtle background pattern if desired e.g. <SvgHeroPattern /> */}
-        </div>
+      <section className="relative py-20 md:py-32 rounded-lg shadow-xl overflow-hidden" style={{ backgroundImage: 'url("/main.jpg")', backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <div className="absolute inset-0 bg-black opacity-70"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <div
             className={`text-5xl md:text-7xl font-headline font-bold text-primary-foreground mb-4 transition-all ease-out duration-700 ${
@@ -234,150 +327,11 @@ export default function HomePage() {
             "grid items-start gap-8",
             showResultsArea ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1"
         )}>
-          <div className={cn( 
+          <div className={cn(
             "w-full", 
-            showResultsArea ? "md:col-span-1" : "md:col-span-3 md:max-w-none" // Changed from md:col-span-3 to md:max-w-none for full width initial form
+            !showResultsArea ? "flex justify-center" : "md:col-span-1"
            )}>
-            <Form {...pathwayForm}>
-              {!showResultsArea ? (
-                // Initial Single-Row Form Layout
-                <form
-                  onSubmit={pathwayForm.handleSubmit(onPathwaySubmit)}
-                  className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end p-6 bg-card rounded-lg shadow-xl w-full"
-                >
-                  <FormField
-                    control={pathwayForm.control}
-                    name="country"
-                    render={({ field }) => (
-                      <FormItem className="min-w-[180px] md:col-span-1">
-                        <FormLabel className="flex items-center"><MapPin className="mr-2 h-4 w-4 text-accent"/>Country</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Select a country" /></SelectTrigger></FormControl>
-                          <SelectContent>
-                            {selectableCountriesHomepage.map(country => (
-                              <SelectItem key={country.value} value={country.value}>{country.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={pathwayForm.control}
-                    name="fieldOfStudy"
-                    render={({ field }) => (
-                      <FormItem className="min-w-[180px] md:col-span-1">
-                        <FormLabel className="flex items-center"><BookOpen className="mr-2 h-4 w-4 text-accent"/>Field of Study</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Select a field" /></SelectTrigger></FormControl>
-                          <SelectContent>
-                            {fieldsOfStudy.map(fos => (
-                              <SelectItem key={fos} value={fos}>{fos}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                    control={pathwayForm.control}
-                    name="gpa"
-                    render={({ field }) => (
-                      <FormItem className="min-w-[180px] md:col-span-1">
-                        <FormLabel className="flex items-center"><AwardIcon className="mr-2 h-4 w-4 text-accent"/>GPA / Academic Standing</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Select GPA" /></SelectTrigger></FormControl>
-                          <SelectContent>
-                            {gpaScaleOptions.map(gpa => (
-                              <SelectItem key={gpa.value} value={gpa.value}>{gpa.label}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button type="submit" disabled={isLoadingPathway} className="h-10 w-full md:col-span-1 md:mt-auto bg-primary text-primary-foreground">
-                    {isLoadingPathway ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                    Get Suggestions
-                  </Button>
-                </form>
-              ) : (
-                // Standard Card Form Layout (when results are shown)
-                <Card className="shadow-xl bg-card flex flex-col flex-grow w-full">
-                  <CardHeader>
-                    <CardTitle className="font-headline text-primary flex items-center"><Search className="mr-2 h-6 w-6"/>Refine Your Search</CardTitle>
-                    <CardDescription>Adjust your selections or try new ones.</CardDescription>
-                  </CardHeader>
-                  <form onSubmit={pathwayForm.handleSubmit(onPathwaySubmit)} className="flex flex-col flex-grow">
-                    <CardContent className="space-y-6 flex-grow">
-                      <FormField
-                        control={pathwayForm.control}
-                        name="country"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center"><MapPin className="mr-2 h-4 w-4 text-accent"/>Country</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl><SelectTrigger><SelectValue placeholder="Select a country" /></SelectTrigger></FormControl>
-                              <SelectContent>
-                                {selectableCountriesHomepage.map(country => (
-                                  <SelectItem key={country.value} value={country.value}>{country.name}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={pathwayForm.control}
-                        name="fieldOfStudy"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center"><BookOpen className="mr-2 h-4 w-4 text-accent"/>Field of Study</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl><SelectTrigger><SelectValue placeholder="Select a field" /></SelectTrigger></FormControl>
-                              <SelectContent>
-                                {fieldsOfStudy.map(fos => (
-                                  <SelectItem key={fos} value={fos}>{fos}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                       <FormField
-                        control={pathwayForm.control}
-                        name="gpa"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel className="flex items-center"><AwardIcon className="mr-2 h-4 w-4 text-accent"/>GPA / Academic Standing</FormLabel>
-                            <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl><SelectTrigger><SelectValue placeholder="Select GPA" /></SelectTrigger></FormControl>
-                              <SelectContent>
-                                {gpaScaleOptions.map(gpa => (
-                                  <SelectItem key={gpa.value} value={gpa.value}>{gpa.label}</SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                    <CardFooter>
-                      <Button type="submit" disabled={isLoadingPathway} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                        {isLoadingPathway ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                        Update Suggestions
-                      </Button>
-                    </CardFooter>
-                  </form>
-                </Card>
-              )}
-            </Form>
+            {renderPathwayForm()}
           </div>
 
           {showResultsArea && (
@@ -406,10 +360,9 @@ export default function HomePage() {
                         <Sparkles className="mr-2 h-6 w-6" /> University Suggestions
                     </CardTitle>
                     <CardDescription>
-                        For {pathwayForm.getValues('country')} - {pathwayForm.getValues('fieldOfStudy')} (GPA: {pathwayForm.getValues('gpa')}).
+                        For {pathwayForm.getValues('country')} - {pathwayForm.getValues('fieldOfStudy')} (GPA: {pathwayForm.getValues('gpa')}, Level: {pathwayForm.getValues('targetEducationLevel')}).
                         {pathwayResult.searchSummary && <span className="block mt-1 text-xs italic">{pathwayResult.searchSummary}</span>}
                     </CardDescription>
-                     {/* Filters and Sort */}
                      <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 items-end">
                         <div>
                             <Label htmlFor="filterType" className="text-xs text-muted-foreground">Filter by Type</Label>
@@ -454,7 +407,7 @@ export default function HomePage() {
                                     <Image src={`https://placehold.co/100x60.png?text=${encodeURIComponent(uni.name.substring(0,3))}`} alt={`${uni.name} logo placeholder`} width={100} height={60} className="rounded object-cover self-start" data-ai-hint={uni.logoDataAiHint || 'university building'} />
                                     <div className="flex-1">
                                         <h4 className="font-semibold text-primary flex items-center text-lg mb-1">
-                                            <UniversityIcon className="mr-2 h-5 w-5 text-accent flex-shrink-0" />
+                                            <UniversityIconLucide className="mr-2 h-5 w-5 text-accent flex-shrink-0" />
                                             {uni.website ? (
                                             <a href={uni.website} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center">
                                                 {uni.name} <ExternalLink className="ml-1.5 h-4 w-4 text-muted-foreground" />
@@ -469,7 +422,7 @@ export default function HomePage() {
                                             <div className="flex items-center" title="University Type"><Briefcase className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">Type: {uni.type}</span></div>
                                             <div className="flex items-center" title="Program Duration"><BookOpen className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">Duration: {uni.programDuration}</span></div>
                                             <div className="flex items-center" title="Tuition Category"><DollarSign className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">Tuition: {uni.tuitionCategory}</span></div>
-                                            <div className="flex items-center" title="Scholarship Level"><AwardIconLucide className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">Scholarships: {uni.scholarshipLevel}</span></div>
+                                            <div className="flex items-center" title="Scholarship Level"><AwardIconLucideComp className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">Scholarships: {uni.scholarshipLevel}</span></div>
                                         </div>
                                         {uni.rawTuitionInfo && <p className="text-xs text-foreground/70 mb-1 italic">Tuition Note: {uni.rawTuitionInfo}</p>}
                                         {uni.rawScholarshipInfo && <p className="text-xs text-foreground/70 mb-1 italic">Scholarship Note: {uni.rawScholarshipInfo}</p>}
@@ -477,7 +430,7 @@ export default function HomePage() {
                                 </div>
                                 <div className="mt-3 text-right">
                                     <Button asChild size="sm" variant="outline" className="text-accent hover:text-accent-foreground hover:bg-accent/10">
-                                        <Link href={`/book-appointment?collegeName=${encodeURIComponent(uni.name)}&country=${encodeURIComponent(pathwayForm.getValues('country'))}&field=${encodeURIComponent(pathwayForm.getValues('fieldOfStudy'))}&gpa=${encodeURIComponent(pathwayForm.getValues('gpa'))}`}>
+                                        <Link href={`/book-appointment?collegeName=${encodeURIComponent(uni.name)}&country=${encodeURIComponent(pathwayForm.getValues('country'))}&field=${encodeURIComponent(pathwayForm.getValues('fieldOfStudy'))}&gpa=${encodeURIComponent(pathwayForm.getValues('gpa'))}&level=${encodeURIComponent(pathwayForm.getValues('targetEducationLevel'))}`}>
                                             Book Consultation
                                         </Link>
                                     </Button>
@@ -583,5 +536,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-
