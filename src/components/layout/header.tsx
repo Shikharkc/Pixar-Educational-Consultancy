@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Home, Info, Briefcase, MapPin, GraduationCap, Mail, ChevronDown, Menu, Wand2, CalendarPlus } from 'lucide-react';
+import { Home, Info, Briefcase, MapPin, GraduationCap, Mail, ChevronDown, Menu, Wand2, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { useState, useEffect, useRef } from 'react'; 
+import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -29,7 +29,7 @@ const navItems = [
     ],
   },
   { href: '/ai-assistants', label: 'AI Assistants', icon: Wand2 },
-  { href: '/book-appointment', label: 'Book Appointment', icon: CalendarPlus },
+  { href: '/book-appointment', label: 'English Test Guide', icon: HelpCircle }, // Changed label and icon
   { href: '/contact', label: 'Contact Us', icon: Mail },
 ];
 
@@ -60,7 +60,7 @@ export default function Header() {
     const handleMouseLeave = () => {
       timeoutRef.current = setTimeout(() => {
         setIsOpen(false);
-      }, 200); 
+      }, 200);
     };
 
     useEffect(() => {
@@ -70,10 +70,10 @@ export default function Header() {
         }
       };
     }, []);
-    
+
     return (
       <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className="relative">
-        <DropdownMenu open={isOpen}>
+        <DropdownMenu open={isOpen} >
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center space-x-2 text-foreground hover:bg-accent hover:text-accent-foreground">
               <Icon className="h-5 w-5" />
@@ -85,12 +85,12 @@ export default function Header() {
             {subItems.map((item) => (
               <DropdownMenuItem key={item.href} asChild>
                 <Link href={item.href} passHref>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start flex items-center space-x-2 text-foreground hover:bg-accent hover:text-accent-foreground" 
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-start flex items-center space-x-2 text-foreground hover:bg-accent hover:text-accent-foreground px-2 py-1.5"
                     onClick={() => {
-                      setIsOpen(false); 
-                      setIsMobileMenuOpen(false); 
+                      setIsOpen(false);
+                      setIsMobileMenuOpen(false);
                     }}
                   >
                     <item.icon className="h-5 w-5" />
@@ -104,13 +104,13 @@ export default function Header() {
       </div>
     );
   };
-  
+
   const renderNavItems = (isMobile: boolean = false) => navItems.map((item) => {
     if (item.subItems) {
       if (isMobile) {
         return (
           <div key={item.label} className="flex flex-col w-full">
-            <div className="flex items-center space-x-2 text-foreground px-4 py-2.5 font-semibold">
+            <div className="flex items-center space-x-2 text-foreground px-4 py-2.5 font-medium"> {/* Adjusted font-semibold to font-medium */}
               <item.icon className="h-5 w-5" />
               <span>{item.label}</span>
             </div>
@@ -150,8 +150,8 @@ export default function Header() {
                 <Menu className="h-6 w-6 text-primary" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] bg-card p-0 pt-4"> 
-              <div className="flex flex-col space-y-0.5"> 
+            <SheetContent side="right" className="w-[280px] bg-card p-0 pt-4">
+              <div className="flex flex-col space-y-0.5">
                 {renderNavItems(true)}
               </div>
             </SheetContent>
