@@ -177,29 +177,26 @@ export default function EnglishTestGuidePage() {
           </TabsContent>
 
           <TabsContent value="test-structures">
-            <div className="space-y-8">
-              {testStructures.map((test, index) => {
-                const [cardRef, cardVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
-                return (
-                  <div key={test.name} ref={cardRef} className={cn("transition-all duration-500 ease-out", cardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 100}ms`}}>
-                    <Card className="bg-card shadow-lg h-full">
-                      <CardHeader>
-                        <CardTitle className="font-headline text-primary flex items-center"><test.icon className="mr-2 h-6 w-6"/>{test.name}</CardTitle>
-                        <CardDescription>Total Time: {test.totalTime}</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-3">
-                        {test.sections.map((section, sIndex) => (
-                          <div key={sIndex} className="border-l-2 border-accent pl-3">
-                            <h4 className="font-semibold text-foreground/90">{section.name}</h4>
-                            <p className="text-sm text-muted-foreground"><Clock className="inline mr-1 h-3 w-3"/>{section.duration}</p>
-                            <p className="text-sm text-foreground/80 mt-1">{section.description}</p>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  </div>
-                );
-              })}
+            <div className="grid md:grid-cols-2 gap-8">
+              {testStructures.map((test) => (
+                <div key={test.name}>
+                  <Card className="bg-card shadow-lg h-full">
+                    <CardHeader>
+                      <CardTitle className="font-headline text-primary flex items-center"><test.icon className="mr-2 h-6 w-6"/>{test.name}</CardTitle>
+                      <CardDescription>Total Time: {test.totalTime}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      {test.sections.map((section, sIndex) => (
+                        <div key={sIndex} className="border-l-2 border-accent pl-3">
+                          <h4 className="font-semibold text-foreground/90">{section.name}</h4>
+                          <p className="text-sm text-muted-foreground"><Clock className="inline mr-1 h-3 w-3"/>{section.duration}</p>
+                          <p className="text-sm text-foreground/80 mt-1">{section.description}</p>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
             </div>
           </TabsContent>
 
