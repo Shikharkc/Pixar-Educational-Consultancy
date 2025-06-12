@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ExternalLink, CheckSquare, Clock, DollarSign, Award, BarChart3, HelpCircle } from 'lucide-react';
+import { ExternalLink, Clock, DollarSign, Award, BarChart3, ListChecks, ClipboardText } from 'lucide-react'; // Updated icons
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const testComparisonData = [
   {
@@ -19,7 +20,8 @@ const testComparisonData = [
     format: "Paper or Computer; Face-to-face speaking option",
     resultTime: "3-5 days (computer), 13 days (paper)",
     scoring: "Band 0-9",
-    keyFeatures: ["Widely accepted globally", "Speaking test with a human examiner"]
+    keyFeatures: ["Widely accepted globally", "Speaking test with a human examiner"],
+    officialSiteUrl: "https://www.ielts.org/"
   },
   {
     name: "TOEFL iBT",
@@ -29,7 +31,8 @@ const testComparisonData = [
     format: "Computer-based at test center",
     resultTime: "4-8 days (official), unofficial reading/listening scores immediate",
     scoring: "0-120 (30 per section)",
-    keyFeatures: ["Strong academic focus", "Integrated tasks simulating university environment"]
+    keyFeatures: ["Strong academic focus", "Integrated tasks simulating university environment"],
+    officialSiteUrl: "https://www.toefl.org/"
   },
   {
     name: "PTE Academic",
@@ -39,7 +42,8 @@ const testComparisonData = [
     format: "Computer-based, AI scored",
     resultTime: "Typically 2 days (can be up to 5)",
     scoring: "10-90 (Global Scale of English)",
-    keyFeatures: ["Fast results", "Fully computer-scored including speaking"]
+    keyFeatures: ["Fast results", "Fully computer-scored including speaking"],
+    officialSiteUrl: "https://www.pearsonpte.com/"
   },
   {
     name: "Duolingo English Test",
@@ -49,7 +53,8 @@ const testComparisonData = [
     format: "Computer-adaptive, at-home online proctoring",
     resultTime: "Within 2 days",
     scoring: "10-160 (Overall & subscores)",
-    keyFeatures: ["Affordable and accessible", "Can be taken online anytime, adaptive difficulty"]
+    keyFeatures: ["Affordable and accessible", "Can be taken online anytime, adaptive difficulty"],
+    officialSiteUrl: "https://englishtest.duolingo.com/"
   }
 ];
 
@@ -97,19 +102,9 @@ const testStructures = [
   }
 ];
 
-const officialSites = [
-  { name: "IELTS Official Site", url: "https://www.ielts.org/", icon: ExternalLink },
-  { name: "PTE Official Site", url: "https://www.pearsonpte.com/", icon: ExternalLink },
-  { name: "TOEFL Official Site", url: "https://www.toefl.org/", icon: ExternalLink },
-  { name: "Duolingo Official Site", url: "https://englishtest.duolingo.com/", icon: ExternalLink },
-];
-
 export default function EnglishTestGuidePage() {
   const [titleRef, isTitleVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true });
-  const [comparisonTableRef, isComparisonTableVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
-  const [testStructuresSectionRef, isTestStructuresSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.05 });
-  const [scoreReqsRef, isScoreReqsVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
-  const [officialSitesRef, isOfficialSitesVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
+  const [tabsContainerRef, isTabsContainerVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.05 });
   const [ctaRef, isCtaVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
 
   return (
@@ -121,119 +116,117 @@ export default function EnglishTestGuidePage() {
         />
       </section>
 
-      <section ref={comparisonTableRef} className={cn("transition-all duration-700 ease-out", isComparisonTableVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
-        <Card className="shadow-xl bg-card">
-          <CardHeader>
-            <CardTitle className="font-headline text-primary flex items-center"><CheckSquare className="mr-2 h-6 w-6"/>Comparison of Popular English Tests</CardTitle>
-            <CardDescription>Quick overview of key features to help you choose.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Test Name</TableHead>
-                    <TableHead><DollarSign className="inline mr-1 h-4 w-4"/>Typical Cost (NPR)</TableHead>
-                    <TableHead><Clock className="inline mr-1 h-4 w-4"/>Duration</TableHead>
-                    <TableHead><Award className="inline mr-1 h-4 w-4"/>Acceptance</TableHead>
-                    <TableHead>Format</TableHead>
-                    <TableHead>Result Time</TableHead>
-                    <TableHead>Scoring</TableHead>
-                    <TableHead>Key Features</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {testComparisonData.map((test, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="font-medium">{test.name}</TableCell>
-                      <TableCell>{test.cost}</TableCell>
-                      <TableCell>{test.typicalDuration}</TableCell>
-                      <TableCell>{test.acceptance}</TableCell>
-                      <TableCell>{test.format}</TableCell>
-                      <TableCell>{test.resultTime}</TableCell>
-                      <TableCell>{test.scoring}</TableCell>
-                      <TableCell className="text-xs">{test.keyFeatures.join(', ')}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-             <p className="text-xs text-muted-foreground mt-4">* Costs are approximate and subject to change. Please check official websites for current fees in your region.</p>
-          </CardContent>
-        </Card>
-      </section>
+      <div ref={tabsContainerRef} className={cn("transition-all duration-700 ease-out", isTabsContainerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
+        <Tabs defaultValue="comparison-guide" className="w-full">
+          <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 md:w-fit mx-auto mb-8">
+            <TabsTrigger value="comparison-guide" className="py-2.5">
+              <ListChecks className="mr-2 h-5 w-5" /> Comparison Guide
+            </TabsTrigger>
+            <TabsTrigger value="test-structures" className="py-2.5">
+              <BarChart3 className="mr-2 h-5 w-5" /> Test Structures
+            </TabsTrigger>
+            <TabsTrigger value="score-requirements" className="py-2.5">
+              <ClipboardText className="mr-2 h-5 w-5" /> Score Requirements
+            </TabsTrigger>
+          </TabsList>
 
-      <section ref={testStructuresSectionRef} className={cn("bg-secondary/30 py-12 rounded-lg shadow-inner transition-all duration-700 ease-out", isTestStructuresSectionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
-        <div className="container mx-auto px-4">
-          <SectionTitle title="Detailed Test Structures" subtitle="Understand the sections and timings for each major test." />
-          <div className="grid md:grid-cols-2 gap-8">
-            {testStructures.map((test, index) => {
-              const [cardRef, cardVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
-              return (
-                <div key={test.name} ref={cardRef} className={cn("transition-all duration-500 ease-out", cardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 100}ms`}}>
-                  <Card className="bg-card shadow-lg h-full">
-                    <CardHeader>
-                      <CardTitle className="font-headline text-primary flex items-center"><test.icon className="mr-2 h-6 w-6"/>{test.name}</CardTitle>
-                      <CardDescription>Total Time: {test.totalTime}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {test.sections.map((section, sIndex) => (
-                        <div key={sIndex} className="border-l-2 border-accent pl-3">
-                          <h4 className="font-semibold text-foreground/90">{section.name}</h4>
-                          <p className="text-sm text-muted-foreground"><Clock className="inline mr-1 h-3 w-3"/>{section.duration}</p>
-                          <p className="text-sm text-foreground/80 mt-1">{section.description}</p>
-                        </div>
+          <TabsContent value="comparison-guide">
+            <Card className="shadow-xl bg-card">
+              <CardHeader>
+                <CardTitle className="font-headline text-primary">Test Comparison Overview</CardTitle>
+                <CardDescription>Quick overview of key features to help you choose. Test names link to official sites.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Test Name</TableHead>
+                        <TableHead><DollarSign className="inline mr-1 h-4 w-4"/>Typical Cost (NPR)</TableHead>
+                        <TableHead><Clock className="inline mr-1 h-4 w-4"/>Duration</TableHead>
+                        <TableHead><Award className="inline mr-1 h-4 w-4"/>Acceptance</TableHead>
+                        <TableHead>Format</TableHead>
+                        <TableHead>Result Time</TableHead>
+                        <TableHead>Scoring</TableHead>
+                        <TableHead>Key Features</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {testComparisonData.map((test, index) => (
+                        <TableRow key={index}>
+                          <TableCell className="font-medium">
+                            <a href={test.officialSiteUrl} target="_blank" rel="noopener noreferrer" className="flex items-center hover:underline text-primary">
+                              {test.name} <ExternalLink className="ml-1.5 h-4 w-4" />
+                            </a>
+                          </TableCell>
+                          <TableCell>{test.cost}</TableCell>
+                          <TableCell>{test.typicalDuration}</TableCell>
+                          <TableCell>{test.acceptance}</TableCell>
+                          <TableCell>{test.format}</TableCell>
+                          <TableCell>{test.resultTime}</TableCell>
+                          <TableCell>{test.scoring}</TableCell>
+                          <TableCell className="text-xs">{test.keyFeatures.join(', ')}</TableCell>
+                        </TableRow>
                       ))}
-                    </CardContent>
-                  </Card>
+                    </TableBody>
+                  </Table>
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+                <p className="text-xs text-muted-foreground mt-4">* Costs are approximate and subject to change. Please check official websites for current fees in your region.</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-      <section ref={scoreReqsRef} className={cn("transition-all duration-700 ease-out", isScoreReqsVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
-        <SectionTitle title="Minimum Score Requirements" />
-        <Card className="max-w-3xl mx-auto shadow-lg bg-card">
-          <CardContent className="p-6">
-            <p className="text-center text-foreground/80">
-              Minimum score requirements for English proficiency tests vary significantly based on the country, institution (university/college), and specific program you are applying to.
-              There is no single "universal" minimum score.
-            </p>
-            <ul className="list-disc list-inside mt-4 text-foreground/70 space-y-1 text-sm">
-              <li>Always check the official admissions website of each university and program you are interested in for their specific English language proficiency requirements.</li>
-              <li>Requirements can also differ for undergraduate, postgraduate, and Ph.D. programs.</li>
-              <li>Some institutions might accept multiple tests (e.g., IELTS or TOEFL or PTE), while others may prefer a specific one.</li>
-              <li>Visa requirements for study permits may also have separate minimum language score criteria set by the country's immigration department.</li>
-            </ul>
-            <p className="text-center text-primary font-semibold mt-4">
-              Our AI Test Advisor can give you a general idea, but for precise requirements, direct university/program research is essential.
-            </p>
-          </CardContent>
-        </Card>
-      </section>
+          <TabsContent value="test-structures">
+            <div className="space-y-8"> {/* Replaces the need for a section with SectionTitle */}
+              {testStructures.map((test, index) => {
+                const [cardRef, cardVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
+                return (
+                  <div key={test.name} ref={cardRef} className={cn("transition-all duration-500 ease-out", cardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 100}ms`}}>
+                    <Card className="bg-card shadow-lg h-full">
+                      <CardHeader>
+                        <CardTitle className="font-headline text-primary flex items-center"><test.icon className="mr-2 h-6 w-6"/>{test.name}</CardTitle>
+                        <CardDescription>Total Time: {test.totalTime}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {test.sections.map((section, sIndex) => (
+                          <div key={sIndex} className="border-l-2 border-accent pl-3">
+                            <h4 className="font-semibold text-foreground/90">{section.name}</h4>
+                            <p className="text-sm text-muted-foreground"><Clock className="inline mr-1 h-3 w-3"/>{section.duration}</p>
+                            <p className="text-sm text-foreground/80 mt-1">{section.description}</p>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  </div>
+                );
+              })}
+            </div>
+          </TabsContent>
 
-      <section ref={officialSitesRef} className={cn("bg-primary/10 py-12 rounded-lg shadow-inner transition-all duration-700 ease-out", isOfficialSitesVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
-        <div className="container mx-auto px-4">
-          <SectionTitle title="Official Test Websites" subtitle="Visit the official sources for the most accurate and up-to-date information." />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 justify-items-center">
-            {officialSites.map((site, index) => {
-               const [siteRef, siteVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
-              return (
-                <div key={site.name} ref={siteRef} className={cn("w-full transition-all duration-500 ease-out", siteVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 100}ms`}}>
-                  <Button asChild variant="outline" className="w-full bg-card hover:bg-accent/10 border-border py-6 text-base">
-                    <a href={site.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center space-y-1">
-                      <site.icon className="h-6 w-6 text-primary mb-1" />
-                      <span className="text-center">{site.name}</span>
-                    </a>
-                  </Button>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
+          <TabsContent value="score-requirements">
+            <Card className="max-w-3xl mx-auto shadow-lg bg-card">
+              <CardHeader>
+                 <CardTitle className="font-headline text-primary">Minimum Score Requirements</CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <p className="text-foreground/80">
+                  Minimum score requirements for English proficiency tests vary significantly based on the country, institution (university/college), and specific program you are applying to.
+                  There is no single "universal" minimum score.
+                </p>
+                <ul className="list-disc list-inside mt-4 text-foreground/70 space-y-1 text-sm">
+                  <li>Always check the official admissions website of each university and program you are interested in for their specific English language proficiency requirements.</li>
+                  <li>Requirements can also differ for undergraduate, postgraduate, and Ph.D. programs.</li>
+                  <li>Some institutions might accept multiple tests (e.g., IELTS or TOEFL or PTE), while others may prefer a specific one.</li>
+                  <li>Visa requirements for study permits may also have separate minimum language score criteria set by the country's immigration department.</li>
+                </ul>
+                <p className="text-primary font-semibold mt-4">
+                  Our AI Test Advisor can give you a general idea, but for precise requirements, direct university/program research is essential.
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
 
       <section ref={ctaRef} className={cn("text-center transition-all duration-700 ease-out", isCtaVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
          <SectionTitle title="Ready to Prepare?" subtitle="Ace your English test with our expert guidance and comprehensive classes."/>
@@ -246,3 +239,5 @@ export default function EnglishTestGuidePage() {
     </div>
   );
 }
+
+    
