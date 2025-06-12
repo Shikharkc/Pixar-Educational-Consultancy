@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 const testComparisonData = [
   {
     name: "IELTS Academic",
-    cost: "~$245-275 USD / ~रु ३२,५००-३६,५००",
+    cost: "~$245-275 USD / ~Rs. 32,500-36,500",
     typicalDuration: "Approx. 2h 45m",
     acceptance: "Very High (Academia, Immigration globally)",
     format: "Paper or Computer; Face-to-face speaking option",
@@ -23,7 +23,7 @@ const testComparisonData = [
   },
   {
     name: "TOEFL iBT",
-    cost: "~$255 USD / ~रु ३४,०००",
+    cost: "~$255 USD / ~Rs. 34,000",
     typicalDuration: "Under 2 hours",
     acceptance: "Very High (Especially US Academia)",
     format: "Computer-based at test center",
@@ -33,7 +33,7 @@ const testComparisonData = [
   },
   {
     name: "PTE Academic",
-    cost: "~$220-250 USD / ~रु २९,०००-३३,०००",
+    cost: "~$220-250 USD / ~Rs. 29,000-33,000",
     typicalDuration: "Approx. 2 hours",
     acceptance: "High (Academia, Immigration in Australia, NZ, UK, growing elsewhere)",
     format: "Computer-based, AI scored",
@@ -43,7 +43,7 @@ const testComparisonData = [
   },
   {
     name: "Duolingo English Test",
-    cost: "~$59 USD / ~रु ७,८००",
+    cost: "~$59 USD / ~Rs. 7,800",
     typicalDuration: "Approx. 1 hour (including setup & interview)",
     acceptance: "Growing (Many US universities, some others)",
     format: "Computer-adaptive, at-home online proctoring",

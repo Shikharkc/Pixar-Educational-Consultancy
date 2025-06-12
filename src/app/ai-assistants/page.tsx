@@ -53,10 +53,10 @@ const selectableCountries = [
 ];
 
 const testComparisonData = [
-  { name: "IELTS Academic", cost: "~$250 USD / ~रु ३३,०००", typicalDuration: "2h 45m", acceptance: "Very High (Academia, Immigration globally)", format: "Paper or Computer", resultTime: "3-13 days", keyFeatures: ["Face-to-face speaking test option", "Widely available test centers"] },
-  { name: "TOEFL iBT", cost: "~$245 USD / ~रु ३२,५००", typicalDuration: "~3 hours", acceptance: "Very High (Especially US Academia)", format: "Computer-based", resultTime: "4-8 days", keyFeatures: ["Strong academic focus", "Integrated tasks simulating university environment"] },
-  { name: "PTE Academic", cost: "~$220 USD / ~रु २९,०००", typicalDuration: "2 hours", acceptance: "High (Academia, Immigration in Australia, NZ, UK)", format: "Computer-based, AI scored", resultTime: "Typically 2-5 days", keyFeatures: ["Fast results", "Fully computer-scored including speaking"] },
-  { name: "Duolingo English Test", cost: "~$59 USD / ~रु ७,८००", typicalDuration: "~1 hour (including setup)", acceptance: "Growing (Many US universities, some others)", format: "Computer-adaptive, at-home", resultTime: "Within 2 days", keyFeatures: ["Affordable and accessible", "Can be taken online anytime"] }
+  { name: "IELTS Academic", cost: "~$250 USD / ~Rs. 33,000", typicalDuration: "2h 45m", acceptance: "Very High (Academia, Immigration globally)", format: "Paper or Computer", resultTime: "3-13 days", keyFeatures: ["Face-to-face speaking test option", "Widely available test centers"] },
+  { name: "TOEFL iBT", cost: "~$245 USD / ~Rs. 32,500", typicalDuration: "~3 hours", acceptance: "Very High (Especially US Academia)", format: "Computer-based", resultTime: "4-8 days", keyFeatures: ["Strong academic focus", "Integrated tasks simulating university environment"] },
+  { name: "PTE Academic", cost: "~$220 USD / ~Rs. 29,000", typicalDuration: "2 hours", acceptance: "High (Academia, Immigration in Australia, NZ, UK)", format: "Computer-based, AI scored", resultTime: "Typically 2-5 days", keyFeatures: ["Fast results", "Fully computer-scored including speaking"] },
+  { name: "Duolingo English Test", cost: "~$59 USD / ~Rs. 7,800", typicalDuration: "~1 hour (including setup)", acceptance: "Growing (Many US universities, some others)", format: "Computer-adaptive, at-home", resultTime: "Within 2 days", keyFeatures: ["Affordable and accessible", "Can be taken online anytime"] }
 ];
 
 
@@ -348,12 +348,12 @@ export default function AiAssistantsPage() {
                           <FormItem>
                             <FormLabel>Budget for the Test (NPR)</FormLabel>
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
-                              <FormControl><SelectTrigger><SelectValue placeholder="Select your budget (रु)" /></SelectTrigger></FormControl>
+                              <FormControl><SelectTrigger><SelectValue placeholder="Select your budget (Rs.)" /></SelectTrigger></FormControl>
                               <SelectContent>
-                                <SelectItem value="< NPR 15000">Less than रु १५,०००</SelectItem>
-                                <SelectItem value="NPR 15000 - NPR 30000">रु १५,००० - रु ३०,०००</SelectItem>
-                                <SelectItem value="NPR 30000 - NPR 45000">रु ३०,००० - रु ४५,०००</SelectItem>
-                                <SelectItem value="> NPR 45000">More than रु ४५,०००</SelectItem>
+                                <SelectItem value="< NPR 15000">Less than Rs. 15,000</SelectItem>
+                                <SelectItem value="NPR 15000 - NPR 30000">Rs. 15,000 - Rs. 30,000</SelectItem>
+                                <SelectItem value="NPR 30000 - NPR 45000">Rs. 30,000 - Rs. 45,000</SelectItem>
+                                <SelectItem value="> NPR 45000">More than Rs. 45,000</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
