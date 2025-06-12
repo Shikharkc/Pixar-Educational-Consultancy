@@ -11,6 +11,7 @@ import { countryData } from '@/lib/data';
 import type { CountryInfo, University } from '@/lib/data';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
+import React from 'react'; // Import React
 
 interface CountryPageProps {
   params: {
@@ -24,7 +25,9 @@ interface CountryPageProps {
 //   }));
 // }
 
-export default function CountryPage({ params }: CountryPageProps) {
+export default function CountryPage({ params: paramsInput }: CountryPageProps) { // Renamed params to paramsInput
+  const params = React.use(paramsInput); // Use React.use() to unwrap params
+
   const countryInfo = countryData.find((c) => c.slug === params.country);
 
   const [headerRef, isHeaderVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.05, initialVisible: true });
