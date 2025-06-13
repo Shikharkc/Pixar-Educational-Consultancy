@@ -18,18 +18,9 @@ const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/about', label: 'About Us', icon: Info },
   { href: '/services', label: 'Services', icon: Briefcase },
-  {
-    label: 'Country Guides',
-    icon: MapPin,
-    subItems: [
-      { href: '/countries/europe', label: 'Europe', icon: MapPin },
-      { href: '/countries/australia', label: 'Australia', icon: MapPin },
-      { href: '/countries/usa', label: 'USA', icon: MapPin },
-      { href: '/countries/new-zealand', label: 'New Zealand', icon: MapPin },
-    ],
-  },
+  { href: '/country-guides', label: 'Country Guides', icon: MapPin }, // Changed from dropdown to direct link
   { href: '/ai-assistants', label: 'AI Assistants', icon: Wand2 },
-  { href: '/book-appointment', label: 'English Test Guide', icon: HelpCircle }, // Changed label and icon
+  { href: '/book-appointment', label: 'English Test Guide', icon: HelpCircle },
   { href: '/contact', label: 'Contact Us', icon: Mail },
 ];
 
@@ -106,11 +97,14 @@ export default function Header() {
   };
 
   const renderNavItems = (isMobile: boolean = false) => navItems.map((item) => {
-    if (item.subItems) {
+    // The Country Guides item is no longer a dropdown, so we don't need special handling for it here.
+    // If any other items were dropdowns, the logic would remain.
+    // For simplicity, assuming only Country Guides was a dropdown previously.
+    if (item.subItems && item.label !== 'Country Guides') { // Check if it's a dropdown and NOT Country Guides
       if (isMobile) {
         return (
           <div key={item.label} className="flex flex-col w-full">
-            <div className="flex items-center space-x-2 text-foreground px-4 py-2.5 font-medium"> {/* Adjusted font-semibold to font-medium */}
+            <div className="flex items-center space-x-2 text-foreground px-4 py-2.5 font-medium">
               <item.icon className="h-5 w-5" />
               <span>{item.label}</span>
             </div>
@@ -127,7 +121,7 @@ export default function Header() {
       }
       return <NavDropdown key={item.label} label={item.label} icon={item.icon} subItems={item.subItems} />;
     }
-    return <NavLink key={item.href} href={item.href} icon={item.icon}>{item.label}</NavLink>;
+    return <NavLink key={item.href || item.label} href={item.href!} icon={item.icon}>{item.label}</NavLink>;
   });
 
 
@@ -161,3 +155,5 @@ export default function Header() {
     </header>
   );
 }
+
+    

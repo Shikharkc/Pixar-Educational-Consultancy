@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import SectionTitle from '@/components/ui/section-title';
 import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info, Search, ExternalLink, Wand2, Briefcase, DollarSign, Award as AwardIconLucideComp, ClipboardCheck } from 'lucide-react';
-import { testimonials, services, fieldsOfStudy, gpaScaleOptions, educationLevelOptions, AwardIcon, UniversityIcon } from '@/lib/data';
+import { testimonials, services, fieldsOfStudy, gpaScaleOptions, educationLevelOptions, AwardIconLucide as AwardIconFromData, UniversityIcon } from '@/lib/data'; // Changed AwardIcon to AwardIconLucide as AwardIconFromData
 import type { Testimonial, Service } from '@/lib/data';
 import { useState, useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -194,7 +194,7 @@ export default function HomePage() {
               name="gpa"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center"><AwardIcon className="mr-2 h-4 w-4 text-accent"/>GPA / Academic Standing</FormLabel>
+                  <FormLabel className="flex items-center"><AwardIconFromData className="mr-2 h-4 w-4 text-accent"/>GPA / Academic Standing</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Select GPA" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -523,5 +523,3 @@ export default function HomePage() {
     </div>
   );
 }
-
-    

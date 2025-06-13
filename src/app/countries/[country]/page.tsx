@@ -25,16 +25,14 @@ interface CountryPageProps {
 //   }));
 // }
 
-export default function CountryPage({ params: paramsInput }: CountryPageProps) { // Renamed params to paramsInput
-  const params = React.use(paramsInput); // Use React.use() to unwrap params
-
-  const countryInfo = countryData.find((c) => c.slug === params.country);
+export default function CountryPage({ params }: { params: { country: string } }) {
 
   const [headerRef, isHeaderVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.05, initialVisible: true });
   const [whySectionRef, isWhySectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
   const [universitiesSectionRef, isUniversitiesSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
   const [ctaSectionRef, isCtaSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
 
+  const countryInfo = countryData.find((c) => c.slug === params.country);
 
   if (!countryInfo) {
     notFound();

@@ -1,14 +1,8 @@
 
-import { Award, Briefcase, Lightbulb, Users, MapPin, Landmark, TrendingUp, Globe, CalendarPlus, FileText, BookOpen, University as UniversityIcon, CheckCircle, Building, Heart, Handshake, Goal, MessageSquare, Search, Wand2, ExternalLink, Home, Info, Award as AwardIcon, GraduationCap } from 'lucide-react';
+import { Award, Briefcase, Lightbulb, Users, MapPin, Landmark, TrendingUp, Globe, CalendarPlus, FileText, BookOpen, University as UniversityIcon, CheckCircle, Building, Heart, Handshake, Goal, MessageSquare, Search, Wand2, ExternalLink, Home, Info, Award as AwardIconLucide, GraduationCap, DollarSign, Clock, UserCheck, FileSpreadsheet } from 'lucide-react';
 import type { ReactElement } from 'react';
 
-export interface Testimonial {
-  id: string;
-  name: string;
-  text: string;
-  studyDestination: string;
-  avatarUrl?: string;
-}
+
 
 export const testimonials: Testimonial[] = [
   {
@@ -138,7 +132,7 @@ export const certifications: Certification[] = [
 export interface University {
   name: string;
   city: string;
-  countryFocus: string; // e.g., "Engineering", "Arts"
+  countryFocus: string; 
   website: string;
 }
 
@@ -146,9 +140,14 @@ export interface CountryInfo {
   id: string;
   name: string;
   slug: string;
+  flagEmoji: string;
   description: string;
   imageUrl: string;
   dataAiHint?: string;
+  averageLivingCost: string;
+  workHoursStudent: string;
+  visaInfoSummary: string;
+  postStudyWorkSummary: string;
   facts: {
     icon: React.ElementType;
     label: string;
@@ -162,13 +161,18 @@ export const countryData: CountryInfo[] = [
     id: 'europe',
     name: 'Europe',
     slug: 'europe',
+    flagEmoji: '🇪🇺',
     description: 'Discover world-class education and rich cultural experiences across diverse European countries. Europe offers a wide range of programs in historic and modern universities.',
-    imageUrl: 'https://placehold.co/800x500.png',
+    imageUrl: 'https://placehold.co/1200x400.png',
     dataAiHint: 'europe landmark',
+    averageLivingCost: '€800 - €1,500 per month (varies widely by country and city)',
+    workHoursStudent: 'Typically 10-20 hours/week during studies, full-time during breaks (varies by country).',
+    visaInfoSummary: 'Schengen visa for short courses, National visa for longer studies. Requirements vary by country. Proof of funds and health insurance are key.',
+    postStudyWorkSummary: 'Many European countries offer post-study work visas (e.g., "Orientation Year" in Netherlands, Job Seeker Visa in Germany) allowing graduates to find employment.',
     facts: [
-      { icon: Landmark, label: 'Key Regions', value: 'UK, Germany, France, Netherlands, etc.' },
-      { icon: Globe, label: 'Languages', value: 'English, German, French, and many more' },
-      { icon: TrendingUp, label: 'Known For', value: 'Research, Engineering, Arts, Humanities' },
+      { icon: Landmark, label: 'Key Regions', value: 'UK, Germany, France, Netherlands, Spain, Italy etc.' },
+      { icon: Globe, label: 'Languages', value: 'English widely used in academia; local languages beneficial.' },
+      { icon: TrendingUp, label: 'Known For', value: 'Research, Engineering, Arts, Humanities, Business' },
     ],
     topUniversities: [
       { name: 'University of Oxford', city: 'Oxford, UK', countryFocus: 'Various', website: 'https://www.ox.ac.uk' },
@@ -181,13 +185,18 @@ export const countryData: CountryInfo[] = [
     id: 'australia',
     name: 'Australia',
     slug: 'australia',
+    flagEmoji: '🇦🇺',
     description: 'Experience a high-quality education system in a vibrant, multicultural environment. Australian universities are known for their research and innovation.',
-    imageUrl: 'https://placehold.co/800x500.png',
+    imageUrl: 'https://placehold.co/1200x400.png',
     dataAiHint: 'australia landmark',
+    averageLivingCost: 'AUD $20,000 - $25,000 per year (approx. AUD $1,700 - $2,100 per month)',
+    workHoursStudent: 'Up to 48 hours per fortnight during academic sessions, unlimited during scheduled breaks.',
+    visaInfoSummary: 'Student visa (subclass 500). Requires Confirmation of Enrolment (CoE), Genuine Temporary Entrant (GTE) statement, financial proof, OSHC (health insurance).',
+    postStudyWorkSummary: 'Temporary Graduate visa (subclass 485) allows eligible international students to stay and work in Australia temporarily after graduation.',
     facts: [
-      { icon: Landmark, label: 'Capital', value: 'Canberra' },
+      { icon: Landmark, label: 'Major Cities', value: 'Sydney, Melbourne, Brisbane, Perth, Adelaide' },
       { icon: Globe, label: 'Language', value: 'English' },
-      { icon: TrendingUp, label: 'Known For', value: 'STEM, Business, Health Sciences' },
+      { icon: TrendingUp, label: 'Known For', value: 'STEM, Business, Health Sciences, Environmental Studies' },
     ],
     topUniversities: [
       { name: 'Australian National University', city: 'Canberra', countryFocus: 'Various', website: 'https://www.anu.edu.au' },
@@ -200,32 +209,42 @@ export const countryData: CountryInfo[] = [
     id: 'usa',
     name: 'USA',
     slug: 'usa',
+    flagEmoji: '🇺🇸',
     description: 'Home to many of the world\'s top universities, the USA offers unparalleled educational opportunities across all fields of study.',
-    imageUrl: 'https://placehold.co/800x500.png',
+    imageUrl: 'https://placehold.co/1200x400.png',
     dataAiHint: 'usa landmark',
+    averageLivingCost: '$1,000 - $2,500 per month (highly variable by city and lifestyle)',
+    workHoursStudent: 'Up to 20 hours/week on-campus during term; full-time on-campus during breaks. Off-campus work requires authorization (CPT/OPT).',
+    visaInfoSummary: 'F-1 visa for academic studies. Requires I-20 form from university, SEVIS fee payment, proof of funds, and visa interview.',
+    postStudyWorkSummary: 'Optional Practical Training (OPT) allows up to 12 months of work experience (extendable for STEM fields). H-1B visa is a common route for long-term employment.',
     facts: [
-      { icon: Landmark, label: 'Capital', value: 'Washington D.C.' },
+      { icon: Landmark, label: 'Key States for Study', value: 'California, New York, Massachusetts, Texas, Illinois' },
       { icon: Globe, label: 'Language', value: 'English' },
-      { icon: TrendingUp, label: 'Known For', value: 'Technology, Business, Research, Arts' },
+      { icon: TrendingUp, label: 'Known For', value: 'Technology, Business, Research, Arts, Innovation' },
     ],
     topUniversities: [
-      { name: 'Massachusetts Institute of Technology (MIT)', city: 'Cambridge', countryFocus: 'Technology & Engineering', website: 'https://web.mit.edu' },
-      { name: 'Stanford University', city: 'Stanford', countryFocus: 'Various', website: 'https://www.stanford.edu' },
-      { name: 'Harvard University', city: 'Cambridge', countryFocus: 'Various', website: 'https://www.harvard.edu' },
-      { name: 'California Institute of Technology (Caltech)', city: 'Pasadena', countryFocus: 'Science & Engineering', website: 'https://www.caltech.edu' },
+      { name: 'Massachusetts Institute of Technology (MIT)', city: 'Cambridge, MA', countryFocus: 'Technology & Engineering', website: 'https://web.mit.edu' },
+      { name: 'Stanford University', city: 'Stanford, CA', countryFocus: 'Various', website: 'https://www.stanford.edu' },
+      { name: 'Harvard University', city: 'Cambridge, MA', countryFocus: 'Various', website: 'https://www.harvard.edu' },
+      { name: 'California Institute of Technology (Caltech)', city: 'Pasadena, CA', countryFocus: 'Science & Engineering', website: 'https://www.caltech.edu' },
     ],
   },
   {
     id: 'new-zealand',
     name: 'New Zealand',
     slug: 'new-zealand',
+    flagEmoji: '🇳🇿',
     description: 'Study in a safe and welcoming country with a world-class education system and stunning natural landscapes. New Zealand offers unique programs and research opportunities.',
-    imageUrl: 'https://placehold.co/800x500.png',
+    imageUrl: 'https://placehold.co/1200x400.png',
     dataAiHint: 'new zealand landscape',
+    averageLivingCost: 'NZD $15,000 - $20,000 per year (approx. NZD $1,250 - $1,670 per month)',
+    workHoursStudent: 'Up to 20 hours/week during studies, full-time during scheduled holidays.',
+    visaInfoSummary: 'Student Visa (Fee Paying Student Visa). Requires Offer of Place from an approved education provider, proof of funds, health and character requirements.',
+    postStudyWorkSummary: 'Post-Study Work Visa available for eligible graduates, allowing them to work for any employer in New Zealand for 1 to 3 years depending on qualification.',
     facts: [
-      { icon: Landmark, label: 'Capital', value: 'Wellington' },
+      { icon: Landmark, label: 'Main Cities', value: 'Auckland, Wellington, Christchurch, Dunedin' },
       { icon: Globe, label: 'Language', value: 'English, Māori' },
-      { icon: TrendingUp, label: 'Known For', value: 'Agriculture, Environmental Science, Film' },
+      { icon: TrendingUp, label: 'Known For', value: 'Agriculture, Environmental Science, Film, Tourism' },
     ],
     topUniversities: [
       { name: 'University of Auckland', city: 'Auckland', countryFocus: 'Various', website: 'https://www.auckland.ac.nz' },
@@ -396,6 +415,7 @@ export const educationLevelOptions = [
 // Consolidating all icon exports from lucide-react that are used across the app
 export {
   Award,
+  AwardIconLucide,
   Briefcase,
   Lightbulb,
   Users,
@@ -418,8 +438,13 @@ export {
   ExternalLink,
   Home,
   Info,
-  AwardIcon,
   GraduationCap,
+  DollarSign,
+  Clock,
+  UserCheck,
+  FileSpreadsheet,
 };
+
+    
 
     
