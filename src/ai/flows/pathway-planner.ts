@@ -36,7 +36,7 @@ const UniversitySuggestionSchema = z.object({
   tuitionCategory: z.enum(["Affordable", "Mid-Range", "Premium", "Varies", "Unknown"]).describe("A category for the estimated annual tuition. Affordable: typically <$15,000 USD/year or equivalent. Mid-Range: $15,000-$30,000 USD/year or equivalent. Premium: >$30,000 USD/year or equivalent. Use 'Varies' if it's highly variable or 'Unknown' if not determinable."),
   tuitionFeeRange: z.string().optional().describe("CONCISE estimated annual tuition fee range if available, e.g., '$10,000 - $15,000 USD', '€8,000 - €12,000'. Provide this if commonly known for the university and program type. Keep this information brief and to the point."),
   englishTestRequirements: z.string().optional().describe("CONCISE typical English proficiency test scores required (e.g., 'IELTS: 6.5+', 'TOEFL iBT: 90+'). Provide this if commonly known. Keep this information brief."),
-  nextIntakeDate: z.string().optional().describe("Typical next intake period or application deadline information, e.g., 'Fall 2025 (Apply by Jan 2025)', 'Rolling Admissions', 'Intakes: Jan, May, Sep'. Be CONCISE. Provide this if commonly known or easily found. Aim for multiple intakes if applicable and brief."),
+  nextIntakeDate: z.string().optional().describe("CONCISE typical next intake period or application deadline information, e.g., 'Fall 2025 (Apply by Jan 2025)', 'Rolling Admissions', 'Intakes: Jan, May, Sep'. Be CONCISE. Provide this if commonly known or easily found. Aim for multiple intakes if applicable and brief."),
 });
 
 const PathwayPlannerOutputSchema = z.object({
@@ -76,9 +76,9 @@ const pathwayPlannerPrompt = ai.definePrompt({
       - "Premium": Typically more than $30,000 USD per year (or local equivalent).
       - "Varies": If tuition is highly variable across programs or student types.
       - "Unknown": If information is not readily available.
-  9.  'tuitionFeeRange': (Optional but highly encouraged if known) A CONCISE estimated annual tuition fee range, e.g., "$10,000 - $15,000 USD". Keep this information brief.
-  10. 'englishTestRequirements': (Optional but highly encouraged if known) CONCISE typical English proficiency test scores required, e.g., "IELTS: 6.5+", "TOEFL iBT: 90+". Keep this brief.
-  11. 'nextIntakeDate': (Optional but highly encouraged if known) CONCISE typical next intake period or application deadline information, e.g., "Fall 2025 (Apply by Jan 2025)", "Rolling Admissions", "Intakes: Jan, May, Sep". If multiple intakes, list them briefly.
+  9.  'tuitionFeeRange': (Optional but highly encouraged if known) Provide a CONCISE estimated annual tuition fee range if available, e.g., '$10,000 - $15,000 USD', '€8,000 - €12,000'. This should be brief and to the point, not a paragraph.
+  10. 'englishTestRequirements': (Optional but highly encouraged if known) Provide CONCISE typical English proficiency test scores required, e.g., "IELTS: 6.5+", "TOEFL iBT: 90+". This should be brief, not a paragraph.
+  11. 'nextIntakeDate': (Optional but highly encouraged if known) Provide CONCISE typical next intake period or application deadline information, e.g., "Fall 2025 (Apply by Jan 2025)", "Rolling Admissions", "Intakes: Jan, May, Sep". This should be brief and factual. If multiple intakes, list them concisely.
 
   Only list universities located within the specified country. Ensure the website is a direct link to the university.
   Provide as many relevant suggestions as you can find for the given criteria.

@@ -313,7 +313,7 @@ export default function HomePage() {
 
           {showResultsArea && (
             <div className={cn(
-                "md:col-span-2 flex flex-col w-full", // Ensure results area takes full width in its column
+                "md:col-span-2 flex flex-col w-full", 
                 "transition-all duration-700 ease-out",
                 resultsContainerAnimatedIn ? "opacity-100" : "opacity-0 pointer-events-none"
             )}>
@@ -341,7 +341,7 @@ export default function HomePage() {
                         {pathwayResult.searchSummary && <span className="block mt-1 text-xs italic">{pathwayResult.searchSummary}</span>}
                     </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex-grow overflow-y-auto space-y-4 max-h-96 md:max-h-[calc(100vh-300px)] p-6 w-full"> {/* Adjusted max height */}
+                    <CardContent className="flex-grow overflow-y-auto space-y-4 max-h-96 md:max-h-[calc(100vh-300px)] p-6 w-full">
                     {universitySuggestions.length > 0 ? (
                         <ul className="space-y-4">
                         {universitySuggestions.map((uni: UniversitySuggestion, index: number) => (
@@ -355,7 +355,7 @@ export default function HomePage() {
                                         </h4>
                                         <p className="text-xs text-muted-foreground mb-2 ml-7">{uni.category || 'N/A'}</p>
 
-                                        <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 text-sm mb-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-sm mb-3">
                                             <div className="flex items-start" title="University Location">
                                                 <MapPin className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0 mt-0.5" />
                                                 <span className="text-foreground/80">{uni.location || 'N/A'}</span>
@@ -387,11 +387,13 @@ export default function HomePage() {
                                     </div>
                                 </div>
                                 <div className="mt-3 text-right space-x-2">
-                                    <Button asChild size="sm" variant="outline" className="text-primary hover:text-primary-foreground hover:bg-primary/10">
-                                        <Link href={`/university-info?country=${encodeURIComponent(pathwayForm.getValues('country'))}&field=${encodeURIComponent(pathwayForm.getValues('fieldOfStudy'))}&gpa=${encodeURIComponent(pathwayForm.getValues('gpa'))}&level=${encodeURIComponent(pathwayForm.getValues('targetEducationLevel'))}&index=${index}`}>
-                                            <InfoIcon className="mr-1.5 h-4 w-4" /> More Info
-                                        </Link>
-                                    </Button>
+                                    {uni.website && (
+                                      <Button asChild size="sm" variant="outline" className="text-primary hover:text-primary-foreground hover:bg-primary/10">
+                                        <a href={uni.website} target="_blank" rel="noopener noreferrer">
+                                            <ExternalLink className="mr-1.5 h-4 w-4" /> More Info
+                                        </a>
+                                      </Button>
+                                    )}
                                     <Button asChild size="sm" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90">
                                         <Link href={`/book-appointment?collegeName=${encodeURIComponent(uni.name)}&country=${encodeURIComponent(pathwayForm.getValues('country'))}&field=${encodeURIComponent(pathwayForm.getValues('fieldOfStudy'))}&gpa=${encodeURIComponent(pathwayForm.getValues('gpa'))}&level=${encodeURIComponent(pathwayForm.getValues('targetEducationLevel'))}`}>
                                             Book Consultation
