@@ -119,13 +119,22 @@ export default function EnglishTestGuidePage() {
       <div ref={tabsContainerRef} className={cn("transition-all duration-700 ease-out", isTabsContainerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
         <Tabs defaultValue="comparison-guide" className="w-full">
           <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 md:w-fit mx-auto mb-8">
-            <TabsTrigger value="comparison-guide" className="py-2.5">
+            <TabsTrigger 
+              value="comparison-guide" 
+              className="py-2.5 whitespace-normal text-center"
+            >
               <ListChecks className="mr-2 h-5 w-5" /> Comparison Guide
             </TabsTrigger>
-            <TabsTrigger value="test-structures" className="py-2.5">
+            <TabsTrigger 
+              value="test-structures" 
+              className="py-2.5 whitespace-normal text-center"
+            >
               <BarChart3 className="mr-2 h-5 w-5" /> Test Structures
             </TabsTrigger>
-            <TabsTrigger value="score-requirements" className="py-2.5">
+            <TabsTrigger 
+              value="score-requirements" 
+              className="py-2.5 whitespace-normal text-center"
+            >
               <ClipboardType className="mr-2 h-5 w-5" /> Score Requirements
             </TabsTrigger>
           </TabsList>

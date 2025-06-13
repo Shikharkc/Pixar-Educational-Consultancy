@@ -34,7 +34,11 @@ export default function CountryGuidesPage() {
         <Tabs defaultValue={defaultCountrySlug} className="w-full">
           <TabsList className="grid w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 mx-auto mb-8">
             {countryData.map((country) => (
-              <TabsTrigger key={country.slug} value={country.slug} className="py-2.5 text-sm md:text-base">
+              <TabsTrigger 
+                key={country.slug} 
+                value={country.slug} 
+                className="py-2.5 text-sm md:text-base whitespace-normal text-center"
+              >
                 <span className="mr-2 text-lg" role="img" aria-label={`${country.name} flag`}>{country.flagEmoji}</span>
                 {country.name}
               </TabsTrigger>
