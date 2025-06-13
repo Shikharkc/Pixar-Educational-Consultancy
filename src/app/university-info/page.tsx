@@ -12,7 +12,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, InfoIcon as AlertInfoIcon, MapPin, BookOpen, University as UniversityIconLucide, ExternalLink, Briefcase, DollarSign, ClipboardCheck, CalendarDays, ArrowLeft } from 'lucide-react';
 import { pathwayPlanner, type PathwayPlannerInput, type PathwayPlannerOutput } from '@/ai/flows/pathway-planner';
 import { cn } from '@/lib/utils';
-import { UniversityIcon } from '@/lib/data'; // Assuming this is the one from data for general use if needed
+// Assuming UniversityIcon from '@/lib/data' is not needed here as UniversityIconLucide is more specific.
+// If it was a different icon, it would be: import { UniversityIcon } from '@/lib/data';
+
 
 type UniversitySuggestion = Exclude<PathwayPlannerOutput['universitySuggestions'], undefined>[number];
 
@@ -32,28 +34,30 @@ function UniversityInfoContent() {
 
     if (country && fieldOfStudy && gpa && targetEducationLevel && indexString) {
       const query: PathwayPlannerInput = { country, fieldOfStudy, gpa, targetEducationLevel };
-      setInitialQuery(query);
+      setInitialQuery(query); // Store the initial query
       const uniIndex = parseInt(indexString, 10);
 
       const fetchUniversity = async () => {
         setIsLoading(true);
         setError(null);
         try {
+          // Re-run the pathwayPlanner with the original query to get the list
           const result = await pathwayPlanner(query);
           if (result.universitySuggestions && result.universitySuggestions[uniIndex]) {
             setUniversity(result.universitySuggestions[uniIndex]);
           } else {
-            setError('University data not found or index out of bounds.');
+            setError('University data not found or index out of bounds. The list might have changed or the index is incorrect.');
           }
         } catch (e) {
           setError(e instanceof Error ? e.message : 'Failed to load university details.');
+          console.error("Error fetching university details:", e);
         } finally {
           setIsLoading(false);
         }
       };
       fetchUniversity();
     } else {
-      setError('Required information to display university details is missing.');
+      setError('Required information to display university details is missing from the URL. Please go back and try again.');
       setIsLoading(false);
     }
   }, [searchParams]);
@@ -75,7 +79,7 @@ function UniversityInfoContent() {
         <AlertDescription>{error}</AlertDescription>
         <div className="mt-4">
             <Button asChild variant="outline">
-                <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Go back to Home</Link>
+                <Link href="/#pathway-search-section"><ArrowLeft className="mr-2 h-4 w-4" /> Go back to Home Search</Link>
             </Button>
         </div>
       </Alert>
@@ -87,17 +91,17 @@ function UniversityInfoContent() {
       <Alert className="max-w-2xl mx-auto my-10">
         <AlertInfoIcon className="h-4 w-4" />
         <AlertTitle>No Data</AlertTitle>
-        <AlertDescription>Could not find the university details. Please try again or go back to the homepage.</AlertDescription>
+        <AlertDescription>Could not find the university details. Please ensure you came from a valid link or try searching again.</AlertDescription>
          <div className="mt-4">
             <Button asChild variant="outline">
-                <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Go back to Home</Link>
+                <Link href="/#pathway-search-section"><ArrowLeft className="mr-2 h-4 w-4" /> Go back to Home Search</Link>
             </Button>
         </div>
       </Alert>
     );
   }
   
-  const placeholderLogo = `https://placehold.co/300x200.png?text=${encodeURIComponent(university.name.substring(0, Math.min(university.name.length,10)))}`;
+  const placeholderLogo = `https://placehold.co/600x400.png?text=${encodeURIComponent(university.name.substring(0, Math.min(university.name.length,15)))}`;
 
   return (
     <div className="space-y-10">
@@ -107,52 +111,78 @@ function UniversityInfoContent() {
             </Button>
         </div>
 
-      <SectionTitle title={university.name} subtitle={university.category} />
+      <SectionTitle title={university.name} subtitle={university.category || 'University Details'} />
 
       <Card className="shadow-xl overflow-hidden bg-card">
-        <div className="relative w-full h-64 md:h-96">
+        <div className="relative w-full h-64 md:h-80 bg-muted">
           <Image 
-            src={placeholderLogo} // Replace with actual image if available
-            alt={`${university.name} campus or logo`} 
+            src={placeholderLogo} 
+            alt={`${university.name} campus or logo placeholder`} 
             layout="fill" 
             objectFit="cover"
-            data-ai-hint={university.logoDataAiHint || 'university campus building'}
+            data-ai-hint={university.logoDataAiHint || 'university building campus'}
+            priority
           />
         </div>
+        <CardHeader>
+            <CardTitle className="font-headline text-2xl text-primary">{university.name}</CardTitle>
+            <CardDescription>{university.category}</CardDescription>
+        </CardHeader>
         <CardContent className="p-6 space-y-6">
-          <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-lg">
-            <div className="flex items-center space-x-3">
-              <MapPin className="h-6 w-6 text-accent flex-shrink-0" />
-              <span className="text-foreground/90"><strong>Location:</strong> {university.location}</span>
+          <div className="grid md:grid-cols-2 gap-x-8 gap-y-4 text-base">
+            <div className="flex items-start space-x-3">
+              <MapPin className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+              <div>
+                <p className="font-semibold text-foreground/90">Location:</p>
+                <p className="text-foreground/80">{university.location || 'N/A'}</p>
+              </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <Briefcase className="h-6 w-6 text-accent flex-shrink-0" />
-              <span className="text-foreground/90"><strong>Type:</strong> {university.type}</span>
+            <div className="flex items-start space-x-3">
+              <Briefcase className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+              <div>
+                <p className="font-semibold text-foreground/90">Type:</p>
+                <p className="text-foreground/80">{university.type || 'N/A'}</p>
+              </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <BookOpen className="h-6 w-6 text-accent flex-shrink-0" />
-              <span className="text-foreground/90"><strong>Typical Duration:</strong> {university.programDuration}</span>
+            <div className="flex items-start space-x-3">
+              <BookOpen className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+              <div>
+                <p className="font-semibold text-foreground/90">Typical Duration:</p>
+                <p className="text-foreground/80">{university.programDuration || 'N/A'}</p>
+              </div>
             </div>
-            <div className="flex items-center space-x-3">
-              <DollarSign className="h-6 w-6 text-accent flex-shrink-0" />
-              <span className="text-foreground/90"><strong>Tuition:</strong> {university.tuitionCategory} {university.tuitionFeeRange && `(${university.tuitionFeeRange})`}</span>
+            <div className="flex items-start space-x-3">
+              <DollarSign className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+              <div>
+                <p className="font-semibold text-foreground/90">Tuition:</p>
+                <p className="text-foreground/80">
+                  {university.tuitionCategory || 'N/A'} 
+                  {university.tuitionFeeRange && ` (${university.tuitionFeeRange})`}
+                </p>
+              </div>
             </div>
             {university.nextIntakeDate && (
-              <div className="flex items-center space-x-3">
-                <CalendarDays className="h-6 w-6 text-accent flex-shrink-0" />
-                <span className="text-foreground/90"><strong>Next Intake:</strong> {university.nextIntakeDate}</span>
+              <div className="flex items-start space-x-3">
+                <CalendarDays className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                 <div>
+                    <p className="font-semibold text-foreground/90">Next Intake(s):</p>
+                    <p className="text-foreground/80">{university.nextIntakeDate}</p>
+                </div>
               </div>
             )}
             {university.englishTestRequirements && (
-              <div className="flex items-center space-x-3 md:col-span-2">
-                <ClipboardCheck className="h-6 w-6 text-accent flex-shrink-0" />
-                <span className="text-foreground/90"><strong>English Tests:</strong> {university.englishTestRequirements}</span>
+              <div className="flex items-start space-x-3 md:col-span-2">
+                <ClipboardCheck className="h-5 w-5 text-accent flex-shrink-0 mt-1" />
+                <div>
+                    <p className="font-semibold text-foreground/90">English Test Requirements:</p>
+                    <p className="text-foreground/80">{university.englishTestRequirements}</p>
+                </div>
               </div>
             )}
           </div>
 
           {university.website && (
-            <div className="text-center mt-6">
+            <div className="text-center mt-8">
               <Button asChild variant="outline" size="lg" className="border-accent text-accent hover:bg-accent/10 hover:text-accent-foreground">
                 <a href={university.website} target="_blank" rel="noopener noreferrer">
                   Visit University Website <ExternalLink className="ml-2 h-5 w-5" />
@@ -177,6 +207,8 @@ function UniversityInfoContent() {
 
 export default function UniversityInfoPage() {
   return (
+    // Wrap with Suspense to handle fallback during client-side navigation
+    // and useSearchParams usage.
     <Suspense fallback={
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
             <Loader2 className="h-16 w-16 text-primary animate-spin mb-4" />
@@ -187,3 +219,4 @@ export default function UniversityInfoPage() {
     </Suspense>
   );
 }
+

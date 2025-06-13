@@ -313,25 +313,25 @@ export default function HomePage() {
 
           {showResultsArea && (
             <div className={cn(
-                "md:col-span-2 flex flex-col min-h-[300px]",
+                "md:col-span-2 flex flex-col w-full", // Ensure results area takes full width in its column
                 "transition-all duration-700 ease-out",
                 resultsContainerAnimatedIn ? "opacity-100" : "opacity-0 pointer-events-none"
             )}>
                 {isLoadingPathway && (
-                <Card className="shadow-xl bg-card flex flex-col items-center justify-center flex-grow min-h-[200px] p-6">
+                <Card className="shadow-xl bg-card flex flex-col items-center justify-center flex-grow min-h-[200px] p-6 w-full">
                     <Loader2 className="h-12 w-12 text-primary animate-spin" />
                     <p className="text-muted-foreground mt-2">Finding universities...</p>
                 </Card>
                 )}
                 {pathwayError && !isLoadingPathway && (
-                <Alert variant="destructive" className="bg-card">
+                <Alert variant="destructive" className="bg-card w-full">
                     <InfoIcon className="h-4 w-4" />
                     <AlertTitle>Error</AlertTitle>
                     <AlertDescription>{pathwayError}</AlertDescription>
                 </Alert>
                 )}
                 {pathwayResult && !isLoadingPathway && (
-                <Card className="shadow-xl bg-card flex flex-col flex-grow">
+                <Card className="shadow-xl bg-card flex flex-col flex-grow w-full">
                     <CardHeader>
                     <CardTitle className="font-headline text-accent flex items-center">
                         <Sparkles className="mr-2 h-6 w-6" /> University Suggestions
@@ -341,70 +341,58 @@ export default function HomePage() {
                         {pathwayResult.searchSummary && <span className="block mt-1 text-xs italic">{pathwayResult.searchSummary}</span>}
                     </CardDescription>
                     </CardHeader>
-                    <CardContent className="flex-grow overflow-y-auto space-y-4 max-h-96 md:max-h-[550px] p-6">
+                    <CardContent className="flex-grow overflow-y-auto space-y-4 max-h-96 md:max-h-[calc(100vh-300px)] p-6 w-full"> {/* Adjusted max height */}
                     {universitySuggestions.length > 0 ? (
                         <ul className="space-y-4">
                         {universitySuggestions.map((uni: UniversitySuggestion, index: number) => (
                             <li key={index} className="p-4 border rounded-lg bg-background/50 hover:shadow-md transition-shadow">
                                 <div className="flex flex-col sm:flex-row gap-4">
-                                    <Image src={`https://placehold.co/100x60.png?text=${encodeURIComponent(uni.name.substring(0,3))}`} alt={`${uni.name} logo placeholder`} width={100} height={60} className="rounded object-cover self-start" data-ai-hint={uni.logoDataAiHint || 'university building'} />
+                                    <Image src={`https://placehold.co/120x80.png?text=${encodeURIComponent(uni.name.substring(0,3))}`} alt={`${uni.name} logo placeholder`} width={120} height={80} className="rounded object-cover self-start sm:self-center" data-ai-hint={uni.logoDataAiHint || 'university building'} />
                                     <div className="flex-1">
                                         <h4 className="font-semibold text-primary flex items-center text-lg mb-1">
                                             <UniversityIconLucide className="mr-2 h-5 w-5 text-accent flex-shrink-0" />
-                                            {uni.website ? (
-                                            <a href={uni.website} target="_blank" rel="noopener noreferrer" className="hover:underline flex items-center">
-                                                {uni.name}
-                                            </a>
-                                            ) : (
-                                            uni.name
-                                            )}
+                                            {uni.name}
                                         </h4>
                                         <p className="text-xs text-muted-foreground mb-2 ml-7">{uni.category || 'N/A'}</p>
 
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-sm mb-3">
-                                            <div className="flex items-center" title="University Location">
-                                                <MapPin className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
+                                        <div className="grid grid-cols-1 gap-x-4 gap-y-1.5 text-sm mb-3">
+                                            <div className="flex items-start" title="University Location">
+                                                <MapPin className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0 mt-0.5" />
                                                 <span className="text-foreground/80">{uni.location || 'N/A'}</span>
                                             </div>
-                                            <div className="flex items-center" title="University Type">
-                                                <Briefcase className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
+                                            <div className="flex items-start" title="University Type">
+                                                <Briefcase className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0 mt-0.5" />
                                                 <span className="text-foreground/80">Type: {uni.type || 'N/A'}</span>
                                             </div>
-                                            <div className="flex items-center" title="Program Duration">
-                                                <BookOpen className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
+                                            <div className="flex items-start" title="Program Duration">
+                                                <BookOpen className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0 mt-0.5" />
                                                 <span className="text-foreground/80">Duration: {uni.programDuration || 'N/A'}</span>
                                             </div>
-                                            <div className="flex items-center" title="Tuition Category & Range">
-                                                <DollarSign className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
+                                            <div className="flex items-start" title="Tuition Category & Range">
+                                                <DollarSign className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0 mt-0.5" />
                                                 <span className="text-foreground/80">
                                                     Tuition: {uni.tuitionCategory || 'N/A'}
-                                                    {uni.tuitionCategory && uni.tuitionCategory !== 'Unknown' && uni.tuitionCategory !== 'Varies' && uni.tuitionFeeRange ? ` (${uni.tuitionFeeRange})` : ''}
+                                                    {uni.tuitionFeeRange ? ` (${uni.tuitionFeeRange})` : ''}
                                                 </span>
                                             </div>
-                                            <div className="flex items-center" title="Next Intake Date">
-                                                <CalendarDays className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
+                                            <div className="flex items-start" title="Next Intake Date">
+                                                <CalendarDays className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0 mt-0.5" />
                                                 <span className="text-foreground/80">Next Intake: {uni.nextIntakeDate || 'N/A'}</span>
                                             </div>
-                                            <div className="flex items-center sm:col-span-2" title="English Test Requirements">
-                                                <ClipboardCheck className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
+                                            <div className="flex items-start" title="English Test Requirements">
+                                                <ClipboardCheck className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0 mt-0.5" />
                                                 <span className="text-foreground/80">English Tests: {uni.englishTestRequirements || 'N/A'}</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="mt-3 text-right space-x-2">
-                                    {uni.website ? (
-                                        <Button asChild size="sm" variant="outline" className="text-accent hover:text-accent-foreground hover:bg-accent/10">
-                                            <a href={uni.website} target="_blank" rel="noopener noreferrer">
-                                                <ExternalLink className="mr-1.5 h-4 w-4" /> Website
-                                            </a>
-                                        </Button>
-                                    ) : (
-                                        <Button size="sm" variant="outline" disabled className="text-muted-foreground">
-                                            Website N/A
-                                        </Button>
-                                    )}
-                                    <Button asChild size="sm" variant="default" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                                    <Button asChild size="sm" variant="outline" className="text-primary hover:text-primary-foreground hover:bg-primary/10">
+                                        <Link href={`/university-info?country=${encodeURIComponent(pathwayForm.getValues('country'))}&field=${encodeURIComponent(pathwayForm.getValues('fieldOfStudy'))}&gpa=${encodeURIComponent(pathwayForm.getValues('gpa'))}&level=${encodeURIComponent(pathwayForm.getValues('targetEducationLevel'))}&index=${index}`}>
+                                            <InfoIcon className="mr-1.5 h-4 w-4" /> More Info
+                                        </Link>
+                                    </Button>
+                                    <Button asChild size="sm" variant="default" className="bg-accent text-accent-foreground hover:bg-accent/90">
                                         <Link href={`/book-appointment?collegeName=${encodeURIComponent(uni.name)}&country=${encodeURIComponent(pathwayForm.getValues('country'))}&field=${encodeURIComponent(pathwayForm.getValues('fieldOfStudy'))}&gpa=${encodeURIComponent(pathwayForm.getValues('gpa'))}&level=${encodeURIComponent(pathwayForm.getValues('targetEducationLevel'))}`}>
                                             Book Consultation
                                         </Link>
@@ -420,7 +408,7 @@ export default function HomePage() {
                 </Card>
                 )}
                 {!isLoadingPathway && !pathwayError && !pathwayResult && (
-                    <Card className="shadow-xl bg-card flex flex-col items-center justify-center flex-grow min-h-[200px] md:min-h-0">
+                    <Card className="shadow-xl bg-card flex flex-col items-center justify-center flex-grow min-h-[200px] md:min-h-0 w-full">
                         <CardContent className="text-center p-6">
                             <Search className="h-12 w-12 md:h-16 md:w-16 text-muted-foreground mx-auto mb-4" />
                             <p className="text-muted-foreground">Your university suggestions will appear here.</p>
