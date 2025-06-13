@@ -35,9 +35,8 @@ const UniversitySuggestionSchema = z.object({
   location: z.string().describe("The city and state/region of the university (e.g., 'Cambridge, MA', 'Sydney, NSW')."),
   tuitionCategory: z.enum(["Affordable", "Mid-Range", "Premium", "Varies", "Unknown"]).describe("A category for the estimated annual tuition. Affordable: typically <$15,000 USD/year or equivalent. Mid-Range: $15,000-$30,000 USD/year or equivalent. Premium: >$30,000 USD/year or equivalent. Use 'Varies' if it's highly variable or 'Unknown' if not determinable."),
   tuitionFeeRange: z.string().optional().describe("Estimated annual tuition fee range if available, e.g., '$10,000 - $15,000 USD', '€8,000 - €12,000'. Keep this concise."),
-  scholarshipLevel: z.enum(["High", "Medium", "Low", "None", "Varies", "Unknown"]).describe("General availability or level of scholarships (High: many options often available; Medium: some options; Low: few options; None: typically no scholarships; Varies; Unknown)."),
-  rawScholarshipInfo: z.string().optional().describe("Optional: Very concise textual information about scholarship availability, e.g., 'Merit-based scholarships available'. Limit to one short phrase."),
   englishTestRequirements: z.string().optional().describe("Typical English proficiency test scores required (e.g., 'IELTS: 6.5+', 'TOEFL iBT: 90+'). Keep this concise."),
+  nextIntakeDate: z.string().optional().describe("Typical next intake period or application deadline information, e.g., 'Fall 2025 (Apply by Jan 2025)', 'Rolling Admissions', 'Intakes: Jan, May, Sep'. Be concise."),
 });
 
 const PathwayPlannerOutputSchema = z.object({
@@ -78,15 +77,8 @@ const pathwayPlannerPrompt = ai.definePrompt({
       - "Varies": If tuition is highly variable across programs or student types.
       - "Unknown": If information is not readily available.
   9.  'tuitionFeeRange': (Optional) A CONCISE estimated annual tuition fee range if available, e.g., "$10,000 - $15,000 USD", "€8,000 - €12,000".
-  10. 'scholarshipLevel': Categorize scholarship availability for students at the target education level:
-      - "High": Many scholarships generally available.
-      - "Medium": Some scholarships available.
-      - "Low": Few scholarships available.
-      - "None": Generally no scholarships.
-      - "Varies": Highly variable.
-      - "Unknown": If information is not readily available.
-  11. 'rawScholarshipInfo': (Optional) A VERY short, concise phrase about scholarship details if available, like "Merit-based aid available."
-  12. 'englishTestRequirements': (Optional) CONCISE typical English proficiency test scores required (e.g., "IELTS: 6.5+", "TOEFL iBT: 90+").
+  10. 'englishTestRequirements': (Optional) CONCISE typical English proficiency test scores required (e.g., "IELTS: 6.5+", "TOEFL iBT: 90+").
+  11. 'nextIntakeDate': (Optional) Typical next intake period or application deadline information, e.g., "Fall 2025 (Apply by Jan 2025)", "Rolling Admissions", "Intakes: Jan, May, Sep". Be concise.
 
   Only list universities located within the specified country. Ensure the website is a direct link to the university.
   Provide as many relevant suggestions as you can find for the given criteria.

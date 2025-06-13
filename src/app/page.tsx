@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import SectionTitle from '@/components/ui/section-title';
-import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info, Search, ExternalLink, Wand2, Briefcase, DollarSign, Award as AwardIconLucideComp, ClipboardCheck } from 'lucide-react';
-import { testimonials, services, fieldsOfStudy, gpaScaleOptions, educationLevelOptions, AwardIconLucide as AwardIconFromData, UniversityIcon } from '@/lib/data'; // Changed AwardIcon to AwardIconLucide as AwardIconFromData
+import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info as InfoIcon, Search, ExternalLink, Wand2, Briefcase, DollarSign, Award as AwardIconLucideComp, ClipboardCheck, CalendarDays } from 'lucide-react';
+import { testimonials, services, fieldsOfStudy, gpaScaleOptions, educationLevelOptions, AwardIconLucide as AwardIconFromData, UniversityIcon } from '@/lib/data';
 import type { Testimonial, Service } from '@/lib/data';
 import { useState, useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -325,7 +325,7 @@ export default function HomePage() {
                 )}
                 {pathwayError && !isLoadingPathway && (
                 <Alert variant="destructive" className="bg-card">
-                    <Info className="h-4 w-4" />
+                    <InfoIcon className="h-4 w-4" />
                     <AlertTitle>Error</AlertTitle>
                     <AlertDescription>{pathwayError}</AlertDescription>
                 </Alert>
@@ -369,10 +369,12 @@ export default function HomePage() {
                                                 <DollarSign className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
                                                 <span className="text-foreground/80">Tuition: {uni.tuitionCategory} {uni.tuitionFeeRange && `(${uni.tuitionFeeRange})`}</span>
                                             </div>
-                                            <div className="flex items-center" title="Scholarship Level & Info">
-                                                <AwardIconLucideComp className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
-                                                <span className="text-foreground/80">Scholarships: {uni.scholarshipLevel} {uni.rawScholarshipInfo && `(${uni.rawScholarshipInfo})`}</span>
-                                            </div>
+                                            {uni.nextIntakeDate && (
+                                                <div className="flex items-center" title="Next Intake Date">
+                                                    <CalendarDays className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
+                                                    <span className="text-foreground/80">Next Intake: {uni.nextIntakeDate}</span>
+                                                </div>
+                                            )}
                                             {uni.englishTestRequirements && (
                                                 <div className="flex items-center sm:col-span-2" title="English Test Requirements">
                                                     <ClipboardCheck className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" />
@@ -382,8 +384,13 @@ export default function HomePage() {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="mt-3 text-right">
+                                <div className="mt-3 text-right space-x-2">
                                     <Button asChild size="sm" variant="outline" className="text-accent hover:text-accent-foreground hover:bg-accent/10">
+                                        <Link href={`/university-info?country=${encodeURIComponent(pathwayForm.getValues('country'))}&field=${encodeURIComponent(pathwayForm.getValues('fieldOfStudy'))}&gpa=${encodeURIComponent(pathwayForm.getValues('gpa'))}&level=${encodeURIComponent(pathwayForm.getValues('targetEducationLevel'))}&index=${index}`}>
+                                            <InfoIcon className="mr-1.5 h-4 w-4" /> More Info
+                                        </Link>
+                                    </Button>
+                                    <Button asChild size="sm" variant="default" className="bg-primary text-primary-foreground hover:bg-primary/90">
                                         <Link href={`/book-appointment?collegeName=${encodeURIComponent(uni.name)}&country=${encodeURIComponent(pathwayForm.getValues('country'))}&field=${encodeURIComponent(pathwayForm.getValues('fieldOfStudy'))}&gpa=${encodeURIComponent(pathwayForm.getValues('gpa'))}&level=${encodeURIComponent(pathwayForm.getValues('targetEducationLevel'))}`}>
                                             Book Consultation
                                         </Link>
