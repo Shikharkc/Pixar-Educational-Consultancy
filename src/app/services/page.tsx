@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import SectionTitle from '@/components/ui/section-title';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { services } from '@/lib/data';
 import type { Service } from '@/lib/data';
 import { CheckCircle, ArrowRight } from 'lucide-react';
