@@ -132,7 +132,7 @@ export const certifications: Certification[] = [
 export interface University {
   name: string;
   city: string;
-  countryFocus: string; 
+  countryFocus: string;
   website: string;
 }
 
@@ -158,30 +158,6 @@ export interface CountryInfo {
 
 export const countryData: CountryInfo[] = [
   {
-    id: 'europe',
-    name: 'Europe',
-    slug: 'europe',
-    flagEmoji: '🇪🇺',
-    description: 'Discover world-class education and rich cultural experiences across diverse European countries. Europe offers a wide range of programs in historic and modern universities.',
-    imageUrl: 'https://placehold.co/1200x400.png',
-    dataAiHint: 'europe landmark',
-    averageLivingCost: '€800 - €1,500 per month (varies widely by country and city)',
-    workHoursStudent: 'Typically 10-20 hours/week during studies, full-time during breaks (varies by country).',
-    visaInfoSummary: 'Schengen visa for short courses, National visa for longer studies. Requirements vary by country. Proof of funds and health insurance are key.',
-    postStudyWorkSummary: 'Many European countries offer post-study work visas (e.g., "Orientation Year" in Netherlands, Job Seeker Visa in Germany) allowing graduates to find employment.',
-    facts: [
-      { icon: Landmark, label: 'Key Regions', value: 'UK, Germany, France, Netherlands, Spain, Italy etc.' },
-      { icon: Globe, label: 'Languages', value: 'English widely used in academia; local languages beneficial.' },
-      { icon: TrendingUp, label: 'Known For', value: 'Research, Engineering, Arts, Humanities, Business' },
-    ],
-    topUniversities: [
-      { name: 'University of Oxford', city: 'Oxford, UK', countryFocus: 'Various', website: 'https://www.ox.ac.uk' },
-      { name: 'ETH Zurich', city: 'Zurich, Switzerland', countryFocus: 'Science & Technology', website: 'https://ethz.ch' },
-      { name: 'Sorbonne University', city: 'Paris, France', countryFocus: 'Arts & Humanities', website: 'https://www.sorbonne-universite.fr' },
-      { name: 'Technical University of Munich', city: 'Munich, Germany', countryFocus: 'Engineering', website: 'https://www.tum.de' },
-    ],
-  },
-  {
     id: 'australia',
     name: 'Australia',
     slug: 'australia',
@@ -189,20 +165,42 @@ export const countryData: CountryInfo[] = [
     description: 'Experience a high-quality education system in a vibrant, multicultural environment. Australian universities are known for their research and innovation.',
     imageUrl: 'https://placehold.co/1200x400.png',
     dataAiHint: 'australia landmark',
-    averageLivingCost: 'AUD $20,000 - $25,000 per year (approx. AUD $1,700 - $2,100 per month)',
+    averageLivingCost: 'AUD $20,000 - $25,000 per year',
     workHoursStudent: 'Up to 48 hours per fortnight during academic sessions, unlimited during scheduled breaks.',
-    visaInfoSummary: 'Student visa (subclass 500). Requires Confirmation of Enrolment (CoE), Genuine Temporary Entrant (GTE) statement, financial proof, OSHC (health insurance).',
-    postStudyWorkSummary: 'Temporary Graduate visa (subclass 485) allows eligible international students to stay and work in Australia temporarily after graduation.',
+    visaInfoSummary: 'Student visa (subclass 500). Requires CoE, GTE statement, financial proof, OSHC.',
+    postStudyWorkSummary: 'Temporary Graduate visa (subclass 485) allows eligible students to stay and work.',
     facts: [
       { icon: Landmark, label: 'Major Cities', value: 'Sydney, Melbourne, Brisbane, Perth, Adelaide' },
       { icon: Globe, label: 'Language', value: 'English' },
-      { icon: TrendingUp, label: 'Known For', value: 'STEM, Business, Health Sciences, Environmental Studies' },
+      { icon: TrendingUp, label: 'Known For', value: 'STEM, Business, Health Sciences' },
     ],
     topUniversities: [
       { name: 'Australian National University', city: 'Canberra', countryFocus: 'Various', website: 'https://www.anu.edu.au' },
       { name: 'University of Melbourne', city: 'Melbourne', countryFocus: 'Various', website: 'https://www.unimelb.edu.au' },
       { name: 'University of Sydney', city: 'Sydney', countryFocus: 'Various', website: 'https://www.sydney.edu.au' },
-      { name: 'University of Queensland', city: 'Brisbane', countryFocus: 'Various', website: 'https://www.uq.edu.au' },
+    ],
+  },
+  {
+    id: 'canada',
+    name: 'Canada',
+    slug: 'canada',
+    flagEmoji: '🇨🇦',
+    description: 'Canada offers a high standard of living, diverse culture, and excellent educational institutions. It is a popular choice for international students.',
+    imageUrl: 'https://placehold.co/1200x400.png',
+    dataAiHint: 'canada landmark',
+    averageLivingCost: 'CAD $15,000 - $20,000 per year',
+    workHoursStudent: 'Up to 20 hours/week during regular academic sessions, full-time during scheduled breaks.',
+    visaInfoSummary: 'Study Permit required. Need an acceptance letter from a DLI, proof of financial support.',
+    postStudyWorkSummary: 'Post-Graduation Work Permit (PGWP) allows graduates to gain Canadian work experience.',
+    facts: [
+      { icon: Landmark, label: 'Major Cities', value: 'Toronto, Montreal, Vancouver, Ottawa' },
+      { icon: Globe, label: 'Languages', value: 'English, French' },
+      { icon: TrendingUp, label: 'Known For', value: 'Technology, Engineering, Business, Health Sciences' },
+    ],
+    topUniversities: [
+      { name: 'University of Toronto', city: 'Toronto', countryFocus: 'Various', website: 'https://www.utoronto.ca' },
+      { name: 'McGill University', city: 'Montreal', countryFocus: 'Various', website: 'https://www.mcgill.ca' },
+      { name: 'University of British Columbia', city: 'Vancouver', countryFocus: 'Various', website: 'https://www.ubc.ca' },
     ],
   },
   {
@@ -213,20 +211,42 @@ export const countryData: CountryInfo[] = [
     description: 'Home to many of the world\'s top universities, the USA offers unparalleled educational opportunities across all fields of study.',
     imageUrl: 'https://placehold.co/1200x400.png',
     dataAiHint: 'usa landmark',
-    averageLivingCost: '$1,000 - $2,500 per month (highly variable by city and lifestyle)',
-    workHoursStudent: 'Up to 20 hours/week on-campus during term; full-time on-campus during breaks. Off-campus work requires authorization (CPT/OPT).',
-    visaInfoSummary: 'F-1 visa for academic studies. Requires I-20 form from university, SEVIS fee payment, proof of funds, and visa interview.',
-    postStudyWorkSummary: 'Optional Practical Training (OPT) allows up to 12 months of work experience (extendable for STEM fields). H-1B visa is a common route for long-term employment.',
+    averageLivingCost: '$1,000 - $2,500 per month (highly variable)',
+    workHoursStudent: 'Up to 20 hours/week on-campus during term; CPT/OPT for off-campus.',
+    visaInfoSummary: 'F-1 visa for academic studies. Requires I-20, SEVIS fee, proof of funds, interview.',
+    postStudyWorkSummary: 'OPT allows up to 12 months work (extendable for STEM). H-1B for long-term.',
     facts: [
-      { icon: Landmark, label: 'Key States for Study', value: 'California, New York, Massachusetts, Texas, Illinois' },
+      { icon: Landmark, label: 'Key States', value: 'California, New York, Massachusetts, Texas' },
       { icon: Globe, label: 'Language', value: 'English' },
-      { icon: TrendingUp, label: 'Known For', value: 'Technology, Business, Research, Arts, Innovation' },
+      { icon: TrendingUp, label: 'Known For', value: 'Technology, Business, Research, Arts' },
     ],
     topUniversities: [
       { name: 'Massachusetts Institute of Technology (MIT)', city: 'Cambridge, MA', countryFocus: 'Technology & Engineering', website: 'https://web.mit.edu' },
       { name: 'Stanford University', city: 'Stanford, CA', countryFocus: 'Various', website: 'https://www.stanford.edu' },
       { name: 'Harvard University', city: 'Cambridge, MA', countryFocus: 'Various', website: 'https://www.harvard.edu' },
-      { name: 'California Institute of Technology (Caltech)', city: 'Pasadena, CA', countryFocus: 'Science & Engineering', website: 'https://www.caltech.edu' },
+    ],
+  },
+  {
+    id: 'uk',
+    name: 'UK',
+    slug: 'uk',
+    flagEmoji: '🇬🇧',
+    description: 'The United Kingdom boasts a rich academic heritage with world-renowned universities, offering a diverse range of courses and a vibrant student life.',
+    imageUrl: 'https://placehold.co/1200x400.png',
+    dataAiHint: 'uk landmark',
+    averageLivingCost: '£1,000 - £1,500 per month (London higher)',
+    workHoursStudent: 'Up to 20 hours/week during term-time for degree students.',
+    visaInfoSummary: 'Student visa. Requires CAS from a licensed sponsor, proof of funds, English proficiency.',
+    postStudyWorkSummary: 'Graduate Route allows 2 years stay (3 for PhD) after course completion.',
+    facts: [
+      { icon: Landmark, label: 'Major Cities', value: 'London, Manchester, Birmingham, Edinburgh' },
+      { icon: Globe, label: 'Language', value: 'English' },
+      { icon: TrendingUp, label: 'Known For', value: 'Finance, Law, Arts & Humanities, Science' },
+    ],
+    topUniversities: [
+      { name: 'University of Oxford', city: 'Oxford', countryFocus: 'Various', website: 'https://www.ox.ac.uk' },
+      { name: 'University of Cambridge', city: 'Cambridge', countryFocus: 'Various', website: 'https://www.cam.ac.uk' },
+      { name: 'Imperial College London', city: 'London', countryFocus: 'Science, Engineering, Medicine', website: 'https://www.imperial.ac.uk' },
     ],
   },
   {
@@ -234,23 +254,22 @@ export const countryData: CountryInfo[] = [
     name: 'New Zealand',
     slug: 'new-zealand',
     flagEmoji: '🇳🇿',
-    description: 'Study in a safe and welcoming country with a world-class education system and stunning natural landscapes. New Zealand offers unique programs and research opportunities.',
+    description: 'Study in a safe, welcoming country with a world-class education system and stunning natural landscapes. Offers unique programs and research opportunities.',
     imageUrl: 'https://placehold.co/1200x400.png',
     dataAiHint: 'new zealand landscape',
-    averageLivingCost: 'NZD $15,000 - $20,000 per year (approx. NZD $1,250 - $1,670 per month)',
-    workHoursStudent: 'Up to 20 hours/week during studies, full-time during scheduled holidays.',
-    visaInfoSummary: 'Student Visa (Fee Paying Student Visa). Requires Offer of Place from an approved education provider, proof of funds, health and character requirements.',
-    postStudyWorkSummary: 'Post-Study Work Visa available for eligible graduates, allowing them to work for any employer in New Zealand for 1 to 3 years depending on qualification.',
+    averageLivingCost: 'NZD $15,000 - $20,000 per year',
+    workHoursStudent: 'Up to 20 hours/week during studies, full-time during holidays.',
+    visaInfoSummary: 'Student Visa. Requires Offer of Place, proof of funds, health & character checks.',
+    postStudyWorkSummary: 'Post-Study Work Visa for 1-3 years for eligible graduates.',
     facts: [
       { icon: Landmark, label: 'Main Cities', value: 'Auckland, Wellington, Christchurch, Dunedin' },
       { icon: Globe, label: 'Language', value: 'English, Māori' },
-      { icon: TrendingUp, label: 'Known For', value: 'Agriculture, Environmental Science, Film, Tourism' },
+      { icon: TrendingUp, label: 'Known For', value: 'Agriculture, Environmental Science, Film' },
     ],
     topUniversities: [
       { name: 'University of Auckland', city: 'Auckland', countryFocus: 'Various', website: 'https://www.auckland.ac.nz' },
       { name: 'University of Otago', city: 'Dunedin', countryFocus: 'Health Sciences, Humanities', website: 'https://www.otago.ac.nz' },
       { name: 'Victoria University of Wellington', city: 'Wellington', countryFocus: 'Law, Public Policy, Design', website: 'https://www.wgtn.ac.nz' },
-      { name: 'University of Canterbury', city: 'Christchurch', countryFocus: 'Engineering, Science', website: 'https://www.canterbury.ac.nz' },
     ],
   },
 ];
@@ -445,6 +464,10 @@ export {
   FileSpreadsheet,
 };
 
-    
-
-    
+export interface Testimonial {
+    id: string;
+    name: string;
+    text: string;
+    studyDestination: string;
+    avatarUrl?: string;
+  }

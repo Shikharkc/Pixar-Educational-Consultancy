@@ -41,11 +41,11 @@ const FADE_DURATION_MS = 300;
 const DISPLAY_DURATION_MS = 2500;
 
 const selectableCountriesHomepage = [
+  { name: 'Australia', value: 'Australia' },
+  { name: 'Canada', value: 'Canada' },
   { name: 'USA', value: 'USA' },
   { name: 'UK', value: 'UK' },
-  { name: 'Australia', value: 'Australia' },
   { name: 'New Zealand', value: 'New Zealand' },
-  { name: 'Europe', value: 'Europe' },
 ];
 
 
@@ -107,7 +107,7 @@ export default function HomePage() {
   async function onPathwaySubmit(values: PathwayFormValues) {
     setPathwayResult(null);
     setPathwayError(null);
-    
+
     if (!showResultsArea) {
         setShowResultsArea(true);
         requestAnimationFrame(() => {
@@ -115,7 +115,7 @@ export default function HomePage() {
         });
     }
     setIsLoadingPathway(true);
-    
+
     try {
       const aiInput: PathwayPlannerInput = {
         country: values.country,
@@ -137,7 +137,7 @@ export default function HomePage() {
     if (!pathwayResult?.universitySuggestions) return [];
     return pathwayResult.universitySuggestions;
   }, [pathwayResult]);
-  
+
   const renderPathwayForm = () => (
      <Card className={cn(
         "shadow-xl bg-card w-full",
@@ -305,17 +305,17 @@ export default function HomePage() {
             showResultsArea ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1"
         )}>
           <div className={cn(
-            "w-full", 
-            !showResultsArea ? "" : "md:col-span-1" 
+            "w-full",
+            !showResultsArea ? "" : "md:col-span-1"
            )}>
             {renderPathwayForm()}
           </div>
 
           {showResultsArea && (
             <div className={cn(
-                "md:col-span-2 flex flex-col min-h-[300px]", 
+                "md:col-span-2 flex flex-col min-h-[300px]",
                 "transition-all duration-700 ease-out",
-                resultsContainerAnimatedIn ? "opacity-100" : "opacity-0 pointer-events-none" 
+                resultsContainerAnimatedIn ? "opacity-100" : "opacity-0 pointer-events-none"
             )}>
                 {isLoadingPathway && (
                 <Card className="shadow-xl bg-card flex flex-col items-center justify-center flex-grow min-h-[200px] p-6">
@@ -360,7 +360,7 @@ export default function HomePage() {
                                             )}
                                         </h4>
                                         <p className="text-xs text-muted-foreground mb-2 ml-7">{uni.category}</p>
-                                        
+
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-sm mb-3">
                                             <div className="flex items-center" title="University Location"><MapPin className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">{uni.location}</span></div>
                                             <div className="flex items-center" title="University Type"><Briefcase className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0" /><span className="text-foreground/80">Type: {uni.type}</span></div>

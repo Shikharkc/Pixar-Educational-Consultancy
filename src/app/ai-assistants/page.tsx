@@ -45,11 +45,11 @@ const docChecklistFormSchema = z.object({
 type DocumentChecklistFormValues = z.infer<typeof docChecklistFormSchema>;
 
 const selectableCountries = [
+  { name: 'Australia', value: 'Australia' },
+  { name: 'Canada', value: 'Canada' },
   { name: 'USA', value: 'USA' },
   { name: 'UK', value: 'UK' },
-  { name: 'Australia', value: 'Australia' },
   { name: 'New Zealand', value: 'New Zealand' },
-  { name: 'Europe', value: 'Europe' },
 ];
 
 const testComparisonData = [
@@ -149,60 +149,60 @@ export default function AiAssistantsPage() {
     if (!docChecklistResult || !docChecklistResult.checklist) return;
     const userName = docChecklistForm.getValues('userName');
     const doc = new jsPDF();
-    const logoSrc = '/logo.png'; 
+    const logoSrc = '/logo.png';
 
     const addPageElementsAndWatermark = () => {
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const watermarkWidth = 80; 
-      const watermarkHeight = 80; 
+      const watermarkWidth = 80;
+      const watermarkHeight = 80;
       const watermarkX = (pageWidth - watermarkWidth) / 2;
       const watermarkY = (pageHeight - watermarkHeight) / 2;
-      
+
       try {
         doc.addImage(logoSrc, 'PNG', watermarkX, watermarkY, watermarkWidth, watermarkHeight, undefined, 'FAST');
       } catch (e) {
         console.warn("Watermark image could not be added. Ensure " + logoSrc + " exists in /public. Error: ", e);
         doc.setFontSize(10);
-        doc.setTextColor(200, 200, 200); 
+        doc.setTextColor(200, 200, 200);
         doc.text("Pixar Edu", pageWidth / 2, pageHeight / 2, { align: 'center', angle: 45 });
-        doc.setTextColor(0, 0, 0); 
+        doc.setTextColor(0, 0, 0);
       }
 
       doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
       doc.text("Pixar Educational Consultancy", pageWidth / 2, 15, { align: 'center' });
-      
+
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.textWithLink("www.pixaredu.com", pageWidth / 2, 23, { align: 'center', url: 'https://www.pixaredu.com' });
-      
+
       doc.setLineWidth(0.5);
-      doc.line(14, 30, pageWidth - 14, 30); 
+      doc.line(14, 30, pageWidth - 14, 30);
     };
 
-    let currentY = 35; 
+    let currentY = 35;
 
     const startNewPage = () => {
       doc.addPage();
       addPageElementsAndWatermark();
-      currentY = 35; 
+      currentY = 35;
     };
 
     addPageElementsAndWatermark();
-    
+
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.text(`Document Checklist for ${userName}`, doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
     currentY += 10;
-    
+
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text(`Education Level: ${docChecklistForm.getValues('educationLevel')}`, 14, currentY);
     currentY += 6;
     doc.text(`Desired Country: ${docChecklistForm.getValues('desiredCountry')}`, 14, currentY);
     currentY += 10;
-    
+
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text("Document Checklist:", 14, currentY);
@@ -211,34 +211,34 @@ export default function AiAssistantsPage() {
     docChecklistResult.checklist.forEach((item, index) => {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      
+
       const itemNumberText = `${index + 1}. `;
       const englishNameText = item.englishName;
       const fullItemText = itemNumberText + englishNameText;
-      
-      const itemNameLines = doc.splitTextToSize(fullItemText, doc.internal.pageSize.getWidth() - 28); 
-      const itemNameHeight = itemNameLines.length * 4.5; 
 
-      const descriptionLines = doc.splitTextToSize(`   Description: ${item.description}`, doc.internal.pageSize.getWidth() - 32); 
-      const descriptionHeight = descriptionLines.length * 4.5; 
-      
-      const totalItemHeight = itemNameHeight + descriptionHeight + 3; 
+      const itemNameLines = doc.splitTextToSize(fullItemText, doc.internal.pageSize.getWidth() - 28);
+      const itemNameHeight = itemNameLines.length * 4.5;
 
-      if (currentY + totalItemHeight > doc.internal.pageSize.getHeight() - 20) { 
+      const descriptionLines = doc.splitTextToSize(`   Description: ${item.description}`, doc.internal.pageSize.getWidth() - 32);
+      const descriptionHeight = descriptionLines.length * 4.5;
+
+      const totalItemHeight = itemNameHeight + descriptionHeight + 3;
+
+      if (currentY + totalItemHeight > doc.internal.pageSize.getHeight() - 20) {
         startNewPage();
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.text("Document Checklist (Continued):", 14, currentY);
         currentY += 7;
       }
-      
+
       doc.text(itemNameLines, 14, currentY);
       currentY += itemNameHeight;
-      
-      doc.text(descriptionLines, 14, currentY); 
-      currentY += descriptionHeight + 3; 
+
+      doc.text(descriptionLines, 14, currentY);
+      currentY += descriptionHeight + 3;
     });
-    
+
     if (docChecklistResult.notes) {
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
@@ -251,19 +251,19 @@ export default function AiAssistantsPage() {
       const notesBodyHeight = notesLines.length * 4.5;
       const totalNotesHeight = notesTitleHeight + notesBodyHeight;
 
-      if (currentY + totalNotesHeight > doc.internal.pageSize.getHeight() - 20) { 
+      if (currentY + totalNotesHeight > doc.internal.pageSize.getHeight() - 20) {
         startNewPage();
       }
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
       doc.text(notesTitle, 14, currentY);
       currentY += notesTitleHeight;
-      
+
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text(notesLines, 14, currentY);
     }
-    
+
     doc.save(`document_checklist_${userName.replace(/\s+/g, '_')}.pdf`);
   };
 
@@ -381,7 +381,7 @@ export default function AiAssistantsPage() {
                   </form>
                 </Form>
               </Card>
-              
+
               {showEnglishTestResultsArea && (
                 <div className={cn(
                     "w-full md:col-span-1 space-y-6",
@@ -540,10 +540,6 @@ export default function AiAssistantsPage() {
                                 {selectableCountries.map(country => (
                                   <SelectItem key={country.value} value={country.value}>{country.name}</SelectItem>
                                 ))}
-                                <SelectItem value="Canada">Canada</SelectItem>
-                                <SelectItem value="Germany">Germany</SelectItem>
-                                <SelectItem value="Japan">Japan</SelectItem>
-                                <SelectItem value="Other">Other (Specify if AI allows)</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -560,7 +556,7 @@ export default function AiAssistantsPage() {
                   </form>
                 </Form>
               </Card>
-              
+
               {showDocChecklistResultsArea && (
                 <div className={cn(
                     "w-full md:col-span-1 space-y-6",
