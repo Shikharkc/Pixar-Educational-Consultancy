@@ -22,8 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 
-// Remove AI flow import: import { englishTestAdvisor, type EnglishTestAdvisorInput, type EnglishTestAdvisorOutput } from '@/ai/flows/english-test-advisor';
-import { generateDocumentChecklist, type DocumentChecklistInput, type DocumentChecklistOutput } from '@/ai/flows/document-checklist-flow';
+// AI flow import removed for document checklist: import { generateDocumentChecklist, type DocumentChecklistInput, type DocumentChecklistOutput } from '@/ai/flows/document-checklist-flow';
 
 import { Loader2, Sparkles, Info, FileText, Download, AlertCircle, BookOpenText, ListChecks, MessageSquare, HelpCircle, CheckCircle as CheckCircleIcon, User } from 'lucide-react';
 
@@ -36,7 +35,6 @@ const englishTestFormSchema = z.object({
 });
 type EnglishTestAdvisorFormValues = z.infer<typeof englishTestFormSchema>;
 
-// Define a type for the rule-based output, similar to EnglishTestAdvisorOutput
 interface RuleBasedEnglishTestOutput {
   testRecommendation: string;
   reasoning: string;
@@ -50,6 +48,82 @@ const docChecklistFormSchema = z.object({
   desiredCountry: z.string().min(1, "Please select your desired country."),
 });
 type DocumentChecklistFormValues = z.infer<typeof docChecklistFormSchema>;
+
+// --- START: Static Data for Rule-Based Document Checklist ---
+interface StaticDocument {
+  englishName: string;
+  nepaliName: string;
+  description: string;
+  educationLevels?: string[]; // e.g., ["Bachelor's Degree", "Master's Degree"] - if undefined, applies to all
+  countries?: string[]; // e.g., ["USA", "Australia"] - if undefined, applies to all
+}
+
+interface RuleBasedDocumentChecklistOutput {
+  checklist: StaticDocument[];
+  notes?: string;
+}
+
+const allEducationLevels = [
+  "High School Diploma or Equivalent (e.g., +2, A-Levels)",
+  "Associate Degree",
+  "Bachelor's Degree",
+  "Master's Degree",
+  "Doctorate (PhD)",
+];
+
+const generalDocuments: StaticDocument[] = [
+  { englishName: "Passport", nepaliName: "राहदानी", description: "Valid passport with sufficient validity (usually at least 6 months beyond intended stay)." },
+  { englishName: "Academic Transcripts & Certificates", nepaliName: "शैक्षिक प्रमाणपत्र र ट्रान्सक्रिप्टहरू", description: "Official transcripts and completion certificates from all previous educational institutions (e.g., SLC/SEE, +2, Bachelor's, Master's)." },
+  { englishName: "English Proficiency Test Score", nepaliName: "अंग्रेजी भाषा प्रवीणता परीक्षा स्कोर", description: "Valid score report from IELTS, TOEFL, PTE, or Duolingo, as required by the institution and country. (e.g. IELTS: 6.0-7.5, TOEFL: 80-100)." },
+  { englishName: "Statement of Purpose (SOP) / Letter of Intent", nepaliName: "उद्देश्यको कथन / आशय पत्र", description: "An essay outlining your academic background, career goals, reasons for choosing the course and institution, and future plans." },
+  { englishName: "Letters of Recommendation (LORs)", nepaliName: "सिफारिश पत्रहरू", description: "Usually 2-3 letters from professors or employers who can attest to your academic abilities and character.", educationLevels: ["Bachelor's Degree", "Master's Degree", "Doctorate (PhD)"] },
+  { englishName: "Curriculum Vitae (CV) / Resume", nepaliName: "बायोडाटा / रिजुमे", description: "A summary of your academic qualifications, work experience, skills, and achievements.", educationLevels: ["Master's Degree", "Doctorate (PhD)"] },
+  { englishName: "Financial Documents", nepaliName: "वित्तीय कागजातहरू", description: "Proof of sufficient funds to cover tuition fees and living expenses (e.g., bank statements, education loan sanction letter, scholarship letter)." },
+  { englishName: "Visa Application Form", nepaliName: "भिसा आवेदन फारम", description: "Completed and signed visa application form for the specific country." },
+  { englishName: "Passport-size Photographs", nepaliName: "पासपोर्ट आकारको फोटोहरू", description: "Recent photographs meeting the specific requirements of the country and institution." },
+  { englishName: "Birth Certificate", nepaliName: "जन्म दर्ता प्रमाणपत्र", description: "Official birth certificate, sometimes required for verification." },
+  { englishName: "Police Clearance Certificate", nepaliName: "पुलिस क्लियरेन्स प्रमाणपत्र", description: "A certificate from the police indicating no criminal record, required by some countries.", countries: ["Australia", "Canada", "New Zealand"] },
+  { englishName: "Health Examination / Medical Certificate", nepaliName: "स्वास्थ्य परीक्षण / मेडिकल प्रमाणपत्र", description: "Proof of medical examination, required by some countries for visa purposes.", countries: ["Australia", "Canada", "New Zealand"] },
+];
+
+const countrySpecificNotes: Record<string, string> = {
+  "USA": "For the USA, the I-20 form from your university is crucial for the F-1 visa application. Also, prepare for the SEVIS fee payment and a visa interview. Financial documentation needs to be robust.",
+  "Australia": "Australia requires a Genuine Temporary Entrant (GTE) statement and Overseas Student Health Cover (OSHC). Ensure your financial documents clearly show the source of funds.",
+  "Canada": "For Canada, you'll need an acceptance letter from a Designated Learning Institution (DLI). Biometrics and a medical exam might be required. A Guaranteed Investment Certificate (GIC) is a common way to show proof of funds for some programs.",
+  "UK": "The UK requires a Confirmation of Acceptance for Studies (CAS) from your university. You'll need to show funds for tuition and living costs, and may need an IELTS UKVI test.",
+  "New Zealand": "New Zealand emphasizes that you are a genuine student and have sufficient funds. Health and character checks are important.",
+};
+
+function getRuleBasedDocumentChecklist(input: { educationLevel: string; desiredCountry: string }): RuleBasedDocumentChecklistOutput {
+  const { educationLevel, desiredCountry } = input;
+
+  let filteredDocuments = generalDocuments.filter(doc => {
+    const educationMatch = !doc.educationLevels || doc.educationLevels.includes(educationLevel);
+    const countryMatch = !doc.countries || doc.countries.includes(desiredCountry);
+    return educationMatch && countryMatch;
+  });
+
+  // Basic sorting: documents applicable to all first, then country/edu specific
+  filteredDocuments.sort((a, b) => {
+      const aSpecificity = (a.countries ? 1 : 0) + (a.educationLevels ? 1 : 0);
+      const bSpecificity = (b.countries ? 1 : 0) + (b.educationLevels ? 1 : 0);
+      return aSpecificity - bSpecificity;
+  });
+
+
+  let notes = "This is a general checklist. Requirements can vary significantly based on the specific institution, program, and your individual circumstances. Always verify the exact requirements with the university and the respective country's immigration authorities. \n\nLanguage proficiency tests like IELTS, TOEFL, or PTE are almost always required; aim for competitive scores. Ensure all documents are genuine, and if not in English, provide certified translations (except for Nepali names).";
+  if (countrySpecificNotes[desiredCountry]) {
+    notes += `\n\nSpecific advice for ${desiredCountry}: ${countrySpecificNotes[desiredCountry]}`;
+  }
+  notes += "\n\nPixar Educational Consultancy can provide personalized assistance with your documentation. Contact us for detailed guidance!"
+
+
+  return {
+    checklist: filteredDocuments,
+    notes: notes,
+  };
+}
+// --- END: Static Data for Rule-Based Document Checklist ---
 
 const selectableCountries = [
   { name: 'Australia', value: 'Australia' },
@@ -71,14 +145,14 @@ export default function AiAssistantsPage() {
   // State for English Test Advisor
   const [isEnglishTestLoading, setIsEnglishTestLoading] = useState(false);
   const [englishTestError, setEnglishTestError] = useState<string | null>(null);
-  const [englishTestResult, setEnglishTestResult] = useState<RuleBasedEnglishTestOutput | null>(null); // Updated type
+  const [englishTestResult, setEnglishTestResult] = useState<RuleBasedEnglishTestOutput | null>(null);
   const [showEnglishTestResultsArea, setShowEnglishTestResultsArea] = useState(false);
   const [englishTestResultsAnimatedIn, setEnglishTestResultsAnimatedIn] = useState(false);
 
   // State for Document Checklist
   const [isDocChecklistLoading, setIsDocChecklistLoading] = useState(false);
   const [docChecklistError, setDocChecklistError] = useState<string | null>(null);
-  const [docChecklistResult, setDocChecklistResult] = useState<DocumentChecklistOutput | null>(null);
+  const [docChecklistResult, setDocChecklistResult] = useState<RuleBasedDocumentChecklistOutput | null>(null); // Updated type
   const [showDocChecklistResultsArea, setShowDocChecklistResultsArea] = useState(false);
   const [docChecklistResultsAnimatedIn, setDocChecklistResultsAnimatedIn] = useState(false);
 
@@ -140,7 +214,6 @@ export default function AiAssistantsPage() {
         badges: ["Good for Beginners", "Adaptive (Duolingo)"]
       };
     } else {
-      // Default or general recommendation if specific rules don't match
       recommendation = {
         testRecommendation: "IELTS Academic",
         reasoning: `IELTS Academic is broadly accepted for studies worldwide, including in ${values.purpose.includes("USA") ? "the USA, " : ""} ${values.purpose.includes("Canada") ? "Canada, " : ""} ${values.purpose.includes("UK") ? "the UK, " : ""} and ${values.purpose.includes("Australia") ? "Australia" : "many other countries"}. It suits various proficiency levels. Pixar Educational Consultancy has excellent IELTS preparation programs. Talk to an advisor for more details!`,
@@ -148,7 +221,6 @@ export default function AiAssistantsPage() {
       };
     }
     
-    // Add a general plug for Pixar's services
     recommendation.reasoning += "\n\nFor dedicated preparation for any English test, Pixar Educational Consultancy offers excellent classes. You can get more personalized advice by contacting one of our advisors.";
 
     return recommendation;
@@ -166,15 +238,12 @@ export default function AiAssistantsPage() {
     }
     setIsEnglishTestLoading(true);
 
-    // Simulate a short delay, as if an API call was made
     await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
       const ruleBasedResult = getRuleBasedEnglishTestRecommendation(values);
       setEnglishTestResult(ruleBasedResult);
     } catch (e) {
-      // This catch block might not be strictly necessary for synchronous rule-based logic
-      // but kept for consistency if any future async operations are added.
       setEnglishTestError(e instanceof Error ? e.message : 'An unexpected error occurred.');
     } finally {
       setIsEnglishTestLoading(false);
@@ -192,16 +261,16 @@ export default function AiAssistantsPage() {
         });
     }
     setIsDocChecklistLoading(true);
+    // Simulate a short delay for UX, as AI call is removed
+    await new Promise(resolve => setTimeout(resolve, 500));
     try {
-      // User name is not sent to the AI flow, it's for PDF personalization only
-      const aiInput: DocumentChecklistInput = {
+      const ruleBasedResult = getRuleBasedDocumentChecklist({
         educationLevel: values.educationLevel,
         desiredCountry: values.desiredCountry,
-      };
-      const aiResult = await generateDocumentChecklist(aiInput);
-      setDocChecklistResult(aiResult);
+      });
+      setDocChecklistResult(ruleBasedResult);
     } catch (e) {
-      setDocChecklistError(e instanceof Error ? e.message : 'An unexpected error occurred.');
+      setDocChecklistError(e instanceof Error ? e.message : 'An unexpected error occurred generating the checklist.');
     } finally {
       setIsDocChecklistLoading(false);
     }
@@ -211,53 +280,63 @@ export default function AiAssistantsPage() {
     if (!docChecklistResult || !docChecklistResult.checklist) return;
     const userName = docChecklistForm.getValues('userName');
     const doc = new jsPDF();
-    const logoSrc = '/logo.png';
+    const logoSrc = '/logo.png'; // Ensure this logo exists in your /public folder
 
+    // Function to add header, footer, and watermark to each page
     const addPageElementsAndWatermark = () => {
       const pageWidth = doc.internal.pageSize.getWidth();
       const pageHeight = doc.internal.pageSize.getHeight();
-      const watermarkWidth = 80;
-      const watermarkHeight = 80;
+      // Watermark (Pixar Edu Logo)
+      const watermarkWidth = 80; // Adjust as needed
+      const watermarkHeight = 80; // Adjust as needed
       const watermarkX = (pageWidth - watermarkWidth) / 2;
       const watermarkY = (pageHeight - watermarkHeight) / 2;
 
       try {
+        // Attempt to add image. If it fails, add text watermark.
         doc.addImage(logoSrc, 'PNG', watermarkX, watermarkY, watermarkWidth, watermarkHeight, undefined, 'FAST');
       } catch (e) {
-        console.warn("Watermark image could not be added. Ensure " + logoSrc + " exists in /public. Error: ", e);
+        console.warn("Watermark image could not be added. Ensure " + logoSrc + " exists in /public. Adding text watermark instead. Error: ", e);
+        // Text watermark as fallback
         doc.setFontSize(10);
-        doc.setTextColor(200, 200, 200);
+        doc.setTextColor(200, 200, 200); // Light grey color
         doc.text("Pixar Edu", pageWidth / 2, pageHeight / 2, { align: 'center', angle: 45 });
-        doc.setTextColor(0, 0, 0);
+        doc.setTextColor(0, 0, 0); // Reset text color
       }
 
+
+      // Header
       doc.setFontSize(20);
       doc.setFont('helvetica', 'bold');
       doc.text("Pixar Educational Consultancy", pageWidth / 2, 15, { align: 'center' });
-
+      
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
-      doc.textWithLink("www.pixaredu.com", pageWidth / 2, 23, { align: 'center', url: 'https://www.pixaredu.com' });
+      doc.textWithLink("www.pixaredu.com", pageWidth / 2, 23, { align: 'center', url: 'https://www.pixaredu.com'});
 
+
+      // Line separator
       doc.setLineWidth(0.5);
-      doc.line(14, 30, pageWidth - 14, 30);
+      doc.line(14, 30, pageWidth - 14, 30); // from x1, y1, to x2, y2
     };
-
-    let currentY = 35;
+    
+    let currentY = 35; // Start content below header
 
     const startNewPage = () => {
       doc.addPage();
       addPageElementsAndWatermark();
-      currentY = 35;
+      currentY = 35; // Reset Y for new page
     };
 
-    addPageElementsAndWatermark();
+    addPageElementsAndWatermark(); // Add elements to the first page
 
+    // Checklist Title
     doc.setFontSize(16);
     doc.setFont('helvetica', 'bold');
     doc.text(`Document Checklist for ${userName}`, doc.internal.pageSize.getWidth() / 2, currentY, { align: 'center' });
     currentY += 10;
 
+    // User Info
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text(`Education Level: ${docChecklistForm.getValues('educationLevel')}`, 14, currentY);
@@ -265,6 +344,7 @@ export default function AiAssistantsPage() {
     doc.text(`Desired Country: ${docChecklistForm.getValues('desiredCountry')}`, 14, currentY);
     currentY += 10;
 
+    // Checklist Items
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text("Document Checklist:", 14, currentY);
@@ -274,33 +354,42 @@ export default function AiAssistantsPage() {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
 
+      // Prepare text parts
       const itemNumberText = `${index + 1}. `;
       const englishNameText = item.englishName;
+      // Nepali name will be omitted from PDF as per previous logic for AI flow
       const fullItemText = itemNumberText + englishNameText;
 
-      const itemNameLines = doc.splitTextToSize(fullItemText, doc.internal.pageSize.getWidth() - 28);
-      const itemNameHeight = itemNameLines.length * 4.5;
+      // Calculate height for item name
+      const itemNameLines = doc.splitTextToSize(fullItemText, doc.internal.pageSize.getWidth() - 28); // 14 margin left, 14 margin right
+      const itemNameHeight = itemNameLines.length * 4.5; // Approximate line height
 
-      const descriptionLines = doc.splitTextToSize(`   Description: ${item.description}`, doc.internal.pageSize.getWidth() - 32);
+      // Calculate height for description
+      const descriptionLines = doc.splitTextToSize(`   Description: ${item.description}`, doc.internal.pageSize.getWidth() - 32); // Indented description
       const descriptionHeight = descriptionLines.length * 4.5;
 
-      const totalItemHeight = itemNameHeight + descriptionHeight + 3;
+      const totalItemHeight = itemNameHeight + descriptionHeight + 3; // +3 for spacing
 
-      if (currentY + totalItemHeight > doc.internal.pageSize.getHeight() - 20) {
+      // Check if new page is needed
+      if (currentY + totalItemHeight > doc.internal.pageSize.getHeight() - 20) { // 20 for bottom margin
         startNewPage();
+        // Add continued title if needed
         doc.setFontSize(12);
         doc.setFont('helvetica', 'bold');
         doc.text("Document Checklist (Continued):", 14, currentY);
         currentY += 7;
       }
-
+      
+      // Add item name
       doc.text(itemNameLines, 14, currentY);
       currentY += itemNameHeight;
 
-      doc.text(descriptionLines, 14, currentY);
-      currentY += descriptionHeight + 3;
+      // Add description
+      doc.text(descriptionLines, 14, currentY); // Indent description slightly
+      currentY += descriptionHeight + 3; // Add some space after description
     });
 
+    // Notes section
     if (docChecklistResult.notes) {
       doc.setFontSize(12);
       doc.setFont('helvetica', 'bold');
@@ -334,8 +423,8 @@ export default function AiAssistantsPage() {
     <div className="space-y-12">
       <div ref={titleSectionRef} className={cn("transition-all duration-700 ease-out", isTitleSectionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
         <SectionTitle
-          title="AI-Powered & Rule-Based Assistants"
-          subtitle="Get personalized advice and checklists for your study abroad journey. Some features use AI, others use optimized logic."
+          title="Personalized Study Assistants"
+          subtitle="Get tailored advice and checklists for your study abroad journey. Powered by smart logic and expert knowledge."
         />
       </div>
 
@@ -346,7 +435,7 @@ export default function AiAssistantsPage() {
               <BookOpenText className="mr-2 h-5 w-5" /> English Test Advisor
             </TabsTrigger>
             <TabsTrigger value="document-checklist" className="py-2.5">
-              <ListChecks className="mr-2 h-5 w-5" /> Document Checklist (AI)
+              <ListChecks className="mr-2 h-5 w-5" /> Document Checklist
             </TabsTrigger>
           </TabsList>
 
@@ -361,7 +450,7 @@ export default function AiAssistantsPage() {
               )}>
                 <CardHeader>
                   <CardTitle className="font-headline text-primary flex items-center"><BookOpenText className="mr-2 h-6 w-6" />Find Your Ideal English Test</CardTitle>
-                  <CardDescription>Fill in your details below for a tailored recommendation (IELTS, PTE, TOEFL, Duolingo, etc.). This feature uses rule-based logic for cost efficiency.</CardDescription>
+                  <CardDescription>Fill in your details for a tailored recommendation (IELTS, PTE, TOEFL, Duolingo, etc.). This feature uses rule-based logic for cost efficiency.</CardDescription>
                 </CardHeader>
                 <Form {...englishTestForm}>
                   <form onSubmit={englishTestForm.handleSubmit(onEnglishTestSubmit)}>
@@ -553,8 +642,8 @@ export default function AiAssistantsPage() {
                   showDocChecklistResultsArea ? "md:col-span-1" : "max-w-2xl"
               )}>
                 <CardHeader>
-                  <CardTitle className="font-headline text-primary flex items-center"><ListChecks className="mr-2 h-6 w-6" />Generate Your Document Checklist (AI-Powered)</CardTitle>
-                  <CardDescription>Provide your details to receive a tailored document list. This feature uses AI.</CardDescription>
+                  <CardTitle className="font-headline text-primary flex items-center"><ListChecks className="mr-2 h-6 w-6" />Generate Your Document Checklist</CardTitle>
+                  <CardDescription>Provide your details to receive a tailored document list. This feature uses predefined checklists for efficiency.</CardDescription>
                 </CardHeader>
                 <Form {...docChecklistForm}>
                   <form onSubmit={docChecklistForm.handleSubmit(onDocChecklistSubmit)}>
@@ -579,11 +668,9 @@ export default function AiAssistantsPage() {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl><SelectTrigger><SelectValue placeholder="Select your education level" /></SelectTrigger></FormControl>
                               <SelectContent>
-                                <SelectItem value="High School Diploma or Equivalent (e.g., +2, A-Levels)">High School Diploma or Equivalent (e.g., +2, A-Levels)</SelectItem>
-                                <SelectItem value="Associate Degree">Associate Degree</SelectItem>
-                                <SelectItem value="Bachelor's Degree">Bachelor's Degree</SelectItem>
-                                <SelectItem value="Master's Degree">Master's Degree</SelectItem>
-                                <SelectItem value="Doctorate (PhD)">Doctorate (PhD)</SelectItem>
+                                {allEducationLevels.map(level => (
+                                  <SelectItem key={level} value={level}>{level}</SelectItem>
+                                ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -629,7 +716,7 @@ export default function AiAssistantsPage() {
                     <Info className="h-5 w-5 text-primary" />
                     <AlertTitle className="font-semibold text-primary">Important Disclaimer</AlertTitle>
                     <AlertDescription className="text-foreground/80">
-                      The checklist provided here includes commonly required documents. Additional documents may be necessary based on your specific academic profile, chosen institution, and personal circumstances. For a comprehensive and personalized document list, we highly recommend visiting our office or contacting us directly.
+                      The checklist provided here includes commonly required documents based on general criteria. Additional documents may be necessary based on your specific academic profile, chosen institution, and personal circumstances. For a comprehensive and personalized document list, we highly recommend visiting our office or contacting us directly.
                     </AlertDescription>
                   </Alert>
 
@@ -664,7 +751,7 @@ export default function AiAssistantsPage() {
                           <Info className="h-4 w-4" />
                           <AlertTitle>PDF Generation Note</AlertTitle>
                           <AlertDescription>
-                            Nepali names for documents are shown below for web view but will be excluded from the PDF. Other Nepali text in descriptions (if any) might not render correctly in the PDF due to font limitations. Ensure your logo is at `public/logo.png` for the PDF watermark.
+                            Nepali names for documents are shown below for web view but will be excluded from the PDF. Ensure your logo is at `public/logo.png` for the PDF watermark.
                           </AlertDescription>
                         </Alert>
                         <div className="overflow-x-auto">
@@ -687,7 +774,7 @@ export default function AiAssistantsPage() {
                                 ))
                               ) : (
                                 <TableRow>
-                                  <TableCell colSpan={3} className="text-center text-muted-foreground">No specific documents found for your criteria. This might be an error or a very unique case.</TableCell>
+                                  <TableCell colSpan={3} className="text-center text-muted-foreground">No specific documents found for your criteria. Please contact us for personalized advice.</TableCell>
                                 </TableRow>
                               )}
                             </TableBody>
@@ -711,5 +798,3 @@ export default function AiAssistantsPage() {
     </div>
   );
 }
-
-    
