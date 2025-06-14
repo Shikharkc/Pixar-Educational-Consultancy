@@ -96,7 +96,7 @@ export default function Header() {
     );
   };
 
-  const renderNavItems = (isMobile: boolean = false) => navItems.map((item: any) => { // Added any type for item to resolve subItems issue temporarily
+  const renderNavItems = (isMobile: boolean = false) => navItems.map((item: any) => { 
     if (item.subItems && item.label !== 'Country Guides') { 
       if (isMobile) {
         return (
@@ -105,7 +105,7 @@ export default function Header() {
               <item.icon className="h-5 w-5" />
               <span>{item.label}</span>
             </div>
-            {item.subItems.map((subItem: any) => ( // Added any type for subItem
+            {item.subItems.map((subItem: any) => ( 
                <Link key={subItem.href} href={subItem.href} passHref>
                 <Button variant="ghost" className="w-full justify-start flex items-center space-x-2 text-foreground hover:bg-accent hover:text-accent-foreground pl-8 py-2.5" onClick={() => setIsMobileMenuOpen(false)}>
                   <subItem.icon className="h-5 w-5" />
