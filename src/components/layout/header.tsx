@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Home, Info, Briefcase, MapPin, GraduationCap, Mail, ChevronDown, Menu, Wand2, HelpCircle } from 'lucide-react';
+import { Home, Info, Briefcase, MapPin, GraduationCap, Mail, ChevronDown, Menu, Wand2, HelpCircle, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,8 +19,14 @@ const navItems = [
   { href: '/about', label: 'About Us', icon: Info },
   { href: '/services', label: 'Services', icon: Briefcase },
   { href: '/country-guides', label: 'Country Guides', icon: MapPin },
-  { href: '/ai-assistants', label: 'Smart Tools', icon: Wand2 },
-  { href: '/book-appointment', label: 'English Test Guide', icon: HelpCircle },
+  { 
+    label: 'Student Hub', 
+    icon: Sparkles,
+    subItems: [
+      { href: '/ai-assistants', label: 'Smart Tools', icon: Wand2 },
+      { href: '/book-appointment', label: 'English Test Guide', icon: HelpCircle },
+    ],
+  },
   { href: '/contact', label: 'Contact Us', icon: Mail },
 ];
 
@@ -97,7 +103,7 @@ export default function Header() {
   };
 
   const renderNavItems = (isMobile: boolean = false) => navItems.map((item: any) => { 
-    if (item.subItems && item.label !== 'Country Guides') { 
+    if (item.subItems) { 
       if (isMobile) {
         return (
           <div key={item.label} className="flex flex-col w-full">
