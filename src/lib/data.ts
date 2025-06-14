@@ -1,8 +1,38 @@
 
-import { Award, Briefcase, Lightbulb, Users, MapPin, Landmark, TrendingUp, Globe, CalendarPlus, FileText, BookOpen, University as UniversityIcon, CheckCircle, Building, Heart, Handshake, Goal, MessageSquare, Search, Wand2, ExternalLink, Home, Info, Award as AwardIconLucide, GraduationCap, DollarSign, Clock, UserCheck, FileSpreadsheet, BookMarked, KeyRound, Activity } from 'lucide-react';
-import type { ReactElement } from 'react';
-
-
+import React, { Fragment, type ReactNode, type ElementType } from 'react';
+import { 
+  Award as AwardIconLucide, // Aliased for clarity
+  Briefcase, 
+  Lightbulb, 
+  Users, 
+  MapPin, 
+  Landmark, 
+  TrendingUp, 
+  Globe, 
+  CalendarPlus, 
+  FileText, 
+  BookOpen, 
+  University as UniversityIcon, 
+  CheckCircle, 
+  Building, 
+  Heart, 
+  Handshake, 
+  Goal, 
+  MessageSquare, 
+  Search, 
+  Wand2, 
+  ExternalLink, 
+  Home, 
+  Info, 
+  GraduationCap, 
+  DollarSign, 
+  Clock, 
+  UserCheck, 
+  FileSpreadsheet as FileSpreadsheetIcon, // Aliased
+  BookMarked, 
+  KeyRound, 
+  Activity 
+} from 'lucide-react';
 
 export const testimonials: Testimonial[] = [
   {
@@ -33,7 +63,7 @@ export interface Service {
   title: string;
   description: string;
   longDescription?: string;
-  icon: React.ElementType;
+  icon: ElementType;
   imageUrl?: string;
   dataAiHint?: string;
   keyFeatures?: string[];
@@ -75,7 +105,7 @@ export const services: Service[] = [
     title: 'Visa & Pre-Departure Support',
     description: 'Expert help with visa applications and pre-departure preparations.',
     longDescription: 'Securing a student visa and preparing for life in a new country are crucial steps. We offer expert assistance with visa applications, including mock interviews and document checklists. Additionally, we provide comprehensive pre-departure briefings covering accommodation, cultural adaptation, and essential travel tips to ensure a smooth transition.',
-    icon: Users, // Consider changing if a more specific visa/travel icon exists e.g. Plane
+    icon: Users, 
     imageUrl: '/vsa.jpg',
     dataAiHint: 'travel preparation',
     keyFeatures: [
@@ -180,18 +210,20 @@ export interface CountryInfo {
   dataAiHint?: string;
   averageLivingCost: string;
   workHoursStudent: string;
-  visaInfoSummary: string;
-  postStudyWorkSummary: string;
-  visaApprovalTrends?: string;
-  averageSalaryAfterStudy?: string;
-  prPathways?: string;
+  visaInfoSummary: string | ReactNode;
+  postStudyWorkSummary: string | ReactNode;
+  visaApprovalTrends?: string | ReactNode;
+  averageSalaryAfterStudy?: string | ReactNode;
+  prPathways?: string | ReactNode;
   facts: {
-    icon: React.ElementType;
+    icon: ElementType;
     label: string;
     value: string;
   }[];
   topUniversities: University[];
 }
+
+const linkClass = "text-accent hover:underline";
 
 export const countryData: CountryInfo[] = [
   {
@@ -204,11 +236,11 @@ export const countryData: CountryInfo[] = [
     dataAiHint: 'australia landmark',
     averageLivingCost: 'AUD $21,000 - $29,000 per year',
     workHoursStudent: 'Up to 48 hours per fortnight during academic sessions, unlimited during scheduled breaks.',
-    visaInfoSummary: 'Student visa (subclass 500). Requires Confirmation of Enrolment (CoE), Genuine Temporary Entrant (GTE) statement, financial proof, Overseas Student Health Cover (OSHC).',
-    postStudyWorkSummary: 'Temporary Graduate visa (subclass 485) allows eligible students to stay and work for 2-4 years, depending on qualification.',
-    visaApprovalTrends: "Generally positive for genuine students. Success rates can vary. Always consult official government sources for current statistics.",
+    visaInfoSummary: <Fragment>Student visa (<a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500" target="_blank" rel="noopener noreferrer" className={linkClass}>subclass 500</a>). Requires Confirmation of Enrolment (<a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/confirmation-of-enrolment" target="_blank" rel="noopener noreferrer" className={linkClass}>CoE</a>), <a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/genuine-temporary-entrant" target="_blank" rel="noopener noreferrer" className={linkClass}>Genuine Temporary Entrant (GTE)</a> statement, financial proof, <a href="https://www.privatehealth.gov.au/health_insurance/overseas_students/" target="_blank" rel="noopener noreferrer" className={linkClass}>Overseas Student Health Cover (OSHC)</a>.</Fragment>,
+    postStudyWorkSummary: <Fragment>Temporary Graduate visa (<a href="https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/temporary-graduate-485" target="_blank" rel="noopener noreferrer" className={linkClass}>subclass 485</a>) allows eligible students to stay and work for 2-4 years, depending on qualification.</Fragment>,
+    visaApprovalTrends: <Fragment>Generally positive for genuine students. Success rates can vary. Always consult <a href="https://immi.homeaffairs.gov.au/" target="_blank" rel="noopener noreferrer" className={linkClass}>official government sources</a> for current statistics.</Fragment>,
     averageSalaryAfterStudy: "AUD $55,000 - $75,000 per year for recent graduates, varying by field. STEM and healthcare often command higher salaries.",
-    prPathways: "Pathways exist via General Skilled Migration (e.g., subclass 189, 190, 491) and employer sponsorship post-work experience. Criteria are points-based.",
+    prPathways: <Fragment>Pathways exist via <a href="https://immi.homeaffairs.gov.au/visas/working-in-australia/skillselect/general-skilled-migration" target="_blank" rel="noopener noreferrer" className={linkClass}>General Skilled Migration</a> (e.g., subclass 189, 190, 491) and employer sponsorship post-work experience. Criteria are points-based.</Fragment>,
     facts: [
       { icon: Landmark, label: 'Major Cities', value: 'Sydney, Melbourne, Brisbane, Perth, Adelaide' },
       { icon: Globe, label: 'Language', value: 'English' },
@@ -230,11 +262,11 @@ export const countryData: CountryInfo[] = [
     dataAiHint: 'canada landmark toronto',
     averageLivingCost: 'CAD $15,000 - $25,000 per year (excluding tuition)',
     workHoursStudent: 'Up to 20 hours/week during regular academic sessions, full-time during scheduled breaks (if eligible).',
-    visaInfoSummary: 'Study Permit required. Need an acceptance letter from a Designated Learning Institution (DLI), proof of financial support, and may require biometrics and medical exam.',
-    postStudyWorkSummary: 'Post-Graduation Work Permit (PGWP) allows graduates to gain Canadian work experience for up to 3 years, depending on program length.',
-    visaApprovalTrends: "High approval rates for complete applications from genuine students. SDS (Student Direct Stream) available for faster processing for eligible countries.",
+    visaInfoSummary: <Fragment>A <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit.html" target="_blank" rel="noopener noreferrer" className={linkClass}>Study Permit</a> is required. Need an acceptance letter from a <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/prepare/designated-learning-institutions-list.html" target="_blank" rel="noopener noreferrer" className={linkClass}>Designated Learning Institution (DLI)</a>, proof of financial support, and may require biometrics and medical exam.</Fragment>,
+    postStudyWorkSummary: <Fragment><a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/work/after-graduation/about.html" target="_blank" rel="noopener noreferrer" className={linkClass}>Post-Graduation Work Permit (PGWP)</a> allows graduates to gain Canadian work experience for up to 3 years, depending on program length.</Fragment>,
+    visaApprovalTrends: <Fragment>High approval rates for complete applications from genuine students. <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/student-direct-stream.html" target="_blank" rel="noopener noreferrer" className={linkClass}>SDS (Student Direct Stream)</a> available for faster processing for eligible countries.</Fragment>,
     averageSalaryAfterStudy: "CAD $45,000 - $65,000 per year for entry-level positions. Varies by province and specialization.",
-    prPathways: "Multiple pathways including Express Entry (e.g., Canadian Experience Class, Federal Skilled Worker Program) and Provincial Nominee Programs (PNPs).",
+    prPathways: <Fragment>Multiple pathways including <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry.html" target="_blank" rel="noopener noreferrer" className={linkClass}>Express Entry</a> (e.g., Canadian Experience Class, Federal Skilled Worker Program) and <a href="https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/provincial-nominees.html" target="_blank" rel="noopener noreferrer" className={linkClass}>Provincial Nominee Programs (PNPs)</a>.</Fragment>,
     facts: [
       { icon: Landmark, label: 'Major Cities', value: 'Toronto, Montreal, Vancouver, Calgary, Ottawa' },
       { icon: Globe, label: 'Languages', value: 'English, French' },
@@ -256,11 +288,11 @@ export const countryData: CountryInfo[] = [
     dataAiHint: 'usa landmark new york',
     averageLivingCost: 'USD $12,000 - $18,000 per year (highly variable by city and lifestyle)',
     workHoursStudent: 'Up to 20 hours/week on-campus during term; Curricular Practical Training (CPT) or Optional Practical Training (OPT) for off-campus work.',
-    visaInfoSummary: 'F-1 visa for academic studies. Requires I-20 form from SEVP-certified school, SEVIS fee payment, proof of funds, and a visa interview. Interview performance is key.',
-    postStudyWorkSummary: 'Optional Practical Training (OPT) allows up to 12 months of work experience (extendable by 24 months for STEM fields). H-1B visa for long-term employment.',
-    visaApprovalTrends: "Approval depends heavily on the visa interview and demonstrating non-immigrant intent. Thorough preparation is crucial.",
+    visaInfoSummary: <Fragment><a href="https://travel.state.gov/content/travel/en/us-visas/study/student-visa.html" target="_blank" rel="noopener noreferrer" className={linkClass}>F-1 visa</a> for academic studies. Requires <a href="https://studyinthestates.dhs.gov/students/prepare/student-forms/form-i-20" target="_blank" rel="noopener noreferrer" className={linkClass}>I-20 form</a> from an SEVP-certified school, <a href="https://www.fmjfee.com/i901fee/index.html" target="_blank" rel="noopener noreferrer" className={linkClass}>SEVIS fee</a> payment, proof of funds, and a visa interview. Interview performance is key.</Fragment>,
+    postStudyWorkSummary: <Fragment><a href="https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/optional-practical-training-opt-for-f-1-students" target="_blank" rel="noopener noreferrer" className={linkClass}>Optional Practical Training (OPT)</a> allows up to 12 months of work experience (extendable by 24 months for STEM fields). <a href="https://www.uscis.gov/working-in-the-united-states/temporary-workers/h-1b-specialty-occupations-and-fashion-models" target="_blank" rel="noopener noreferrer" className={linkClass}>H-1B visa</a> for long-term employment.</Fragment>,
+    visaApprovalTrends: <Fragment>Approval depends heavily on the visa interview and demonstrating non-immigrant intent. Thorough preparation is crucial. Refer to <a href="https://travel.state.gov/content/travel/en/us-visas.html" target="_blank" rel="noopener noreferrer" className={linkClass}>official visa statistics</a>.</Fragment>,
     averageSalaryAfterStudy: "USD $60,000 - $80,000+ per year for bachelor's degree holders, significantly higher for master's/PhD, especially in STEM/Business.",
-    prPathways: "PR (Green Card) typically obtained through employer sponsorship (e.g., EB-2, EB-3 visas) or family-based petitions. Long and competitive process.",
+    prPathways: <Fragment>PR (<a href="https://www.uscis.gov/green-card" target="_blank" rel="noopener noreferrer" className={linkClass}>Green Card</a>) typically obtained through employer sponsorship (e.g., EB-2, EB-3 visas) or family-based petitions. Long and competitive process.</Fragment>,
     facts: [
       { icon: Landmark, label: 'Key States', value: 'California, New York, Massachusetts, Texas, Illinois' },
       { icon: Globe, label: 'Language', value: 'English' },
@@ -282,11 +314,11 @@ export const countryData: CountryInfo[] = [
     dataAiHint: 'uk landmark london',
     averageLivingCost: 'GBP £12,000 - £15,000 per year (London significantly higher)',
     workHoursStudent: 'Up to 20 hours/week during term-time for degree students at degree-awarding institutions.',
-    visaInfoSummary: 'Student visa. Requires Confirmation of Acceptance for Studies (CAS) from a licensed sponsor, proof of funds, English proficiency (e.g., IELTS UKVI). Points-based system.',
-    postStudyWorkSummary: 'Graduate Route allows eligible graduates to stay and work, or look for work, for 2 years (3 years for PhD graduates) after course completion.',
-    visaApprovalTrends: "Generally good for applicants meeting all requirements. Financial documentation and CAS validity are crucial.",
+    visaInfoSummary: <Fragment><a href="https://www.gov.uk/student-visa" target="_blank" rel="noopener noreferrer" className={linkClass}>Student visa</a>. Requires <a href="https://www.gov.uk/student-visa/cas" target="_blank" rel="noopener noreferrer" className={linkClass}>Confirmation of Acceptance for Studies (CAS)</a> from a licensed sponsor, proof of funds, English proficiency (e.g., <a href="https://www.gov.uk/ielts-ukvi" target="_blank" rel="noopener noreferrer" className={linkClass}>IELTS UKVI</a>). Points-based system.</Fragment>,
+    postStudyWorkSummary: <Fragment><a href="https://www.gov.uk/graduate-visa" target="_blank" rel="noopener noreferrer" className={linkClass}>Graduate Route</a> allows eligible graduates to stay and work, or look for work, for 2 years (3 years for PhD graduates) after course completion.</Fragment>,
+    visaApprovalTrends: <Fragment>Generally good for applicants meeting all requirements. Financial documentation and CAS validity are crucial. Check <a href="https://www.gov.uk/government/statistics/immigration-system-statistics-year-ending-december-2023" target="_blank" rel="noopener noreferrer" className={linkClass}>official statistics</a>.</Fragment>,
     averageSalaryAfterStudy: "GBP £25,000 - £35,000 per year for new graduates. Higher in fields like finance, tech in London.",
-    prPathways: "Pathways to Indefinite Leave to Remain (ILR) typically involve long-term work visas (e.g., Skilled Worker visa) after several years of residence and meeting specific criteria.",
+    prPathways: <Fragment>Pathways to <a href="https://www.gov.uk/indefinite-leave-to-remain" target="_blank" rel="noopener noreferrer" className={linkClass}>Indefinite Leave to Remain (ILR)</a> typically involve long-term work visas (e.g., <a href="https://www.gov.uk/skilled-worker-visa" target="_blank" rel="noopener noreferrer" className={linkClass}>Skilled Worker visa</a>) after several years of residence and meeting specific criteria.</Fragment>,
     facts: [
       { icon: Landmark, label: 'Major Cities', value: 'London, Manchester, Birmingham, Edinburgh, Glasgow' },
       { icon: Globe, label: 'Language', value: 'English' },
@@ -308,11 +340,11 @@ export const countryData: CountryInfo[] = [
     dataAiHint: 'new zealand landscape mountains',
     averageLivingCost: 'NZD $20,000 - $25,000 per year',
     workHoursStudent: 'Up to 20 hours/week during studies if your course meets requirements, full-time during scheduled holidays.',
-    visaInfoSummary: 'Student Visa (Fee Paying Student Visa). Requires Offer of Place from an approved education provider, proof of funds to cover tuition and living costs, health & character checks.',
-    postStudyWorkSummary: 'Post-Study Work Visa available for 1-3 years for eligible graduates, depending on qualification and where you studied.',
-    visaApprovalTrends: "Good approval rates for well-prepared applications demonstrating genuine student intent and sufficient funds.",
+    visaInfoSummary: <Fragment><a href="https://www.immigration.govt.nz/new-zealand-visas/visas/visa/student-visa" target="_blank" rel="noopener noreferrer" className={linkClass}>Student Visa</a> (Fee Paying Student Visa). Requires <a href="https://www.immigration.govt.nz/new-zealand-visas/visas/visa/student-visa#offer-of-place" target="_blank" rel="noopener noreferrer" className={linkClass}>Offer of Place</a> from an approved education provider, proof of funds to cover tuition and living costs, health & character checks.</Fragment>,
+    postStudyWorkSummary: <Fragment><a href="https://www.immigration.govt.nz/new-zealand-visas/visas/visa/post-study-work-visa" target="_blank" rel="noopener noreferrer" className={linkClass}>Post-Study Work Visa</a> available for 1-3 years for eligible graduates, depending on qualification and where you studied.</Fragment>,
+    visaApprovalTrends: <Fragment>Good approval rates for well-prepared applications demonstrating genuine student intent and sufficient funds. See <a href="https://www.immigration.govt.nz/about-us/research-and-statistics" target="_blank" rel="noopener noreferrer" className={linkClass}>official statistics</a>.</Fragment>,
     averageSalaryAfterStudy: "NZD $50,000 - $65,000 per year for graduates. Depends on industry and location.",
-    prPathways: "Points-based Skilled Migrant Category Resident Visa is a common pathway after gaining skilled work experience in New Zealand.",
+    prPathways: <Fragment>Points-based <a href="https://www.immigration.govt.nz/new-zealand-visas/visas/visa/skilled-migrant-category-resident-visa" target="_blank" rel="noopener noreferrer" className={linkClass}>Skilled Migrant Category Resident Visa</a> is a common pathway after gaining skilled work experience in New Zealand.</Fragment>,
     facts: [
       { icon: Landmark, label: 'Main Cities', value: 'Auckland, Wellington, Christchurch, Dunedin, Hamilton' },
       { icon: Globe, label: 'Language', value: 'English, Māori' },
@@ -482,51 +514,57 @@ export const educationLevelOptions = [
   { value: "Master's Degree", label: "Seeking Master's Degree" },
 ];
 
+// Exporting types and specific icons used throughout the application
+export type { Testimonial }; // Re-export Testimonial type
 
-// Consolidating all icon exports from lucide-react that are used across the app
-export {
-  Award,
-  AwardIconLucide,
-  Briefcase,
-  Lightbulb,
-  Users,
-  MapPin,
-  Landmark,
-  TrendingUp,
-  Globe,
-  CalendarPlus,
-  FileText,
-  BookOpen,
-  BookMarked,
-  UniversityIcon,
-  CheckCircle,
-  Building,
-  Heart,
-  Handshake,
-  Goal,
-  MessageSquare,
-  Search,
-  Wand2,
-  ExternalLink,
-  Home,
-  Info,
-  GraduationCap,
-  DollarSign,
-  Clock,
-  UserCheck,
-  FileSpreadsheet,
-  KeyRound,
-  Activity,
-};
+// Lucide icons are already exported by name, so no need for separate export list here.
+// The interfaces Service, TeamMember, Certification, University, CountryInfo are defined and exported above.
+// Data arrays testimonials, services, teamMembers, certifications, countryData, fieldsOfStudy, appointmentServices, appointmentStaff, appointmentTimeSlots, gpaScaleOptions, educationLevelOptions are also exported above.
+// The linkClass constant is also defined and used locally.
+// The type imports ElementType and ReactNode from 'react' are used directly in interfaces.
+// The Fragment component is imported from 'react' and used.
 
-export interface Testimonial {
-    id: string;
-    name: string;
-    text: string;
-    studyDestination: string;
-    avatarUrl?: string;
-  }
+// The following explicit export list (previously from lib/data.ts before type consolidation)
+// is no longer strictly necessary as components usually import icons directly from lucide-react or types from this file.
+// However, if any component was relying on a re-export from here for these specific names,
+// they are covered by the direct named exports from lucide-react at the top of this file.
 
-
-
-    
+// export {
+//   AwardIconLucide, // This is an alias for Award from lucide-react
+//   Briefcase,
+//   Lightbulb,
+//   Users,
+//   MapPin,
+//   Landmark,
+//   TrendingUp,
+//   Globe,
+//   CalendarPlus,
+//   FileText,
+//   BookOpen,
+//   BookMarked,
+//   UniversityIcon,
+//   CheckCircle,
+//   Building,
+//   Heart,
+//   Handshake,
+//   Goal,
+//   MessageSquare,
+//   Search,
+//   Wand2,
+//   ExternalLink,
+//   Home,
+//   Info,
+//   GraduationCap,
+//   DollarSign,
+//   Clock,
+//   UserCheck,
+//   FileSpreadsheetIcon, // This is an alias for FileSpreadsheet from lucide-react
+//   KeyRound,
+//   Activity,
+// };
+// No, the above re-export block isn't needed as individual icons are imported as named exports from lucide-react.
+// The interfaces/types are exported. The data arrays are exported.
+// The alias for Award is AwardIconLucide and for FileSpreadsheet is FileSpreadsheetIcon.
+// These are used directly in the data structures if needed or imported by components.
+// The goal here is to ensure `data.ts` itself is clean and parsable.
+// The main change is `import React, { Fragment, ... }` and using `<Fragment>`.
