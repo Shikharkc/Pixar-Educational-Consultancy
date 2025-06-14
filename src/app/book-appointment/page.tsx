@@ -211,15 +211,17 @@ export default function EnglishTestGuidePage() {
   const currentFromTestDetails = testOptionsForConverter.find(t => t.value === fromTest);
 
   useEffect(() => {
-    // Reset score and results if fromTest changes
-    setInputScore('');
-    setConvertedScoreResult(null);
-    setConversionError(null);
-    // If the new fromTest is the same as toTest, reset toTest
-    if (fromTest && fromTest === toTest) {
+    // This effect should run when 'fromTest' changes, to clear relevant fields.
+    setInputScore(''); // Clear score because its scale/rules might have changed
+    setConvertedScoreResult(null); // Clear previous results
+    setConversionError(null); // Clear previous errors
+
+    // If 'fromTest' changes and it happens to be the same as 'toTest',
+    // then 'toTest' should be cleared because a test cannot be converted to itself.
+    if (fromTest && toTest === fromTest) {
       setToTest('');
     }
-  }, [fromTest, toTest]);
+  }, [fromTest]);
 
 
   const handleConvertScore = () => {
@@ -233,7 +235,7 @@ export default function EnglishTestGuidePage() {
 
     const selectedFromTestDetails = testOptionsForConverter.find(t => t.value === fromTest);
     if (!selectedFromTestDetails) {
-      setConversionError("Invalid 'Test Taken' selected."); // Should not happen if UI is correct
+      setConversionError("Invalid 'Test Taken' selected.");
       return;
     }
 
@@ -242,19 +244,20 @@ export default function EnglishTestGuidePage() {
       setConversionError(`Score for ${selectedFromTestDetails.label} must be between ${selectedFromTestDetails.scale.min} and ${selectedFromTestDetails.scale.max}.`);
       return;
     }
-    // Validate step for specific tests
-    if (fromTest === 'ielts' && scoreValue % selectedFromTestDetails.scale.step !== 0) {
-        setConversionError(`IELTS score must be in increments of ${selectedFromTestDetails.scale.step} (e.g., 6.0, 6.5).`);
-        return;
-    }
-    if (fromTest === 'duolingo' && scoreValue % selectedFromTestDetails.scale.step !== 0) {
-        setConversionError(`Duolingo score must be in increments of ${selectedFromTestDetails.scale.step} (e.g., 110, 115).`);
-        return;
+    
+    if (selectedFromTestDetails.scale.step && scoreValue % selectedFromTestDetails.scale.step !== 0) {
+       if (fromTest === 'ielts') {
+           setConversionError(`IELTS score must be in increments of ${selectedFromTestDetails.scale.step} (e.g., 6.0, 6.5).`);
+           return;
+       }
+       if (fromTest === 'duolingo') {
+            setConversionError(`Duolingo score must be in increments of ${selectedFromTestDetails.scale.step} (e.g., 110, 115).`);
+            return;
+       }
     }
 
 
     if (fromTest === toTest) {
-      // This case should ideally be prevented by disabling the option in the dropdown
       setConvertedScoreResult(`Equivalent ${selectedFromTestDetails.label} score: ${scoreValue}`);
       return;
     }
@@ -265,7 +268,6 @@ export default function EnglishTestGuidePage() {
       const toTestLabel = testOptionsForConverter.find(t => t.value === toTest)?.label || toTest;
       setConvertedScoreResult(`Approx. equivalent ${toTestLabel} score: ${result}`);
     } else {
-      // This case should also be rare if all defined tests have conversion paths
       setConvertedScoreResult("Direct conversion for this pair is not commonly provided or N/A.");
     }
   };
@@ -374,7 +376,12 @@ export default function EnglishTestGuidePage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                   <div>
                     <Label htmlFor="fromTest" className="text-sm font-medium text-foreground/90">Test Taken</Label>
-                    <Select value={fromTest} onValueChange={setFromTest}>
+                    <Select value={fromTest} onValueChange={(value) => {
+                        setFromTest(value);
+                        // InputScore is cleared by useEffect based on fromTest
+                        // ConvertedScoreResult & error cleared by useEffect based on fromTest
+                        // if (value && value === toTest) setToTest(''); // This handled by useEffect too
+                    }}>
                       <SelectTrigger id="fromTest" className="w-full mt-1">
                         <SelectValue placeholder="Select your test" />
                       </SelectTrigger>
@@ -390,9 +397,13 @@ export default function EnglishTestGuidePage() {
                     <Input 
                       id="inputScore" 
                       type="number" 
-                      placeholder={currentFromTestDetails?.placeholder || "e.g., 7.0 or 95"}
+                      placeholder={currentFromTestDetails?.placeholder || "Select test first"}
                       value={inputScore}
-                      onChange={(e) => setInputScore(e.target.value)}
+                      onChange={(e) => {
+                        setInputScore(e.target.value);
+                        setConvertedScoreResult(null); // Clear results on score change
+                        setConversionError(null);
+                      }}
                       className="mt-1"
                       disabled={!fromTest} 
                       min={currentFromTestDetails?.scale.min}
@@ -403,7 +414,15 @@ export default function EnglishTestGuidePage() {
                 </div>
                 <div>
                   <Label htmlFor="toTest" className="text-sm font-medium text-foreground/90">Convert To Test</Label>
-                  <Select value={toTest} onValueChange={setToTest} disabled={!fromTest}>
+                  <Select 
+                    value={toTest} 
+                    onValueChange={(value) => {
+                        setToTest(value);
+                        setConvertedScoreResult(null); // Clear results on toTest change
+                        setConversionError(null);
+                    }} 
+                    disabled={!fromTest}
+                  >
                     <SelectTrigger id="toTest" className="w-full mt-1">
                       <SelectValue placeholder="Select target test" />
                     </SelectTrigger>
@@ -416,7 +435,11 @@ export default function EnglishTestGuidePage() {
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleConvertScore} className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={!fromTest || !toTest || !inputScore}>
+                <Button 
+                    onClick={handleConvertScore} 
+                    className="w-full bg-primary text-primary-foreground hover:bg-primary/90" 
+                    disabled={!fromTest || !toTest || !inputScore}
+                >
                   <ReplaceIcon className="mr-2 h-4 w-4" /> Convert Score
                 </Button>
 
@@ -456,3 +479,4 @@ export default function EnglishTestGuidePage() {
     </div>
   );
 }
+
