@@ -336,7 +336,7 @@ export default function FAQPage() {
         />
       </section>
 
-      <div className="max-w-4xl mx-auto space-y-10">
+      <div className="max-w-6xl mx-auto space-y-10 md:grid md:grid-cols-2 md:gap-x-12 md:gap-y-10 md:space-y-0">
         {faqData.map((category, categoryIndex) => {
           const [categoryRef, isCategoryVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.05 });
           return (
