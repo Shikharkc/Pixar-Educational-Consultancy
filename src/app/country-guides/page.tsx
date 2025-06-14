@@ -13,7 +13,7 @@ import { countryData } from '@/lib/data';
 import type { CountryInfo, University } from '@/lib/data';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
-import { ExternalLink, DollarSign, Clock, FileSpreadsheet, UserCheck, Briefcase, GitCompareArrows } from 'lucide-react';
+import { ExternalLink, DollarSign, Clock, FileSpreadsheet, UserCheck, Briefcase, GitCompareArrows, TrendingUp, KeyRound, Activity } from 'lucide-react';
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -38,13 +38,24 @@ export default function CountryGuidesPage() {
       </div>
     </div>
   );
+  
+  const KeyInfoItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string | undefined }) => (
+    <div className="flex items-start space-x-3 p-3 bg-secondary/30 rounded-md">
+      <Icon className="h-6 w-6 text-accent mt-1 flex-shrink-0" />
+      <div>
+        <h4 className="font-semibold">{label}</h4>
+        <p>{value || 'Information not available'}</p>
+      </div>
+    </div>
+  );
+
 
   return (
     <div className="space-y-12 md:space-y-16">
       <section ref={titleSectionRef} className={cn("transition-all duration-700 ease-out", isTitleSectionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
         <SectionTitle
           title="Explore Study Destinations"
-          subtitle="Discover detailed guides for popular countries, including living costs, work opportunities, and top universities. You can also compare countries side-by-side."
+          subtitle="Discover detailed guides for popular countries, including living costs, work opportunities, top universities, visa trends, salary expectations, and PR pathways. You can also compare countries side-by-side."
         />
       </section>
 
@@ -96,34 +107,13 @@ export default function CountryGuidesPage() {
                   <CardTitle className="font-headline text-primary">Key Information for Students</CardTitle>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-6 text-foreground/80">
-                  <div className="flex items-start space-x-3 p-3 bg-secondary/30 rounded-md">
-                    <DollarSign className="h-6 w-6 text-accent mt-1 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold">Average Living Cost</h4>
-                      <p>{countryInfo.averageLivingCost}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3 p-3 bg-secondary/30 rounded-md">
-                    <Clock className="h-6 w-6 text-accent mt-1 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold">Work Hours (Students)</h4>
-                      <p>{countryInfo.workHoursStudent}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3 p-3 bg-secondary/30 rounded-md md:col-span-1">
-                    <FileSpreadsheet className="h-6 w-6 text-accent mt-1 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold">Visa Info Summary</h4>
-                      <p>{countryInfo.visaInfoSummary}</p>
-                    </div>
-                  </div>
-                   <div className="flex items-start space-x-3 p-3 bg-secondary/30 rounded-md md:col-span-1">
-                    <UserCheck className="h-6 w-6 text-accent mt-1 flex-shrink-0" />
-                    <div>
-                      <h4 className="font-semibold">Post-Study Work Options</h4>
-                      <p>{countryInfo.postStudyWorkSummary}</p>
-                    </div>
-                  </div>
+                  <KeyInfoItem icon={DollarSign} label="Average Living Cost" value={countryInfo.averageLivingCost} />
+                  <KeyInfoItem icon={Clock} label="Work Hours (Students)" value={countryInfo.workHoursStudent} />
+                  <KeyInfoItem icon={FileSpreadsheet} label="Visa Info Summary" value={countryInfo.visaInfoSummary} />
+                  <KeyInfoItem icon={UserCheck} label="Post-Study Work Options" value={countryInfo.postStudyWorkSummary} />
+                  <KeyInfoItem icon={TrendingUp} label="Visa Approval Trends" value={countryInfo.visaApprovalTrends} />
+                  <KeyInfoItem icon={DollarSign} label="Average Salary After Study" value={countryInfo.averageSalaryAfterStudy} />
+                  <KeyInfoItem icon={KeyRound} label="PR Pathways" value={countryInfo.prPathways} />
                 </CardContent>
               </Card>
 
@@ -251,6 +241,9 @@ export default function CountryGuidesPage() {
                       <ComparisonDetailItem icon={Clock} label="Work Hours (Students)" value={country.workHoursStudent} />
                       <ComparisonDetailItem icon={FileSpreadsheet} label="Visa Info Summary" value={country.visaInfoSummary} />
                       <ComparisonDetailItem icon={UserCheck} label="Post-Study Work Options" value={country.postStudyWorkSummary} />
+                      <ComparisonDetailItem icon={TrendingUp} label="Visa Approval Trends" value={country.visaApprovalTrends} />
+                      <ComparisonDetailItem icon={DollarSign} label="Avg. Salary After Study" value={country.averageSalaryAfterStudy} />
+                      <ComparisonDetailItem icon={KeyRound} label="PR Pathways" value={country.prPathways} />
                        <div className="pt-2">
                         <h5 className="font-semibold text-sm text-primary mb-1">Key Facts:</h5>
                         <ul className="list-disc list-inside pl-2 space-y-1 text-left">
@@ -296,3 +289,6 @@ export default function CountryGuidesPage() {
     </div>
   );
 }
+
+
+    

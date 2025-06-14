@@ -1,5 +1,5 @@
 
-import { Award, Briefcase, Lightbulb, Users, MapPin, Landmark, TrendingUp, Globe, CalendarPlus, FileText, BookOpen, University as UniversityIcon, CheckCircle, Building, Heart, Handshake, Goal, MessageSquare, Search, Wand2, ExternalLink, Home, Info, Award as AwardIconLucide, GraduationCap, DollarSign, Clock, UserCheck, FileSpreadsheet, BookMarked } from 'lucide-react';
+import { Award, Briefcase, Lightbulb, Users, MapPin, Landmark, TrendingUp, Globe, CalendarPlus, FileText, BookOpen, University as UniversityIcon, CheckCircle, Building, Heart, Handshake, Goal, MessageSquare, Search, Wand2, ExternalLink, Home, Info, Award as AwardIconLucide, GraduationCap, DollarSign, Clock, UserCheck, FileSpreadsheet, BookMarked, KeyRound, Activity } from 'lucide-react';
 import type { ReactElement } from 'react';
 
 
@@ -182,6 +182,9 @@ export interface CountryInfo {
   workHoursStudent: string;
   visaInfoSummary: string;
   postStudyWorkSummary: string;
+  visaApprovalTrends?: string;
+  averageSalaryAfterStudy?: string;
+  prPathways?: string;
   facts: {
     icon: React.ElementType;
     label: string;
@@ -203,6 +206,9 @@ export const countryData: CountryInfo[] = [
     workHoursStudent: 'Up to 48 hours per fortnight during academic sessions, unlimited during scheduled breaks.',
     visaInfoSummary: 'Student visa (subclass 500). Requires Confirmation of Enrolment (CoE), Genuine Temporary Entrant (GTE) statement, financial proof, Overseas Student Health Cover (OSHC).',
     postStudyWorkSummary: 'Temporary Graduate visa (subclass 485) allows eligible students to stay and work for 2-4 years, depending on qualification.',
+    visaApprovalTrends: "Generally positive for genuine students. Success rates can vary. Always consult official government sources for current statistics.",
+    averageSalaryAfterStudy: "AUD $55,000 - $75,000 per year for recent graduates, varying by field. STEM and healthcare often command higher salaries.",
+    prPathways: "Pathways exist via General Skilled Migration (e.g., subclass 189, 190, 491) and employer sponsorship post-work experience. Criteria are points-based.",
     facts: [
       { icon: Landmark, label: 'Major Cities', value: 'Sydney, Melbourne, Brisbane, Perth, Adelaide' },
       { icon: Globe, label: 'Language', value: 'English' },
@@ -226,6 +232,9 @@ export const countryData: CountryInfo[] = [
     workHoursStudent: 'Up to 20 hours/week during regular academic sessions, full-time during scheduled breaks (if eligible).',
     visaInfoSummary: 'Study Permit required. Need an acceptance letter from a Designated Learning Institution (DLI), proof of financial support, and may require biometrics and medical exam.',
     postStudyWorkSummary: 'Post-Graduation Work Permit (PGWP) allows graduates to gain Canadian work experience for up to 3 years, depending on program length.',
+    visaApprovalTrends: "High approval rates for complete applications from genuine students. SDS (Student Direct Stream) available for faster processing for eligible countries.",
+    averageSalaryAfterStudy: "CAD $45,000 - $65,000 per year for entry-level positions. Varies by province and specialization.",
+    prPathways: "Multiple pathways including Express Entry (e.g., Canadian Experience Class, Federal Skilled Worker Program) and Provincial Nominee Programs (PNPs).",
     facts: [
       { icon: Landmark, label: 'Major Cities', value: 'Toronto, Montreal, Vancouver, Calgary, Ottawa' },
       { icon: Globe, label: 'Languages', value: 'English, French' },
@@ -247,8 +256,11 @@ export const countryData: CountryInfo[] = [
     dataAiHint: 'usa landmark new york',
     averageLivingCost: 'USD $12,000 - $18,000 per year (highly variable by city and lifestyle)',
     workHoursStudent: 'Up to 20 hours/week on-campus during term; Curricular Practical Training (CPT) or Optional Practical Training (OPT) for off-campus work.',
-    visaInfoSummary: 'F-1 visa for academic studies. Requires I-20 form from SEVP-certified school, SEVIS fee payment, proof of funds, and a visa interview.',
+    visaInfoSummary: 'F-1 visa for academic studies. Requires I-20 form from SEVP-certified school, SEVIS fee payment, proof of funds, and a visa interview. Interview performance is key.',
     postStudyWorkSummary: 'Optional Practical Training (OPT) allows up to 12 months of work experience (extendable by 24 months for STEM fields). H-1B visa for long-term employment.',
+    visaApprovalTrends: "Approval depends heavily on the visa interview and demonstrating non-immigrant intent. Thorough preparation is crucial.",
+    averageSalaryAfterStudy: "USD $60,000 - $80,000+ per year for bachelor's degree holders, significantly higher for master's/PhD, especially in STEM/Business.",
+    prPathways: "PR (Green Card) typically obtained through employer sponsorship (e.g., EB-2, EB-3 visas) or family-based petitions. Long and competitive process.",
     facts: [
       { icon: Landmark, label: 'Key States', value: 'California, New York, Massachusetts, Texas, Illinois' },
       { icon: Globe, label: 'Language', value: 'English' },
@@ -270,8 +282,11 @@ export const countryData: CountryInfo[] = [
     dataAiHint: 'uk landmark london',
     averageLivingCost: 'GBP £12,000 - £15,000 per year (London significantly higher)',
     workHoursStudent: 'Up to 20 hours/week during term-time for degree students at degree-awarding institutions.',
-    visaInfoSummary: 'Student visa. Requires Confirmation of Acceptance for Studies (CAS) from a licensed sponsor, proof of funds, English proficiency (e.g., IELTS UKVI).',
+    visaInfoSummary: 'Student visa. Requires Confirmation of Acceptance for Studies (CAS) from a licensed sponsor, proof of funds, English proficiency (e.g., IELTS UKVI). Points-based system.',
     postStudyWorkSummary: 'Graduate Route allows eligible graduates to stay and work, or look for work, for 2 years (3 years for PhD graduates) after course completion.',
+    visaApprovalTrends: "Generally good for applicants meeting all requirements. Financial documentation and CAS validity are crucial.",
+    averageSalaryAfterStudy: "GBP £25,000 - £35,000 per year for new graduates. Higher in fields like finance, tech in London.",
+    prPathways: "Pathways to Indefinite Leave to Remain (ILR) typically involve long-term work visas (e.g., Skilled Worker visa) after several years of residence and meeting specific criteria.",
     facts: [
       { icon: Landmark, label: 'Major Cities', value: 'London, Manchester, Birmingham, Edinburgh, Glasgow' },
       { icon: Globe, label: 'Language', value: 'English' },
@@ -295,6 +310,9 @@ export const countryData: CountryInfo[] = [
     workHoursStudent: 'Up to 20 hours/week during studies if your course meets requirements, full-time during scheduled holidays.',
     visaInfoSummary: 'Student Visa (Fee Paying Student Visa). Requires Offer of Place from an approved education provider, proof of funds to cover tuition and living costs, health & character checks.',
     postStudyWorkSummary: 'Post-Study Work Visa available for 1-3 years for eligible graduates, depending on qualification and where you studied.',
+    visaApprovalTrends: "Good approval rates for well-prepared applications demonstrating genuine student intent and sufficient funds.",
+    averageSalaryAfterStudy: "NZD $50,000 - $65,000 per year for graduates. Depends on industry and location.",
+    prPathways: "Points-based Skilled Migrant Category Resident Visa is a common pathway after gaining skilled work experience in New Zealand.",
     facts: [
       { icon: Landmark, label: 'Main Cities', value: 'Auckland, Wellington, Christchurch, Dunedin, Hamilton' },
       { icon: Globe, label: 'Language', value: 'English, Māori' },
@@ -497,6 +515,8 @@ export {
   Clock,
   UserCheck,
   FileSpreadsheet,
+  KeyRound,
+  Activity,
 };
 
 export interface Testimonial {
@@ -507,3 +527,6 @@ export interface Testimonial {
     avatarUrl?: string;
   }
 
+
+
+    
