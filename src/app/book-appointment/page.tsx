@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import SectionTitle from '@/components/ui/section-title';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -109,10 +109,10 @@ const testStructures = [
 
 // Score Converter Data and Logic
 const testOptionsForConverter = [
-  { value: 'ielts', label: 'IELTS Academic', scale: { min: 0, max: 9, step: 0.5 } },
-  { value: 'toefl', label: 'TOEFL iBT', scale: { min: 0, max: 120, step: 1 } },
-  { value: 'pte', label: 'PTE Academic', scale: { min: 10, max: 90, step: 1 } },
-  { value: 'duolingo', label: 'Duolingo English Test', scale: { min: 10, max: 160, step: 5 } },
+  { value: 'ielts', label: 'IELTS Academic', scale: { min: 0, max: 9, step: 0.5 }, placeholder: "e.g., 7.0" },
+  { value: 'toefl', label: 'TOEFL iBT', scale: { min: 0, max: 120, step: 1 }, placeholder: "e.g., 95" },
+  { value: 'pte', label: 'PTE Academic', scale: { min: 10, max: 90, step: 1 }, placeholder: "e.g., 65" },
+  { value: 'duolingo', label: 'Duolingo English Test', scale: { min: 10, max: 160, step: 5 }, placeholder: "e.g., 120" },
 ];
 
 // Simplified, approximate conversion ranges.
@@ -207,6 +207,20 @@ export default function EnglishTestGuidePage() {
   const [toTest, setToTest] = useState('');
   const [convertedScoreResult, setConvertedScoreResult] = useState<string | null>(null);
   const [conversionError, setConversionError] = useState<string | null>(null);
+  
+  const currentFromTestDetails = testOptionsForConverter.find(t => t.value === fromTest);
+
+  useEffect(() => {
+    // Reset score and results if fromTest changes
+    setInputScore('');
+    setConvertedScoreResult(null);
+    setConversionError(null);
+    // If the new fromTest is the same as toTest, reset toTest
+    if (fromTest && fromTest === toTest) {
+      setToTest('');
+    }
+  }, [fromTest, toTest]);
+
 
   const handleConvertScore = () => {
     setConversionError(null);
@@ -219,7 +233,7 @@ export default function EnglishTestGuidePage() {
 
     const selectedFromTestDetails = testOptionsForConverter.find(t => t.value === fromTest);
     if (!selectedFromTestDetails) {
-      setConversionError("Invalid 'Test Taken' selected.");
+      setConversionError("Invalid 'Test Taken' selected."); // Should not happen if UI is correct
       return;
     }
 
@@ -228,19 +242,19 @@ export default function EnglishTestGuidePage() {
       setConversionError(`Score for ${selectedFromTestDetails.label} must be between ${selectedFromTestDetails.scale.min} and ${selectedFromTestDetails.scale.max}.`);
       return;
     }
-    // Validate step for IELTS
-    if (fromTest === 'ielts' && scoreValue % 0.5 !== 0) {
-        setConversionError(`IELTS score must be in increments of 0.5 (e.g., 6.0, 6.5).`);
+    // Validate step for specific tests
+    if (fromTest === 'ielts' && scoreValue % selectedFromTestDetails.scale.step !== 0) {
+        setConversionError(`IELTS score must be in increments of ${selectedFromTestDetails.scale.step} (e.g., 6.0, 6.5).`);
         return;
     }
-    // Validate step for Duolingo
-    if (fromTest === 'duolingo' && scoreValue % 5 !== 0) {
-        setConversionError(`Duolingo score must be in increments of 5 (e.g., 110, 115).`);
+    if (fromTest === 'duolingo' && scoreValue % selectedFromTestDetails.scale.step !== 0) {
+        setConversionError(`Duolingo score must be in increments of ${selectedFromTestDetails.scale.step} (e.g., 110, 115).`);
         return;
     }
 
 
     if (fromTest === toTest) {
+      // This case should ideally be prevented by disabling the option in the dropdown
       setConvertedScoreResult(`Equivalent ${selectedFromTestDetails.label} score: ${scoreValue}`);
       return;
     }
@@ -251,8 +265,8 @@ export default function EnglishTestGuidePage() {
       const toTestLabel = testOptionsForConverter.find(t => t.value === toTest)?.label || toTest;
       setConvertedScoreResult(`Approx. equivalent ${toTestLabel} score: ${result}`);
     } else {
-      setConvertedScoreResult("Direct conversion for this pair is not commonly provided. Results may be less precise or N/A.");
-      // Try indirect conversion if possible (e.g. From -> IELTS -> To) - more complex, for future enhancement
+      // This case should also be rare if all defined tests have conversion paths
+      setConvertedScoreResult("Direct conversion for this pair is not commonly provided or N/A.");
     }
   };
 
@@ -359,17 +373,6 @@ export default function EnglishTestGuidePage() {
               <CardContent className="p-6 space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end">
                   <div>
-                    <Label htmlFor="inputScore" className="text-sm font-medium text-foreground/90">Your Score</Label>
-                    <Input 
-                      id="inputScore" 
-                      type="number" 
-                      placeholder="e.g., 7.0 or 95" 
-                      value={inputScore}
-                      onChange={(e) => setInputScore(e.target.value)}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
                     <Label htmlFor="fromTest" className="text-sm font-medium text-foreground/90">Test Taken</Label>
                     <Select value={fromTest} onValueChange={setFromTest}>
                       <SelectTrigger id="fromTest" className="w-full mt-1">
@@ -382,21 +385,38 @@ export default function EnglishTestGuidePage() {
                       </SelectContent>
                     </Select>
                   </div>
+                  <div>
+                    <Label htmlFor="inputScore" className="text-sm font-medium text-foreground/90">Your Score</Label>
+                    <Input 
+                      id="inputScore" 
+                      type="number" 
+                      placeholder={currentFromTestDetails?.placeholder || "e.g., 7.0 or 95"}
+                      value={inputScore}
+                      onChange={(e) => setInputScore(e.target.value)}
+                      className="mt-1"
+                      disabled={!fromTest} 
+                      min={currentFromTestDetails?.scale.min}
+                      max={currentFromTestDetails?.scale.max}
+                      step={currentFromTestDetails?.scale.step}
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="toTest" className="text-sm font-medium text-foreground/90">Convert To Test</Label>
-                  <Select value={toTest} onValueChange={setToTest}>
+                  <Select value={toTest} onValueChange={setToTest} disabled={!fromTest}>
                     <SelectTrigger id="toTest" className="w-full mt-1">
                       <SelectValue placeholder="Select target test" />
                     </SelectTrigger>
                     <SelectContent>
                       {testOptionsForConverter.map(opt => (
-                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                        <SelectItem key={opt.value} value={opt.value} disabled={opt.value === fromTest}>
+                          {opt.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <Button onClick={handleConvertScore} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                <Button onClick={handleConvertScore} className="w-full bg-primary text-primary-foreground hover:bg-primary/90" disabled={!fromTest || !toTest || !inputScore}>
                   <ReplaceIcon className="mr-2 h-4 w-4" /> Convert Score
                 </Button>
 
@@ -436,5 +456,3 @@ export default function EnglishTestGuidePage() {
     </div>
   );
 }
-
-    
