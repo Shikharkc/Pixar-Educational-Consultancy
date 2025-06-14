@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Home, Info, Briefcase, MapPin, GraduationCap, Mail, ChevronDown, Menu, Wand2, HelpCircle, Sparkles, Share2 } from 'lucide-react'; // Added Share2
+import { Home, Info, Briefcase, MapPin, GraduationCap, Mail, ChevronDown, Menu, Wand2, HelpCircle, Sparkles, Share2, CheckSquare } from 'lucide-react'; // Added CheckSquare
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -25,9 +25,10 @@ const navItems = [
     subItems: [
       { href: '/ai-assistants', label: 'Smart Tools', icon: Wand2 },
       { href: '/book-appointment', label: 'English Test Guide', icon: HelpCircle },
+      { href: '/pre-departure-toolkit', label: 'Pre-Departure Toolkit', icon: CheckSquare }, // New link
     ],
   },
-  { href: '/connect', label: 'Connect', icon: Share2 }, // New "Connect" item
+  { href: '/connect', label: 'Connect', icon: Share2 },
   { href: '/contact', label: 'Contact Us', icon: Mail },
 ];
 

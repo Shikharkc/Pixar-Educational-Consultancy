@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { GraduationCap, Mail, Phone, MapPin, ShieldCheck, FileText } from 'lucide-react';
+import { GraduationCap, Mail, Phone, MapPin, ShieldCheck, FileText, CheckSquare } from 'lucide-react'; // Added CheckSquare
 
 export default function Footer() {
   return (
@@ -25,8 +25,9 @@ export default function Footer() {
               <li><Link href="/about" className="hover:text-accent transition-colors">About Us</Link></li>
               <li><Link href="/services" className="hover:text-accent transition-colors">Services</Link></li>
               <li><Link href="/country-guides" className="hover:text-accent transition-colors">Country Guides</Link></li>
-              <li><Link href="/ai-assistants" className="hover:text-accent transition-colors">Student Hub</Link></li>
+              <li><Link href="/ai-assistants" className="hover:text-accent transition-colors">Student Hub (Smart Tools)</Link></li>
               <li><Link href="/book-appointment" className="hover:text-accent transition-colors">English Test Guide</Link></li>
+              <li><Link href="/pre-departure-toolkit" className="flex items-center space-x-1 hover:text-accent transition-colors"><CheckSquare className="h-4 w-4 flex-shrink-0" /><span>Pre-Departure Toolkit</span></Link></li> {/* New link */}
               <li><Link href="/faq" className="hover:text-accent transition-colors">FAQ</Link></li>
             </ul>
           </div>
