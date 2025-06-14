@@ -141,7 +141,7 @@ const testComparisonData = [
 ];
 
 
-export default function AiAssistantsPage() {
+export default function SmartToolsPage() {
   // State for English Test Advisor
   const [isEnglishTestLoading, setIsEnglishTestLoading] = useState(false);
   const [englishTestError, setEnglishTestError] = useState<string | null>(null);
@@ -423,8 +423,8 @@ export default function AiAssistantsPage() {
     <div className="space-y-12">
       <div ref={titleSectionRef} className={cn("transition-all duration-700 ease-out", isTitleSectionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
         <SectionTitle
-          title="Personalized Study Assistants"
-          subtitle="Get tailored advice and checklists for your study abroad journey. Powered by smart logic and expert knowledge."
+          title="Smart Study Tools"
+          subtitle="Get tailored advice and checklists for your study abroad journey. Powered by our advanced database and smart logic."
         />
       </div>
 
@@ -798,3 +798,4 @@ export default function AiAssistantsPage() {
     </div>
   );
 }
+

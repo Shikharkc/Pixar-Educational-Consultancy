@@ -18,8 +18,8 @@ const navItems = [
   { href: '/', label: 'Home', icon: Home },
   { href: '/about', label: 'About Us', icon: Info },
   { href: '/services', label: 'Services', icon: Briefcase },
-  { href: '/country-guides', label: 'Country Guides', icon: MapPin }, // Changed from dropdown to direct link
-  { href: '/ai-assistants', label: 'AI Assistants', icon: Wand2 },
+  { href: '/country-guides', label: 'Country Guides', icon: MapPin },
+  { href: '/ai-assistants', label: 'Smart Tools', icon: Wand2 },
   { href: '/book-appointment', label: 'English Test Guide', icon: HelpCircle },
   { href: '/contact', label: 'Contact Us', icon: Mail },
 ];
@@ -96,11 +96,8 @@ export default function Header() {
     );
   };
 
-  const renderNavItems = (isMobile: boolean = false) => navItems.map((item) => {
-    // The Country Guides item is no longer a dropdown, so we don't need special handling for it here.
-    // If any other items were dropdowns, the logic would remain.
-    // For simplicity, assuming only Country Guides was a dropdown previously.
-    if (item.subItems && item.label !== 'Country Guides') { // Check if it's a dropdown and NOT Country Guides
+  const renderNavItems = (isMobile: boolean = false) => navItems.map((item: any) => { // Added any type for item to resolve subItems issue temporarily
+    if (item.subItems && item.label !== 'Country Guides') { 
       if (isMobile) {
         return (
           <div key={item.label} className="flex flex-col w-full">
@@ -108,7 +105,7 @@ export default function Header() {
               <item.icon className="h-5 w-5" />
               <span>{item.label}</span>
             </div>
-            {item.subItems.map(subItem => (
+            {item.subItems.map((subItem: any) => ( // Added any type for subItem
                <Link key={subItem.href} href={subItem.href} passHref>
                 <Button variant="ghost" className="w-full justify-start flex items-center space-x-2 text-foreground hover:bg-accent hover:text-accent-foreground pl-8 py-2.5" onClick={() => setIsMobileMenuOpen(false)}>
                   <subItem.icon className="h-5 w-5" />
@@ -155,5 +152,4 @@ export default function Header() {
     </header>
   );
 }
-
     

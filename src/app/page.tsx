@@ -260,14 +260,14 @@ export default function HomePage() {
           </div>
           <h1
             className={cn(
-              "text-4xl md:text-5xl font-headline font-bold text-primary-foreground mb-6 min-h-[5rem] md:min-h-[6rem] flex items-center justify-center", // Added min-h classes and flex for vertical centering if text is short
+              "text-4xl md:text-5xl font-headline font-bold text-primary-foreground mb-6 min-h-[5rem] md:min-h-[6rem] flex items-center justify-center", 
               "transition-transform ease-out duration-700 delay-100",
               heroAnimated ? "translate-y-0" : "translate-y-10 opacity-0",
               "transition-opacity ease-in-out"
             )}
             style={{ transitionDuration: `${FADE_DURATION_MS}ms`, opacity: isTaglineVisible && heroAnimated ? 1 : 0 }}
           >
-            <span>{currentTaglineText}</span> {/* Wrapped text in a span for better flex control if needed */}
+            <span>{currentTaglineText}</span>
           </h1>
           <p
             className={`text-lg md:text-xl text-primary-foreground/90 max-w-3xl mx-auto mb-10 transition-all ease-out duration-700 delay-200 ${
@@ -286,7 +286,7 @@ export default function HomePage() {
               <Link href="/services">Explore Services <ArrowRight className="ml-2 h-5 w-5" /></Link>
             </Button>
             <Button size="lg" variant="outline" asChild className="w-full sm:w-auto border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 shadow-lg bg-accent text-accent-foreground hover:bg-accent/90">
-              <Link href="/ai-assistants">Use our AI Assistants <Wand2 className="ml-2 h-5 w-5" /></Link>
+              <Link href="/ai-assistants">Use our Smart Tools <Wand2 className="ml-2 h-5 w-5" /></Link>
             </Button>
           </div>
         </div>
