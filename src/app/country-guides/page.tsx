@@ -9,8 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { countryData } from '@/lib/data';
-import type { CountryInfo, University } from '@/lib/data';
+import { countryData } from '@/lib/data.tsx';
+import type { CountryInfo, University } from '@/lib/data.tsx';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
 import { ExternalLink, DollarSign, Clock, FileSpreadsheet, UserCheck, Briefcase, GitCompareArrows, TrendingUp, KeyRound, Activity } from 'lucide-react';
@@ -29,22 +29,22 @@ export default function CountryGuidesPage() {
   const selectedCountry1Data = selectedCountry1Slug ? countryData.find(c => c.slug === selectedCountry1Slug) : null;
   const selectedCountry2Data = selectedCountry2Slug ? countryData.find(c => c.slug === selectedCountry2Slug) : null;
 
-  const ComparisonDetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string | undefined }) => (
+  const ComparisonDetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string | React.ReactNode | undefined }) => (
     <div className="flex items-start space-x-3 p-2 bg-background/50 rounded-md">
       <Icon className="h-5 w-5 text-accent mt-0.5 flex-shrink-0" />
       <div>
         <h5 className="font-semibold text-sm text-primary">{label}</h5>
-        <p className="text-xs text-foreground/80">{value || 'N/A'}</p>
+        {typeof value === 'string' ? <p className="text-xs text-foreground/80">{value || 'N/A'}</p> : <div className="text-xs text-foreground/80">{value || 'N/A'}</div>}
       </div>
     </div>
   );
   
-  const KeyInfoItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string | undefined }) => (
+  const KeyInfoItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string | React.ReactNode | undefined }) => (
     <div className="flex items-start space-x-3 p-3 bg-secondary/30 rounded-md">
       <Icon className="h-6 w-6 text-accent mt-1 flex-shrink-0" />
       <div>
         <h4 className="font-semibold">{label}</h4>
-        <p>{value || 'Information not available'}</p>
+        {typeof value === 'string' ? <p>{value || 'Information not available'}</p> : <div>{value || 'Information not available'}</div>}
       </div>
     </div>
   );

@@ -4,8 +4,8 @@ import Image from 'next/image';
 import SectionTitle from '@/components/ui/section-title';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Target, Users, Award, CheckCircle, Building, Heart, Handshake, Goal, Lightbulb } from 'lucide-react';
-import { teamMembers, certifications } from '@/lib/data';
-import type { TeamMember, Certification } from '@/lib/data';
+import { teamMembers, certifications } from '@/lib/data.tsx';
+import type { TeamMember, Certification } from '@/lib/data.tsx';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
 

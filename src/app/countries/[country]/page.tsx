@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { ExternalLink } from 'lucide-react';
-import { countryData } from '@/lib/data';
-import type { CountryInfo, University } from '@/lib/data';
+import { countryData } from '@/lib/data.tsx';
+import type { CountryInfo, University } from '@/lib/data.tsx';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
 import React from 'react'; // Import React

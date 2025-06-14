@@ -6,9 +6,9 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import SectionTitle from '@/components/ui/section-title';
-import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info as InfoIcon, Search, ExternalLink, Wand2, Briefcase, DollarSign, ClipboardCheck, CalendarDays } from 'lucide-react';
-import { testimonials, services, fieldsOfStudy, gpaScaleOptions, educationLevelOptions, AwardIconLucide as AwardIconFromData, UniversityIcon } from '@/lib/data';
-import type { Testimonial, Service } from '@/lib/data';
+import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info as InfoIcon, Search, ExternalLink, Wand2, Briefcase, DollarSign, ClipboardCheck, CalendarDays, Award as AwardIconFromData } from 'lucide-react';
+import { testimonials, services, fieldsOfStudy, gpaScaleOptions, educationLevelOptions } from '@/lib/data.tsx';
+import type { Testimonial, Service } from '@/lib/data.tsx';
 import { useState, useEffect, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -212,7 +212,7 @@ export default function HomePage() {
               name="targetEducationLevel"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex items-center"><UniversityIcon className="mr-2 h-4 w-4 text-accent"/>Target Education Level</FormLabel>
+                  <FormLabel className="flex items-center"><UniversityIconLucide className="mr-2 h-4 w-4 text-accent"/>Target Education Level</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl><SelectTrigger><SelectValue placeholder="Select target level" /></SelectTrigger></FormControl>
                     <SelectContent>
@@ -260,7 +260,7 @@ export default function HomePage() {
           </div>
           <h1
             className={cn(
-              "text-4xl md:text-5xl font-headline font-bold text-primary-foreground mb-6 h-[5rem] md:min-h-[6rem] flex items-center justify-center", // Changed min-h-[5rem] to h-[5rem]
+              "text-4xl md:text-5xl font-headline font-bold text-primary-foreground mb-6 h-[5rem] md:min-h-[6rem] flex items-center justify-center", 
               "transition-transform ease-out duration-700 delay-100",
               heroAnimated ? "translate-y-0" : "translate-y-10 opacity-0",
               "transition-opacity ease-in-out"
