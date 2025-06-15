@@ -2,7 +2,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Home, Info, Briefcase, MapPin, GraduationCap, Mail, ChevronDown, Menu, Wand2, HelpCircle, Sparkles, Share2, CheckSquare } from 'lucide-react'; // Added CheckSquare
+import { Home, Info, Briefcase, MapPin, GraduationCap, Mail, ChevronDown, Menu, Wand2, HelpCircle, Sparkles, Share2, CheckSquare, MessageCircleQuestion } from 'lucide-react'; // Added MessageCircleQuestion
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -24,8 +24,9 @@ const navItems = [
     icon: Sparkles,
     subItems: [
       { href: '/ai-assistants', label: 'Smart Tools', icon: Wand2 },
-      { href: '/book-appointment', label: 'English Test Guide', icon: HelpCircle },
-      { href: '/pre-departure-toolkit', label: 'Pre-Departure Toolkit', icon: CheckSquare }, // New link
+      { href: '/book-appointment', label: 'English Test Guide', icon: HelpCircle }, // This was English Test Guide
+      { href: '/pre-departure-toolkit', label: 'Pre-Departure Toolkit', icon: CheckSquare },
+      { href: '/interview-qa', label: 'Interview Q&A', icon: MessageCircleQuestion }, // New Interview Q&A link
     ],
   },
   { href: '/connect', label: 'Connect', icon: Share2 },
@@ -160,4 +161,6 @@ export default function Header() {
     </header>
   );
 }
+    
+
     
