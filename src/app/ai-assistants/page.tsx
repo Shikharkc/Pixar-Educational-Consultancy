@@ -24,8 +24,11 @@ import { cn } from '@/lib/utils';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { allEducationLevels, sopCountries } from '@/lib/data.tsx'; 
 
-import { generateSop, type SopGeneratorInput, type SopGeneratorOutput } from '@/ai/flows/sop-generator-flow';
-import { SopGeneratorInputSchema } from '@/ai/schemas/sop-schemas'; // Updated import
+// Removed AI flow import for SOP
+// import { generateSop, type SopGeneratorInput as AISopInput, type SopGeneratorOutput as AISopOutput } from '@/ai/flows/sop-generator-flow';
+// import { SopGeneratorInputSchema as AISopInputSchema } from '@/ai/schemas/sop-schemas'; 
+
+import { generateSopFromTemplate } from '@/lib/sop-templates'; // New import for template-based SOP
 
 import { Loader2, Sparkles, Info, FileText, Download, AlertCircle, ListChecks, User, FilePenLine, Copy as CopyIcon } from 'lucide-react';
 
@@ -110,14 +113,34 @@ const selectableCountries = [ // This list is for the Document Checklist
 ];
 
 // SOP Generator Schemas and Types
-type SopFormValues = z.infer<typeof SopGeneratorInputSchema>;
+// Input schema can remain similar
+export const SopGeneratorInputSchema = z.object({
+  fullName: z.string().min(2, "Full name must be at least 2 characters.").max(100, "Full name is too long.").describe("The student's full name."),
+  targetCountry: z.string().min(1, "Please select a target country.").describe("The country where the student wishes to study."),
+  targetEducationLevel: z.string().min(1, "Please select the target education level.").describe("The level of education the student is applying for (e.g., Bachelor's Degree, Master's Degree)."),
+  fieldOfStudy: z.string().min(2, "Field of study must be at least 2 characters.").max(100, "Field of study is too long.").describe("The student's desired field of study."),
+  academicBackground: z.string().min(50, "Academic background must be at least 50 characters.").max(2000, "Academic background is too long, maximum 2000 characters.").describe("Details of past education, relevant subjects, grades/GPA, key projects, and academic achievements."),
+  extracurricularsWorkExperience: z.string().min(20, "Please provide some details, minimum 20 characters.").max(2000, "Extracurriculars/Work experience is too long, maximum 2000 characters.").optional().describe("Relevant work experience, internships, volunteer work, leadership roles, and significant extracurricular activities."),
+  whyThisProgram: z.string().min(50, "Reasons for choosing this program must be at least 50 characters.").max(1500, "Reasons for this program are too long, maximum 1500 characters.").describe("Reasons for choosing this specific program and university (mention specific aspects if known)."),
+  whyThisCountry: z.string().min(50, "Reasons for choosing this country must be at least 50 characters.").max(1500, "Reasons for this country are too long, maximum 1500 characters.").describe("Reasons for choosing this particular country for studies."),
+  futureGoals: z.string().min(50, "Future goals must be at least 50 characters.").max(1500, "Future goals are too long, maximum 1500 characters.").describe("Short-term and long-term career aspirations and how this program/country will help achieve them."),
+  additionalPoints: z.string().max(1000, "Additional points are too long, maximum 1000 characters.").optional().describe("Any other specific information or points the student wants to include in the SOP."),
+  tone: z.enum(["Formal", "Slightly Informal", "Enthusiastic", "Objective"]).default("Formal").describe("The desired tone of the SOP."),
+});
+
+export type SopGeneratorInput = z.infer<typeof SopGeneratorInputSchema>; // Renamed for clarity
+
+// Output type simplifies as there's no AI feedback
+interface SopGeneratorOutput {
+  sopText: string;
+}
 
 
 export default function SmartToolsPage() {
   const { toast } = useToast();
 
   // State for SOP Generator
-  const [isSopLoading, setIsSopLoading] = useState(false);
+  const [isSopLoading, setIsSopLoading] = useState(false); // Will be very brief now
   const [sopError, setSopError] = useState<string | null>(null);
   const [sopResult, setSopResult] = useState<SopGeneratorOutput | null>(null);
   const [showSopResultsArea, setShowSopResultsArea] = useState(false);
@@ -135,7 +158,7 @@ export default function SmartToolsPage() {
   const [titleSectionRef, isTitleSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true });
   const [tabsRef, isTabsVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.05 });
 
-  const sopForm = useForm<SopFormValues>({
+  const sopForm = useForm<SopGeneratorInput>({ // Using renamed SopGeneratorInput
     resolver: zodResolver(SopGeneratorInputSchema),
     defaultValues: {
       fullName: '',
@@ -148,7 +171,7 @@ export default function SmartToolsPage() {
       whyThisCountry: '',
       futureGoals: '',
       additionalPoints: '',
-      tone: 'Formal',
+      tone: 'Formal', // 'tone' might not be used by basic templates, but can be kept for future template enhancements
     },
   });
 
@@ -161,7 +184,7 @@ export default function SmartToolsPage() {
     },
   });
 
-  async function onSopSubmit(values: SopFormValues) {
+  async function onSopSubmit(values: SopGeneratorInput) {
     setSopResult(null);
     setSopError(null);
 
@@ -171,14 +194,15 @@ export default function SmartToolsPage() {
           setSopResultsAnimatedIn(true);
       });
     }
-    setIsSopLoading(true);
+    setIsSopLoading(true); // Briefly set to true for consistency, though generation is client-side
 
     try {
-      const aiResult = await generateSop(values);
-      setSopResult(aiResult);
+      // Call the template-based generator
+      const generatedText = generateSopFromTemplate(values);
+      setSopResult({ sopText: generatedText });
     } catch (e) {
       setSopError(e instanceof Error ? e.message : 'An unexpected error occurred while generating the SOP.');
-      console.error("SOP Generation Error:", e);
+      console.error("SOP Template Generation Error:", e);
     } finally {
       setIsSopLoading(false);
     }
@@ -209,7 +233,7 @@ export default function SmartToolsPage() {
         });
     }
     setIsDocChecklistLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 500)); // Simulating slight delay
     try {
       const ruleBasedResult = getRuleBasedDocumentChecklist({
         educationLevel: values.educationLevel,
@@ -351,7 +375,7 @@ export default function SmartToolsPage() {
       <div ref={titleSectionRef} className={cn("transition-all duration-700 ease-out", isTitleSectionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
         <SectionTitle
           title="Smart Study Tools"
-          subtitle="Utilize our AI-powered assistants and checklists for your study abroad journey."
+          subtitle="Utilize our SOP template generator and document checklists for your study abroad journey."
         />
       </div>
 
@@ -377,7 +401,7 @@ export default function SmartToolsPage() {
               )}>
                 <CardHeader>
                   <CardTitle className="font-headline text-primary flex items-center"><FilePenLine className="mr-2 h-6 w-6" />Craft Your Statement of Purpose</CardTitle>
-                  <CardDescription>Fill in your details, and our AI will help draft a compelling SOP for your university application.</CardDescription>
+                  <CardDescription>Fill in your details, and our tool will help draft an SOP based on common templates for your university application.</CardDescription>
                 </CardHeader>
                 <Form {...sopForm}>
                   <form onSubmit={sopForm.handleSubmit(onSopSubmit)}>
@@ -422,10 +446,10 @@ export default function SmartToolsPage() {
                         <FormItem><FormLabel>Future Goals & Career Aspirations</FormLabel><FormControl><Textarea placeholder="Describe your short-term and long-term career goals and how this program and study in this country will help you achieve them..." rows={4} {...field} /></FormControl><FormMessage /></FormItem>
                       )}/>
                       <FormField control={sopForm.control} name="additionalPoints" render={({ field }) => (
-                        <FormItem><FormLabel>Other Specific Points to Include (Optional)</FormLabel><FormControl><Textarea placeholder="Any other specific information or points you want the AI to consider for your SOP..." rows={3} {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Other Specific Points to Include (Optional)</FormLabel><FormControl><Textarea placeholder="Any other specific information or points you want the tool to consider for your SOP..." rows={3} {...field} /></FormControl><FormMessage /></FormItem>
                       )}/>
                        <FormField control={sopForm.control} name="tone" render={({ field }) => (
-                            <FormItem><FormLabel>Desired Tone</FormLabel>
+                            <FormItem><FormLabel>Desired Tone (informational, templates may vary)</FormLabel>
                               <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Select tone" /></SelectTrigger></FormControl>
                                 <SelectContent>
@@ -450,15 +474,15 @@ export default function SmartToolsPage() {
 
               {showSopResultsArea && (
                 <div className={cn(
-                    "w-full md:col-span-1 space-y-6", // Adjusted for SOP side-by-side
+                    "w-full md:col-span-1 space-y-6", 
                     "transition-all duration-700 ease-out",
                     sopResultsAnimatedIn ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10 pointer-events-none"
                 )}>
-                  {isSopLoading && (
+                  {isSopLoading && ( // This will be very brief
                     <Card className="shadow-xl bg-card">
                       <CardContent className="p-10 text-center">
                         <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto mb-4" />
-                        <p className="text-muted-foreground">Generating your SOP draft... This may take a moment.</p>
+                        <p className="text-muted-foreground">Generating your SOP draft...</p>
                       </CardContent>
                     </Card>
                   )}
@@ -473,8 +497,8 @@ export default function SmartToolsPage() {
                     <Card className="shadow-xl bg-gradient-to-br from-accent/10 to-background">
                       <CardHeader className="flex flex-row justify-between items-center">
                         <div>
-                          <CardTitle className="font-headline text-accent flex items-center"><Sparkles className="mr-2 h-6 w-6" /> Your AI-Generated SOP Draft</CardTitle>
-                           <CardDescription>Review, edit, and personalize this draft. This is a starting point.</CardDescription>
+                          <CardTitle className="font-headline text-accent flex items-center"><Sparkles className="mr-2 h-6 w-6" /> Your Template-Based SOP Draft</CardTitle>
+                           <CardDescription>Review, edit, and extensively personalize this draft. This is a starting point based on common structures.</CardDescription>
                         </div>
                         <Button onClick={handleCopySop} variant="outline" size="sm">
                           <CopyIcon className="mr-2 h-4 w-4" /> Copy SOP
@@ -487,18 +511,12 @@ export default function SmartToolsPage() {
                           readOnly
                           className="w-full h-96 text-sm bg-background/70 resize-none" 
                         />
-                        {sopResult.feedback && (
-                           <Alert variant="default" className="bg-secondary/50 border-secondary">
-                             <Info className="h-4 w-4" />
-                             <AlertTitle className="font-semibold">AI Feedback & Suggestions</AlertTitle>
-                             <AlertDescription>{sopResult.feedback}</AlertDescription>
-                           </Alert>
-                        )}
+                        {/* Removed AI feedback section */}
                         <Alert>
                             <Info className="h-4 w-4" />
                             <AlertTitle className="font-semibold">Important Note</AlertTitle>
                             <AlertDescription>
-                                This AI-generated SOP is a draft to assist you. It is crucial to thoroughly review, personalize, and edit it to ensure it accurately reflects your voice, experiences, and aspirations. Do not submit it without significant personalization. Consult our advisors for expert review.
+                                This SOP is generated from a template based on your inputs. It is crucial to thoroughly review, personalize, and edit it to ensure it accurately reflects your unique voice, experiences, and aspirations. Do not submit it without significant personalization. Consult our advisors for expert review.
                             </AlertDescription>
                         </Alert>
                          <div className="pt-4 text-center">
@@ -553,7 +571,7 @@ export default function SmartToolsPage() {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl><SelectTrigger><SelectValue placeholder="Select your education level" /></SelectTrigger></FormControl>
                               <SelectContent>
-                                {allEducationLevels.map(level => ( // Using allEducationLevels from data.tsx
+                                {allEducationLevels.map(level => ( 
                                   <SelectItem key={level.value} value={level.value}>{level.name}</SelectItem>
                                 ))}
                               </SelectContent>
@@ -571,7 +589,7 @@ export default function SmartToolsPage() {
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl><SelectTrigger><SelectValue placeholder="Select a country" /></SelectTrigger></FormControl>
                               <SelectContent>
-                                {selectableCountries.map(country => ( // This is the doc checklist specific country list
+                                {selectableCountries.map(country => ( 
                                   <SelectItem key={country.value} value={country.value}>{country.name}</SelectItem>
                                 ))}
                               </SelectContent>
