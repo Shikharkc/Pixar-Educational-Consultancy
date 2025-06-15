@@ -168,7 +168,7 @@ export default function InterviewQAPage() {
                   <CardDescription>{country.intro}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <Accordion type="multiple" collapsible className="w-full space-y-4">
+                  <Accordion type="multiple" className="w-full space-y-4">
                     <AccordionItem value="common-questions" className="border border-border bg-background/30 shadow-sm rounded-lg hover:shadow-md">
                       <AccordionTrigger className="text-lg font-medium text-primary hover:text-accent px-4 py-3">
                         <HelpCircle className="mr-2 h-5 w-5" /> Common Questions
