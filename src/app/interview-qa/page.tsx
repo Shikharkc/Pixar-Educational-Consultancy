@@ -5,7 +5,7 @@ import SectionTitle from '@/components/ui/section-title';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { MessageCircleQuestion, HelpCircle, Lightbulb, ShieldCheck, Users, Smile, Eye, GraduationCap, Banknote, Briefcase as BriefcaseIcon, Home as HomeIcon } from 'lucide-react';
+import { MessageCircleQuestion, HelpCircle, Lightbulb, ShieldCheck, Users, Smile, Eye, GraduationCap, Banknote, Briefcase as BriefcaseIcon, Home as HomeIcon, UserCheck } from 'lucide-react';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -116,7 +116,6 @@ const interviewData: CountryQnA[] = [
       "Be polite and respectful throughout the interview."
     ],
   },
-  // ... (Similar detailed Q&A for Australia, UK, Canada, New Zealand will follow)
   {
     countryName: 'Australia',
     countrySlug: 'australia',
