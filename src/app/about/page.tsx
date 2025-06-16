@@ -3,11 +3,15 @@
 import Image from 'next/image';
 import SectionTitle from '@/components/ui/section-title';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Target, Users, Award, CheckCircle, Building, Heart, Handshake, Goal, Lightbulb } from 'lucide-react';
+import { Target, Users, Award, CheckCircle, Building, Heart, Handshake, Goal, Lightbulb, UsersRound } from 'lucide-react';
 import { teamMembers, certifications } from '@/lib/data.tsx';
 import type { TeamMember, Certification } from '@/lib/data.tsx';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { useState } from 'react';
 
 export default function AboutPage() {
   const whyChooseUsPoints = [
@@ -33,6 +37,34 @@ export default function AboutPage() {
   const [s5Ref, s5Visible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true });
   const [s6Ref, s6Visible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true });
 
+  const [isTeamPopupOpen, setIsTeamPopupOpen] = useState(false);
+  const initialDisplayCount = 6;
+  const displayedTeamMembers = teamMembers.slice(0, initialDisplayCount);
+  const remainingTeamMembers = teamMembers.slice(initialDisplayCount);
+
+  const renderTeamMemberCard = (member: TeamMember) => (
+    <Card className="text-center overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card h-full flex flex-col group">
+      <div className="pt-4 px-4">
+        <div className="relative w-24 h-24 mx-auto rounded-md overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow">
+          <Image
+            src={member.imageUrl}
+            alt={member.name}
+            layout="fill"
+            objectFit="cover"
+            className="transition-transform duration-300 ease-out group-hover:scale-105"
+            data-ai-hint={member.dataAiHint || 'professional portrait'}
+          />
+        </div>
+      </div>
+      <CardHeader className="pt-3 pb-1 flex-grow">
+        <CardTitle className="font-headline text-base text-primary">{member.name}</CardTitle>
+        <p className="text-xs text-accent font-medium">{member.role}</p>
+      </CardHeader>
+      <CardContent className="px-3 pb-3 text-xs">
+        <p className="text-foreground/70 leading-snug line-clamp-3">{member.bio}</p>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="space-y-16 md:space-y-24">
@@ -41,13 +73,13 @@ export default function AboutPage() {
         <SectionTitle title="About Pixar Educational Consultancy" />
         <div className="grid md:grid-cols-2 gap-10 items-center">
           <div className="relative aspect-[4/3] rounded-lg shadow-xl overflow-hidden">
-            <Image 
-              src="/pixar.webp" 
-              alt="Pixar Educational Consultancy Office or Team" 
+            <Image
+              src="/pixar.webp"
+              alt="Pixar Educational Consultancy Office or Team"
               layout="fill"
               objectFit="cover"
               className="rounded-lg"
-              data-ai-hint="modern office students" 
+              data-ai-hint="modern office students"
             />
           </div>
           <div className="space-y-6">
@@ -88,7 +120,7 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-      
+
       {/* Our Approach and Network Section */}
       <section ref={s3Ref} className={cn("transition-all duration-700 ease-out", s3Visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
         <SectionTitle title="Our Approach and Network" subtitle="Providing comprehensive solutions for your global education." />
@@ -146,33 +178,44 @@ export default function AboutPage() {
       <section ref={s5Ref} className={cn("bg-secondary/50 py-16 rounded-lg shadow-inner transition-all duration-700 ease-out", s5Visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
         <div className="container mx-auto px-4">
           <SectionTitle title="Meet Our Expert Team" subtitle="Dedicated professionals passionate about your educational journey." />
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-            {teamMembers.map((member: TeamMember, index: number) => {
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-8">
+            {displayedTeamMembers.map((member: TeamMember, index: number) => {
                const [cardRef, cardVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
               return (
                 <div key={member.id} ref={cardRef} className={cn("transition-all duration-500 ease-out", cardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 100}ms`}}>
-                  <Card className="text-center overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card h-full">
-                    <div className="relative h-40 w-full">
-                      <Image 
-                        src={member.imageUrl} 
-                        alt={member.name} 
-                        layout="fill" 
-                        objectFit="cover" 
-                        data-ai-hint={member.dataAiHint || 'professional portrait'}
-                      />
-                    </div>
-                    <CardHeader className="pt-4 pb-2">
-                      <CardTitle className="font-headline text-lg text-primary">{member.name}</CardTitle>
-                      <p className="text-xs text-accent font-medium">{member.role}</p>
-                    </CardHeader>
-                    <CardContent className="px-4 pb-4">
-                      <p className="text-xs text-foreground/70">{member.bio}</p>
-                    </CardContent>
-                  </Card>
+                  {renderTeamMemberCard(member)}
                 </div>
               );
             })}
           </div>
+          {remainingTeamMembers.length > 0 && (
+            <div className="text-center">
+              <Dialog open={isTeamPopupOpen} onOpenChange={setIsTeamPopupOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="lg" className="text-primary hover:text-primary-foreground hover:bg-primary/90 border-primary">
+                    <UsersRound className="mr-2 h-5 w-5" /> View {remainingTeamMembers.length} More Team Members
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-4xl max-h-[90vh] flex flex-col">
+                  <DialogHeader>
+                    <DialogTitle className="text-2xl font-headline text-primary">Our Dedicated Team</DialogTitle>
+                    <DialogDescription>
+                      Get to know the rest of our professionals committed to your success.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <ScrollArea className="flex-grow pr-3 -mr-3"> {/* Added padding for scrollbar */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 py-4">
+                      {remainingTeamMembers.map((member: TeamMember) => (
+                        <div key={member.id}>
+                          {renderTeamMemberCard(member)}
+                        </div>
+                      ))}
+                    </div>
+                  </ScrollArea>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
         </div>
       </section>
 
@@ -185,12 +228,12 @@ export default function AboutPage() {
               const [certRef, certVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.2 });
               return (
               <div key={cert.id} ref={certRef} className={cn("text-center p-4 rounded-lg bg-card shadow-md hover:shadow-lg transition-shadow w-full transition-all duration-500 ease-out", certVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 100}ms`}}>
-                <Image 
-                  src={cert.logoUrl} 
-                  alt={cert.name} 
-                  width={120} 
-                  height={80} 
-                  className="mx-auto mb-3 object-contain" 
+                <Image
+                  src={cert.logoUrl}
+                  alt={cert.name}
+                  width={120}
+                  height={80}
+                  className="mx-auto mb-3 object-contain"
                   data-ai-hint={cert.dataAiHint || 'logo badge'}
                 />
                 <h4 className="font-semibold text-primary text-sm md:text-base">{cert.name}</h4>
