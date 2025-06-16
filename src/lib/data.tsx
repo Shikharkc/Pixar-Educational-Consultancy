@@ -395,107 +395,26 @@ export const countryData: CountryInfo[] = [
 ];
 
 export const fieldsOfStudy: string[] = [
-  "Accounting",
-  "Aerospace Engineering",
-  "Agriculture",
-  "Anthropology",
-  "Architecture",
-  "Art History",
-  "Artificial Intelligence",
-  "Astronomy",
-  "Astrophysics",
-  "Biochemistry",
-  "Bioengineering",
-  "Biology",
-  "Biomedical Engineering",
-  "Biotechnology",
-  "Business Administration",
-  "Chemical Engineering",
-  "Chemistry",
-  "Civil Engineering",
-  "Cognitive Science",
-  "Communications",
-  "Computer Engineering",
-  "Computer Science",
-  "Creative Writing",
-  "Criminology",
-  "Cybersecurity",
-  "Data Science",
-  "Dentistry",
-  "Design (Graphic, Industrial, etc.)",
-  "Diploma",
-  "Drama and Theatre Arts",
-  "Earth Sciences",
-  "Economics",
-  "Education",
-  "Electrical Engineering",
-  "English Literature",
-  "Environmental Science",
-  "Fashion Design",
-  "Film Studies",
-  "Finance",
-  "Fine Arts",
-  "Food Science",
-  "Forensic Science",
-  "Genetics",
-  "Geography",
-  "Geology",
-  "Health Sciences",
-  "History",
-  "Hospitality Management",
-  "Human Resources Management",
-  "Industrial Engineering",
-  "Information Technology",
-  "International Relations",
-  "Journalism",
-  "Kinesiology",
-  "Languages and Linguistics",
-  "Law",
-  "Liberal Arts",
-  "Library Science",
-  "Marine Biology",
-  "Marketing",
-  "Materials Science",
-  "Mathematics",
-  "Mechanical Engineering",
-  "Mechatronics",
-  "Media Studies",
-  "Medicine",
-  "Microbiology",
-  "Music",
-  "Nanotechnology",
-  "Neuroscience",
-  "Nuclear Engineering",
-  "Nursing",
-  "Nutrition and Dietetics",
-  "Oceanography",
-  "Petroleum Engineering",
-  "Pharmacy",
-  "Philosophy",
-  "Physics",
-  "Physiology",
-  "Political Science",
-  "Postgraduate Diploma",
-  "Psychology",
-  "Public Health",
-  "Robotics",
-  "Social Services",
-  "Social Work",
-  "Sociology",
-  "Software Engineering",
-  "Space Science",
-  "Sports Science",
-  "Statistics",
-  "Supply Chain Management",
-  "Sustainable Development",
-  "Telecommunications Engineering",
-  "Tourism Management",
-  "Urban Planning",
-  "Veterinary Medicine",
-  "Zoology",
+  "Accounting", "Aerospace Engineering", "Agriculture", "Anthropology", "Architecture", "Art History", 
+  "Artificial Intelligence", "Astronomy", "Astrophysics", "Biochemistry", "Bioengineering", "Biology", 
+  "Biomedical Engineering", "Biotechnology", "Business Administration", "Chemical Engineering", "Chemistry", 
+  "Civil Engineering", "Cognitive Science", "Communications", "Computer Engineering", "Computer Science", 
+  "Creative Writing", "Criminology", "Cybersecurity", "Data Science", "Dentistry", 
+  "Design (Graphic, Industrial, etc.)", "Diploma", "Drama and Theatre Arts", "Earth Sciences", "Economics", 
+  "Education", "Electrical Engineering", "English Literature", "Environmental Science", "Fashion Design", 
+  "Film Studies", "Finance", "Fine Arts", "Food Science", "Forensic Science", "Genetics", "Geography", 
+  "Geology", "Health Sciences", "History", "Hospitality Management", "Human Resources Management", 
+  "Industrial Engineering", "Information Technology", "International Relations", "Journalism", "Kinesiology", 
+  "Languages and Linguistics", "Law", "Liberal Arts", "Library Science", "Marine Biology", "Marketing", 
+  "Materials Science", "Mathematics", "Mechanical Engineering", "Mechatronics", "Media Studies", "Medicine", 
+  "Microbiology", "Music", "Nanotechnology", "Neuroscience", "Nuclear Engineering", "Nursing", 
+  "Nutrition and Dietetics", "Oceanography", "Petroleum Engineering", "Pharmacy", "Philosophy", "Physics", 
+  "Physiology", "Political Science", "Postgraduate Diploma", "Psychology", "Public Health", "Robotics", 
+  "Social Services", "Social Work", "Sociology", "Software Engineering", "Space Science", "Sports Science", 
+  "Statistics", "Supply Chain Management", "Sustainable Development", "Telecommunications Engineering", 
+  "Tourism Management", "Urban Planning", "Veterinary Medicine", "Zoology",
 ];
 
-// Updated to match user's Google Form options
 export const allEducationLevels = [ 
   { name: "10+2", value: "10+2" },
   { name: "Diploma", value: "Diploma" },
@@ -510,7 +429,6 @@ export const educationLevelOptions = [
   { value: "Master's Degree", label: "Seeking Master's Degree" },
 ];
 
-// Updated to match user's Google Form options
 export const englishTestOptions = [
   { value: "IELTS", label: "IELTS" },
   { value: "PTE", label: "PTE" },
@@ -519,18 +437,30 @@ export const englishTestOptions = [
   { value: "Not Taken Yet", label: "Not Taken Yet" },
 ];
 
-// Updated to match user's Google Form options
-// The `value` will be the country name, `label` will include the flag.
-export const studyDestinationOptions = [
-  { value: "USA", label: "🇺🇸 USA" },
-  { value: "New Zealand", label: "🇳🇿 New Zealand" },
-  { value: "Australia", label: "🇦🇺 Australia" },
-  { value: "Canada", label: "🇨🇦 Canada" },
-  { value: "UK", label: "🇬🇧 UK" },
+export const testPreparationOptions = [
+  { value: "IELTS", label: "IELTS Preparation Class" },
+  { value: "PTE", label: "PTE Preparation Class" },
+  { value: "TOEFL", label: "TOEFL Preparation Class" },
+  { value: "DUOLINGO", label: "Duolingo Test Preparation Class" },
+  { value: "General English Improvement", label: "General English Improvement" },
 ];
 
+const getFlagEmoji = (countryCode: string): string => {
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map(char => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+};
 
-// Data for Appointment Booking (ensure these match your needs if used elsewhere)
+export const studyDestinationOptions = [
+  { value: "USA", label: `${getFlagEmoji('US')} USA` },
+  { value: "New Zealand", label: `${getFlagEmoji('NZ')} New Zealand` },
+  { value: "Australia", label: `${getFlagEmoji('AU')} Australia` },
+  { value: "Canada", label: `${getFlagEmoji('CA')} Canada` },
+  { value: "UK", label: `${getFlagEmoji('GB')} UK` },
+];
+
 export const appointmentServices = [
   { value: 'ielts_class_inquiry', label: 'IELTS Class Inquiry' },
   { value: 'pte_class_inquiry', label: 'PTE Class Inquiry' },
@@ -553,22 +483,10 @@ export const appointmentStaff = [
 ];
 
 export const appointmentTimeSlots = [
-  '09:00 AM - 09:30 AM',
-  '09:30 AM - 10:00 AM',
-  '10:00 AM - 10:30 AM',
-  '10:30 AM - 11:00 AM',
-  '11:00 AM - 11:30 AM',
-  '11:30 AM - 12:00 PM',
-  '12:00 PM - 12:30 PM',
-  '12:30 PM - 01:00 PM',
-  '01:00 PM - 01:30 PM',
-  '01:30 PM - 02:00 PM',
-  '02:00 PM - 02:30 PM',
-  '02:30 PM - 03:00 PM',
-  '03:00 PM - 03:30 PM',
-  '03:30 PM - 04:00 PM',
-  '04:00 PM - 04:30 PM',
-  '04:30 PM - 05:00 PM',
+  '09:00 AM - 09:30 AM', '09:30 AM - 10:00 AM', '10:00 AM - 10:30 AM', '10:30 AM - 11:00 AM',
+  '11:00 AM - 11:30 AM', '11:30 AM - 12:00 PM', '12:00 PM - 12:30 PM', '12:30 PM - 01:00 PM',
+  '01:00 PM - 01:30 PM', '01:30 PM - 02:00 PM', '02:00 PM - 02:30 PM', '02:30 PM - 03:00 PM',
+  '03:00 PM - 03:30 PM', '03:30 PM - 04:00 PM', '04:00 PM - 04:30 PM', '04:30 PM - 05:00 PM',
 ];
 
 export const gpaScaleOptions = [
