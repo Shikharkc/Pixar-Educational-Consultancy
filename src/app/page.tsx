@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import SectionTitle from '@/components/ui/section-title';
-import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info as InfoIcon, Search, ExternalLink, Wand2, Briefcase, DollarSign, ClipboardCheck, CalendarDays, Award as AwardIconFromData, Clock } from 'lucide-react';
+import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info as InfoIcon, Search, ExternalLink, Wand2, Briefcase, DollarSign, ClipboardCheck, CalendarDays, Award as AwardIconFromData, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
 import { testimonials, services, fieldsOfStudy, gpaScaleOptions, educationLevelOptions, upcomingIntakeData } from '@/lib/data.tsx';
 import type { Testimonial, Service, IntakeInfo } from '@/lib/data.tsx';
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -74,7 +74,6 @@ function calculateTimeRemaining(targetDateString: string): TimeRemaining {
   if (dateAfterFullMonths < targetDate) {
       totalWeeks = differenceInCalendarWeeks(targetDate, dateAfterFullMonths, { weekStartsOn: 1 });
   }
-   // Ensure weeks are not negative if target is very close to month boundary after full months
   if (totalWeeks < 0) totalWeeks = 0;
 
 
@@ -111,6 +110,7 @@ export default function HomePage() {
   const [resultsContainerAnimatedIn, setResultsContainerAnimatedIn] = useState(false);
 
   const [intakeTimes, setIntakeTimes] = useState<Record<string, TimeRemaining>>({});
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   const [heroSectionRef, isHeroSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.05, initialVisible: true });
   const [pathwaySearchSectionRef, isPathwaySearchSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.02, initialVisible: false });
@@ -197,6 +197,12 @@ export default function HomePage() {
     if (!pathwayResult?.universitySuggestions) return [];
     return pathwayResult.universitySuggestions;
   }, [pathwayResult]);
+
+  const handleScroll = (scrollOffset: number) => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollBy({ left: scrollOffset, behavior: 'smooth' });
+    }
+  };
 
   const renderPathwayForm = () => (
      <Card className={cn(
@@ -485,7 +491,7 @@ export default function HomePage() {
       </section>
 
       {/* Upcoming Intakes Section */}
-      <section 
+      <section
         ref={upcomingIntakesSectionRef}
         className={cn(
           "transition-all duration-700 ease-out",
@@ -493,40 +499,78 @@ export default function HomePage() {
         )}
       >
         <SectionTitle title="Upcoming Intakes & Deadlines" subtitle="Plan ahead for key application windows in popular countries." />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-          {upcomingIntakeData.map((intake: IntakeInfo, index: number) => {
-            const [intakeCardRef, isIntakeCardVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
-            const timeRemainingText = intakeTimes[intake.countrySlug]?.displayText || 'Calculating...';
-            
-            return (
-              <div key={intake.countrySlug} ref={intakeCardRef} className={cn("transition-all duration-500 ease-out", isIntakeCardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 100}ms`}}>
-                <Card className="bg-card shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="font-headline text-lg text-primary flex items-center">
-                      <span className="text-xl mr-2">{intake.flagEmoji}</span>{intake.countryName}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="flex-grow space-y-1.5 text-sm pt-0">
-                    <div className="flex items-center" title={`Specific intake period: ${intake.intakeNote}. Actual start: ${intake.nextIntakeDate ? format(new Date(intake.nextIntakeDate), "MMMM d, yyyy") : 'N/A'}`}>
-                      <CalendarDays className="h-4 w-4 text-accent mr-2 flex-shrink-0" />
-                      <span className="text-foreground/90 font-medium">{intake.intakeNote}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <Clock className="h-4 w-4 text-accent mr-2 flex-shrink-0" />
-                      <span className="text-foreground/80">{timeRemainingText}</span>
-                    </div>
-                  </CardContent>
-                  <CardFooter className="pt-2">
-                    <Button asChild variant="link" className="text-accent p-0 text-sm hover:text-primary">
-                      <Link href={`/country-guides#${intake.countrySlug}`}>
-                        Learn more <ArrowRight className="ml-1 h-4 w-4" />
-                      </Link>
-                    </Button>
-                  </CardFooter>
-                </Card>
-              </div>
-            );
-          })}
+        <div className="relative">
+          <div
+            ref={scrollContainerRef}
+            className={cn(
+              "py-2",
+              "flex flex-nowrap overflow-x-auto space-x-4 snap-x snap-mandatory scroll-smooth", // Horizontal scroll for smaller screens
+              "lg:grid lg:grid-cols-5 lg:gap-4 lg:space-x-0 lg:overflow-visible lg:snap-none" // Grid for large screens
+            )}
+          >
+            {upcomingIntakeData.map((intake: IntakeInfo, index: number) => {
+              const [intakeCardRef, isIntakeCardVisibleInner] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
+              const timeRemainingText = intakeTimes[intake.countrySlug]?.displayText || 'Calculating...';
+              
+              return (
+                <div
+                  key={intake.countrySlug}
+                  ref={intakeCardRef}
+                  className={cn(
+                    "transition-all duration-500 ease-out snap-center",
+                    "flex-shrink-0 w-[250px] xs:w-[270px] sm:w-[290px]", // Widths for scrollable view
+                    "lg:w-full lg:flex-shrink-1", // Reset width for grid view
+                    isIntakeCardVisibleInner ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+                  )}
+                  style={{transitionDelay: `${index * 100}ms`}}
+                >
+                  <Card className="bg-card shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="font-headline text-lg text-primary flex items-center">
+                        <span className="text-xl mr-2">{intake.flagEmoji}</span>{intake.countryName}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="flex-grow space-y-1.5 text-sm pt-0">
+                      <div className="flex items-center" title={`Specific intake period: ${intake.intakeNote}. Actual start: ${intake.nextIntakeDate ? format(new Date(intake.nextIntakeDate), "MMMM d, yyyy") : 'N/A'}`}>
+                        <CalendarDays className="h-4 w-4 text-accent mr-2 flex-shrink-0" />
+                        <span className="text-foreground/90 font-medium">{intake.intakeNote}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Clock className="h-4 w-4 text-accent mr-2 flex-shrink-0" />
+                        <span className="text-foreground/80">{timeRemainingText}</span>
+                      </div>
+                    </CardContent>
+                    <CardFooter className="pt-2">
+                      <Button asChild variant="link" className="text-accent p-0 text-sm hover:text-primary">
+                        <Link href={`/country-guides#${intake.countrySlug}`}>
+                          Learn more <ArrowRight className="ml-1 h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+              );
+            })}
+          </div>
+          {/* Scroll Buttons: only show them on screens smaller than lg */}
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute -left-2 sm:-left-4 top-1/2 -translate-y-1/2 z-10 bg-card hover:bg-card/80 opacity-80 hover:opacity-100 shadow-md rounded-full p-2 h-10 w-10 lg:hidden"
+            onClick={() => handleScroll(-280)} // Scroll amount
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            className="absolute -right-2 sm:-right-4 top-1/2 -translate-y-1/2 z-10 bg-card hover:bg-card/80 opacity-80 hover:opacity-100 shadow-md rounded-full p-2 h-10 w-10 lg:hidden"
+            onClick={() => handleScroll(280)} // Scroll amount
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </Button>
         </div>
       </section>
 
@@ -572,9 +616,9 @@ export default function HomePage() {
         <SectionTitle title="Our Core Services" subtitle="Comprehensive support to navigate your educational path." />
         <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
           {services.slice(0,3).map((service: Service, index: number) => {
-             const [cardRef, isCardVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
+             const [cardRef, isServiceCardVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
             return (
-              <div key={service.id} ref={cardRef} className={cn("transition-all duration-700 ease-out", isCardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 100}ms`}}>
+              <div key={service.id} ref={cardRef} className={cn("transition-all duration-700 ease-out", isServiceCardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 100}ms`}}>
                 <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card h-full flex flex-col">
                   {service.imageUrl && (
                     <div className="relative h-48 w-full">
