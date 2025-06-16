@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SectionTitle from '@/components/ui/section-title';
-import { Mail, MapPin, Phone, MessageSquare, Send, Loader2, BookUser, CheckBadge, Target, Languages, GraduationCap } from 'lucide-react';
+import { Mail, MapPin, Phone, MessageSquare, Send, Loader2, BookUser, Target, Languages, GraduationCap, StickyNote } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useState } from 'react';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
@@ -40,7 +40,7 @@ const EDUCATION_ENTRY_ID = 'REPLACE_WITH_EDUCATION_FIELD_ENTRY_ID';
 const ENGLISH_TEST_ENTRY_ID = 'REPLACE_WITH_ENGLISH_TEST_FIELD_ENTRY_ID';
 const DESTINATION_ENTRY_ID = 'REPLACE_WITH_DESTINATION_FIELD_ENTRY_ID';
 const MESSAGE_ENTRY_ID = 'REPLACE_WITH_MESSAGE_FIELD_ENTRY_ID'; 
-const ADDITIONAL_NOTES_ENTRY_ID = 'REPLACE_WITH_ADDITIONAL_NOTES_FIELD_ENTRY_ID';
+const ADDITIONAL_NOTES_ENTRY_ID = 'REPLACE_WITH_ADDITIONAL_NOTES_FIELD_ENTRY_ID'; // Was SUBJECT_ENTRY_ID
 
 async function submitToGoogleSheet(data: ContactFormValues): Promise<{ success: boolean; message: string }> {
   if (GOOGLE_FORM_ACTION_URL === 'REPLACE_WITH_YOUR_GOOGLE_FORM_ACTION_URL' || !NAME_ENTRY_ID.startsWith('entry.')) {
@@ -253,7 +253,7 @@ export default function ContactPage() {
                     name="additionalNotes"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="flex items-center"><CheckBadge className="mr-2 h-4 w-4 text-accent" />Additional Notes (Optional)</FormLabel>
+                        <FormLabel className="flex items-center"><StickyNote className="mr-2 h-4 w-4 text-accent" />Additional Notes (Optional)</FormLabel>
                         <FormControl><Input placeholder="Any other details..." {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
