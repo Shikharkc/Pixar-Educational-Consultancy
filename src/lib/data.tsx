@@ -192,7 +192,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Pawan Acharya',
     role: 'Managing Director',
     bio: 'Oversees the operational and strategic direction of Pixar Educational Consultancy, ensuring service excellence.',
-    imageUrl: 'https://placehold.co/300x300.png',
+    imageUrl: '/pawan.jpg',
     dataAiHint: 'director man',
   },
   {
@@ -208,7 +208,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Shikhar KC',
     role: 'IT Head',
     bio: 'Manages our IT infrastructure and digital platforms, ensuring smooth technological operations.',
-    imageUrl: 'https://placehold.co/300x300.png',
+    imageUrl: '/shikhar.jpg',
     dataAiHint: 'tech professional',
   },
   {
@@ -216,7 +216,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Sabina Thapa',
     role: 'Australia Counselor',
     bio: 'Provides specialized counseling for students aspiring to study in Australia, focusing on admissions and visas.',
-    imageUrl: 'https://placehold.co/300x300.png',
+    imageUrl: '/sabina.jpg',
     dataAiHint: 'counselor woman',
   },
   {

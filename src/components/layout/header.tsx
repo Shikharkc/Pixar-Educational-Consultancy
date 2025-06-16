@@ -10,7 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"; // Added SheetHeader, SheetTitle
 import { useState, useEffect, useRef } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -163,8 +163,14 @@ export default function Header() {
                 <Menu className="h-6 w-6 text-primary" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-[280px] bg-card p-0 pt-4">
-              <div className="flex flex-col space-y-0.5">
+            <SheetContent side="right" className="w-[280px] bg-card p-0">
+              <SheetHeader className="p-4 border-b border-border">
+                <SheetTitle className="text-lg font-semibold text-primary flex items-center">
+                  <GraduationCap className="mr-2 h-6 w-6" />
+                  Pixar Edu Menu
+                </SheetTitle>
+              </SheetHeader>
+              <div className="flex flex-col space-y-0.5 pt-2">
                 {renderNavItems(true)}
               </div>
             </SheetContent>
