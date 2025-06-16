@@ -438,14 +438,16 @@ export const englishTestOptions = [
 ];
 
 export const testPreparationOptions = [
-  { value: "IELTS", label: "IELTS Preparation Class" },
-  { value: "PTE", label: "PTE Preparation Class" },
-  { value: "TOEFL", label: "TOEFL Preparation Class" },
-  { value: "DUOLINGO", label: "Duolingo Test Preparation Class" },
-  { value: "General English Improvement", label: "General English Improvement" },
+  { value: "IELTS", label: "IELTS Prep" },
+  { value: "PTE", label: "PTE Prep" },
+  { value: "TOEFL", label: "TOEFL Prep" },
+  { value: "DUOLINGO", label: "Duolingo Prep" },
+  { value: "USA_VISA_PREP", label: "Unlimited USA Visa Prep" },
+  { value: "General English", label: "General English" },
 ];
 
 const getFlagEmoji = (countryCode: string): string => {
+  if (!countryCode || countryCode.length !== 2) return '🏳️'; // Default flag
   const codePoints = countryCode
     .toUpperCase()
     .split('')
