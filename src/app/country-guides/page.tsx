@@ -1,7 +1,7 @@
 
 'use client';
 
-import React from 'react'; // Added explicit React import
+import React, { useEffect, useState } from 'react'; // Added explicit React import and useEffect, useState
 import Image from 'next/image';
 import Link from 'next/link';
 import SectionTitle from '@/components/ui/section-title';
@@ -14,20 +14,46 @@ import type { CountryInfo, University } from '@/lib/data.tsx';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
 import { ExternalLink, DollarSign, Clock, FileSpreadsheet, UserCheck, Briefcase, GitCompareArrows, TrendingUp, KeyRound, Activity } from 'lucide-react';
-import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function CountryGuidesPage() {
   const [titleSectionRef, isTitleSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true });
   const [tabsContainerRef, isTabsContainerVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.05 });
 
-  const defaultCountrySlug = countryData.length > 0 ? countryData[0].slug : '';
+  const defaultCountrySlug = countryData.length > 0 ? countryData[0].slug : 'compare'; // Default to 'compare' if no countries
+  const [activeTab, setActiveTab] = useState<string>(defaultCountrySlug);
 
   const [selectedCountry1Slug, setSelectedCountry1Slug] = useState<string | null>(null);
   const [selectedCountry2Slug, setSelectedCountry2Slug] = useState<string | null>(null);
 
   const selectedCountry1Data = selectedCountry1Slug ? countryData.find(c => c.slug === selectedCountry1Slug) : null;
   const selectedCountry2Data = selectedCountry2Slug ? countryData.find(c => c.slug === selectedCountry2Slug) : null;
+
+  useEffect(() => {
+    const hash = window.location.hash.substring(1); // Remove #
+    const isValidSlug = countryData.some(country => country.slug === hash) || hash === 'compare';
+    if (hash && isValidSlug) {
+      setActiveTab(hash);
+    } else if (!hash && countryData.length > 0) {
+        // If no hash, set to default (first country or compare) and update URL
+        // This handles initial load without a hash.
+        const initialTab = countryData.length > 0 ? countryData[0].slug : 'compare';
+        setActiveTab(initialTab);
+        // Only update hash if it's not already the default to avoid loop
+        // For initial load, we don't necessarily want to force a hash.
+        // If there's an invalid hash, we could clear it or set to default.
+    } else if (!hash && activeTab !== defaultCountrySlug) {
+        // If no hash but activeTab isn't default (e.g. user navigated away then back)
+        // This ensures URL reflects current tab state if it's not default.
+        // window.history.replaceState(null, '', `#${activeTab}`);
+        // No, let's not do this here as it might conflict. Simpler to rely on onValueChange.
+    }
+  }, []); // Runs only on mount to set initial tab from hash.
+
+  const handleTabChange = (newTabSlug: string) => {
+    setActiveTab(newTabSlug);
+    window.history.replaceState(null, '', `#${newTabSlug}`); // Update URL hash without page reload
+  };
 
   const ComparisonDetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: string | React.ReactNode | undefined }) => (
     <div className="flex items-start space-x-3 p-2 bg-background/50 rounded-md">
@@ -60,7 +86,7 @@ export default function CountryGuidesPage() {
       </section>
 
       <div ref={tabsContainerRef} className={cn("transition-all duration-700 ease-out", isTabsContainerVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
-        <Tabs defaultValue={defaultCountrySlug} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="h-auto p-0 grid w-full grid-cols-2 md:grid-cols-3 gap-2 mx-auto mb-8">
             {countryData.map((country) => (
               <TabsTrigger

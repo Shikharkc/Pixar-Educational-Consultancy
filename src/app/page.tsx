@@ -519,7 +519,7 @@ export default function HomePage() {
                   <CardFooter className="pt-2">
                     <Button asChild variant="link" className="text-accent p-0 text-sm hover:text-primary">
                       <Link href={`/country-guides#${intake.countrySlug}`}>
-                        Country Guide <ArrowRight className="ml-1 h-4 w-4" />
+                        Learn more <ArrowRight className="ml-1 h-4 w-4" />
                       </Link>
                     </Button>
                   </CardFooter>
@@ -585,7 +585,7 @@ export default function HomePage() {
                     <CardTitle className="font-headline text-primary flex items-center"><service.icon className="mr-2 h-6 w-6 text-accent" />{service.title}</CardTitle>
                   </CardHeader>
                   <CardContent className="flex-grow">
-                    <p className="text-foreground/80">{service.description}</p>
+                    <p className="text-foreground/80">{service.longDescription || service.description}</p>
                   </CardContent>
                   <CardFooter>
                     <Button asChild variant="link" className="text-accent p-0">
