@@ -564,3 +564,24 @@ export const gpaScaleOptions = [
   { value: "Below 2.5", label: "Below 2.5 (or equivalent)" },
   { value: "N/A", label: "Not Applicable / Varies" },
 ];
+
+export const englishTestOptions = [
+  { value: "IELTS", label: "IELTS" },
+  { value: "TOEFL", label: "TOEFL iBT" },
+  { value: "PTE", label: "PTE Academic" },
+  { value: "Duolingo", label: "Duolingo English Test" },
+  { value: "Not Taken Yet", label: "Not Taken Yet / Planning" },
+  { value: "Other", label: "Other" },
+];
+
+export const studyDestinationOptions = [
+  { value: "USA", label: "USA" },
+  { value: "Canada", label: "Canada" },
+  { value: "Australia", label: "Australia" },
+  { value: "UK", label: "UK" },
+  { value: "New Zealand", label: "New Zealand" },
+  { value: "Europe (General)", label: "Europe (General)" },
+  { value: "Germany", label: "Germany" },
+  { value: "France", label: "France" },
+  { value: "Other", label: "Other" },
+];

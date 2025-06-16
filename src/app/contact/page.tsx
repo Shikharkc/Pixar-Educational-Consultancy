@@ -9,48 +9,63 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SectionTitle from '@/components/ui/section-title';
-import { Mail, MapPin, Phone, MessageSquare, Send, Loader2 } from 'lucide-react';
+import { Mail, MapPin, Phone, MessageSquare, Send, Loader2, BookUser, CheckBadge, Target, Languages, GraduationCap } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useState } from 'react';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
+import { allEducationLevels, englishTestOptions, studyDestinationOptions } from '@/lib/data';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters.").max(50, "Name is too long."),
   email: z.string().email("Invalid email address."),
-  subject: z.string().min(5, "Subject must be at least 5 characters.").max(100, "Subject is too long."),
-  message: z.string().min(10, "Message must be at least 10 characters.").max(500, "Message is too long."),
+  phoneNumber: z.string().min(7, "Phone number seems too short.").max(15, "Phone number seems too long.").regex(/^\+?[0-9\s-()]*$/, "Invalid phone number format."),
+  lastCompletedEducation: z.string().min(1, "Please select your education level."),
+  englishProficiencyTest: z.string().min(1, "Please select an option for English proficiency test."),
+  preferredStudyDestination: z.string().min(1, "Please select your preferred study destination."),
+  message: z.string().min(10, "Your inquiry must be at least 10 characters.").max(1000, "Inquiry is too long."),
+  additionalNotes: z.string().max(500, "Additional notes are too long.").optional(),
 });
 
 type ContactFormValues = z.infer<typeof contactFormSchema>;
 
 // IMPORTANT: Replace these placeholders with your actual Google Form Action URL and Entry IDs
 const GOOGLE_FORM_ACTION_URL = 'REPLACE_WITH_YOUR_GOOGLE_FORM_ACTION_URL'; // e.g., https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse
-const NAME_ENTRY_ID = 'REPLACE_WITH_NAME_FIELD_ENTRY_ID'; // e.g., entry.123456789
-const EMAIL_ENTRY_ID = 'REPLACE_WITH_EMAIL_FIELD_ENTRY_ID'; // e.g., entry.987654321
-const SUBJECT_ENTRY_ID = 'REPLACE_WITH_SUBJECT_FIELD_ENTRY_ID'; // e.g., entry.112233445
-const MESSAGE_ENTRY_ID = 'REPLACE_WITH_MESSAGE_FIELD_ENTRY_ID'; // e.g., entry.556677889
+const NAME_ENTRY_ID = 'REPLACE_WITH_NAME_FIELD_ENTRY_ID'; 
+const EMAIL_ENTRY_ID = 'REPLACE_WITH_EMAIL_FIELD_ENTRY_ID';
+const PHONE_NUMBER_ENTRY_ID = 'REPLACE_WITH_PHONE_NUMBER_FIELD_ENTRY_ID';
+const EDUCATION_ENTRY_ID = 'REPLACE_WITH_EDUCATION_FIELD_ENTRY_ID';
+const ENGLISH_TEST_ENTRY_ID = 'REPLACE_WITH_ENGLISH_TEST_FIELD_ENTRY_ID';
+const DESTINATION_ENTRY_ID = 'REPLACE_WITH_DESTINATION_FIELD_ENTRY_ID';
+const MESSAGE_ENTRY_ID = 'REPLACE_WITH_MESSAGE_FIELD_ENTRY_ID'; 
+const ADDITIONAL_NOTES_ENTRY_ID = 'REPLACE_WITH_ADDITIONAL_NOTES_FIELD_ENTRY_ID';
 
 async function submitToGoogleSheet(data: ContactFormValues): Promise<{ success: boolean; message: string }> {
   if (GOOGLE_FORM_ACTION_URL === 'REPLACE_WITH_YOUR_GOOGLE_FORM_ACTION_URL' || !NAME_ENTRY_ID.startsWith('entry.')) {
-    console.error("Google Form URL or Entry IDs are not configured. Please update them in src/app/contact/page.tsx");
+    console.error("Google Form URL or critical Entry IDs are not configured. Please update them in src/app/contact/page.tsx");
     return { success: false, message: "Form submission is not configured correctly. Please contact support." };
   }
 
   const formData = new FormData();
   formData.append(NAME_ENTRY_ID, data.name);
   formData.append(EMAIL_ENTRY_ID, data.email);
-  formData.append(SUBJECT_ENTRY_ID, data.subject);
+  formData.append(PHONE_NUMBER_ENTRY_ID, data.phoneNumber);
+  formData.append(EDUCATION_ENTRY_ID, data.lastCompletedEducation);
+  formData.append(ENGLISH_TEST_ENTRY_ID, data.englishProficiencyTest);
+  formData.append(DESTINATION_ENTRY_ID, data.preferredStudyDestination);
   formData.append(MESSAGE_ENTRY_ID, data.message);
+  if (data.additionalNotes) {
+    formData.append(ADDITIONAL_NOTES_ENTRY_ID, data.additionalNotes);
+  }
 
   try {
     await fetch(GOOGLE_FORM_ACTION_URL, {
       method: 'POST',
       body: formData,
-      mode: 'no-cors', // Important for submitting to Google Forms to prevent CORS errors
+      mode: 'no-cors', 
     });
-    // 'no-cors' mode means we don't get a real response, so we assume success if no error is thrown
     return { success: true, message: "Your message has been sent successfully! We'll get back to you soon." };
   } catch (error) {
     console.error('Error submitting to Google Sheet:', error);
@@ -71,8 +86,12 @@ export default function ContactPage() {
     defaultValues: {
       name: '',
       email: '',
-      subject: '',
+      phoneNumber: '',
+      lastCompletedEducation: '',
+      englishProficiencyTest: '',
+      preferredStudyDestination: '',
       message: '',
+      additionalNotes: '',
     },
   });
 
@@ -116,7 +135,7 @@ export default function ContactPage() {
         />
       </div>
 
-      <div className="grid md:grid-cols-2 gap-12">
+      <div className="grid md:grid-cols-2 gap-12 items-start">
         {/* Contact Form */}
         <div ref={formCardRef} className={cn("transition-all duration-700 ease-out", isFormCardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
           <Card className="shadow-xl bg-card">
@@ -126,36 +145,94 @@ export default function ContactPage() {
             </CardHeader>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)}>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center"><BookUser className="mr-2 h-4 w-4 text-accent" />Full Name</FormLabel>
+                          <FormControl><Input placeholder="e.g., Jane Doe" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center"><Mail className="mr-2 h-4 w-4 text-accent" />Email Address</FormLabel>
+                          <FormControl><Input type="email" placeholder="you@example.com" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                   <FormField
+                      control={form.control}
+                      name="phoneNumber"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center"><Phone className="mr-2 h-4 w-4 text-accent" />Phone Number</FormLabel>
+                          <FormControl><Input type="tel" placeholder="+977 98XXXXXXXX" {...field} /></FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="lastCompletedEducation"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center"><GraduationCap className="mr-2 h-4 w-4 text-accent" />Last Completed Education</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Select education level" /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              {allEducationLevels.map(level => (
+                                <SelectItem key={level.value} value={level.value}>{level.name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="englishProficiencyTest"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="flex items-center"><Languages className="mr-2 h-4 w-4 text-accent" />English Proficiency Test</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Select test status" /></SelectTrigger></FormControl>
+                            <SelectContent>
+                              {englishTestOptions.map(option => (
+                                <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                   <FormField
                     control={form.control}
-                    name="name"
+                    name="preferredStudyDestination"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl><Input placeholder="John Doe" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Email Address</FormLabel>
-                        <FormControl><Input type="email" placeholder="you@example.com" {...field} /></FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="subject"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Subject</FormLabel>
-                        <FormControl><Input placeholder="Inquiry about services" {...field} /></FormControl>
+                        <FormLabel className="flex items-center"><Target className="mr-2 h-4 w-4 text-accent" />Preferred Study Destination</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                          <FormControl><SelectTrigger><SelectValue placeholder="Select destination" /></SelectTrigger></FormControl>
+                          <SelectContent>
+                            {studyDestinationOptions.map(option => (
+                              <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -165,8 +242,19 @@ export default function ContactPage() {
                     name="message"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Your Message</FormLabel>
-                        <FormControl><Textarea placeholder="Tell us more about your needs..." rows={5} {...field} /></FormControl>
+                        <FormLabel className="flex items-center"><MessageSquare className="mr-2 h-4 w-4 text-accent" />Your Inquiry / Specific Questions</FormLabel>
+                        <FormControl><Textarea placeholder="Tell us more about your needs or specific questions..." rows={5} {...field} /></FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="additionalNotes"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center"><CheckBadge className="mr-2 h-4 w-4 text-accent" />Additional Notes (Optional)</FormLabel>
+                        <FormControl><Input placeholder="Any other details..." {...field} /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -226,7 +314,6 @@ export default function ContactPage() {
               <CardTitle className="font-headline text-primary">Find Us On Map</CardTitle>
             </CardHeader>
             <CardContent>
-              {/* Placeholder for Google Map */}
               <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3197.165484604168!2d85.3327993749223!3d27.686924426392938!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39eb19a84379c423%3A0xef4effecef07815d!2sPIXAR%20EDUCATIONAL%20CONSULTANCY!5e1!3m2!1sen!2sau!4v1749691561992!5m2!1sen!2sau" width="100%" height="300" style={{border:0}} allowFullScreen loading="lazy" referrerPolicy="no-referrer-when-downgrade"></iframe>
             </CardContent>
           </Card>
