@@ -34,20 +34,19 @@ const generalContactFormSchema = z.object({
 });
 type GeneralContactFormValues = z.infer<typeof generalContactFormSchema>;
 
-// Constants for Google Form submission (BOTH FORMS WILL USE THESE IF SUBMITTING TO THE SAME SHEET)
-// If Prep Class form submits to a DIFFERENT sheet, create separate constants for it.
-const GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScmMqPLB4NX_BZSSS4C3_2_9wNga-GBmbznGc9nNCs231IeaA/formResponse';
-const NAME_ENTRY_ID = 'entry.381136677';
-const EMAIL_ENTRY_ID = 'entry.897898403';
-const PHONE_NUMBER_ENTRY_ID = 'entry.1344864969';
-const LAST_COMPLETED_EDUCATION_ENTRY_ID = 'entry.2085503739';
-const ENGLISH_PROFICIENCY_TEST_ENTRY_ID = 'entry.1325410288';
-const PREFERRED_STUDY_DESTINATION_ENTRY_ID = 'entry.22741016';
-const ADDITIONAL_NOTES_ENTRY_ID = 'REPLACE_WITH_YOUR_ADDITIONAL_NOTES_FIELD_ENTRY_ID'; // Same for both forms if this field is shared
+// Constants for Google Form submission (SHARED FOR BOTH FORMS if submitting to the same sheet)
+const GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScOw8ztRBTL_iN0yRmszjlIUBPPDebd8fKIl4RcUZThZs9CSA/formResponse';
+const NAME_ENTRY_ID = 'entry.44402001';
+const EMAIL_ENTRY_ID = 'entry.1939269637';
+const PHONE_NUMBER_ENTRY_ID = 'entry.1784825660';
+const ADDITIONAL_NOTES_ENTRY_ID = 'entry.1135205593';
 
-// Entry IDs specific to the Preparation Class Booking form (if submitting to the same sheet, these are new columns)
-const PREFERRED_TEST_ENTRY_ID = 'REPLACE_WITH_YOUR_PREFERRED_TEST_FIELD_ENTRY_ID'; // Get this from your modified Google Form
-const PREFERRED_START_DATE_ENTRY_ID = 'REPLACE_WITH_YOUR_PREFERRED_START_DATE_FIELD_ENTRY_ID'; // Get this from your modified Google Form
+// Entry IDs for fields specific to the General Inquiry form OR new columns in the shared sheet
+// IMPORTANT: Update these if these fields exist in your Google Form and you want to capture them.
+// Get these from a pre-filled link of YOUR Google Form where you've filled ALL fields.
+const LAST_COMPLETED_EDUCATION_ENTRY_ID = 'REPLACE_WITH_YOUR_EDUCATION_FIELD_ENTRY_ID'; // e.g., 'entry.xxxxxxxxxx'
+const ENGLISH_PROFICIENCY_TEST_ENTRY_ID = 'REPLACE_WITH_YOUR_ENGLISH_TEST_FIELD_ENTRY_ID'; // e.g., 'entry.yyyyyyyyyy'
+const PREFERRED_STUDY_DESTINATION_ENTRY_ID = 'REPLACE_WITH_YOUR_DESTINATION_FIELD_ENTRY_ID'; // e.g., 'entry.zzzzzzzzzz'
 
 
 async function submitToGeneralContactGoogleSheet(data: GeneralContactFormValues): Promise<{ success: boolean; message: string }> {
@@ -60,15 +59,32 @@ async function submitToGeneralContactGoogleSheet(data: GeneralContactFormValues)
   formData.append(NAME_ENTRY_ID, data.name);
   formData.append(EMAIL_ENTRY_ID, data.email);
   formData.append(PHONE_NUMBER_ENTRY_ID, data.phoneNumber);
-  formData.append(LAST_COMPLETED_EDUCATION_ENTRY_ID, data.lastCompletedEducation);
-  formData.append(ENGLISH_PROFICIENCY_TEST_ENTRY_ID, data.englishProficiencyTest);
-  formData.append(PREFERRED_STUDY_DESTINATION_ENTRY_ID, data.preferredStudyDestination);
+
+  // General Inquiry Specific Fields - only append if entry ID is configured
+  if (LAST_COMPLETED_EDUCATION_ENTRY_ID !== 'REPLACE_WITH_YOUR_EDUCATION_FIELD_ENTRY_ID') {
+    formData.append(LAST_COMPLETED_EDUCATION_ENTRY_ID, data.lastCompletedEducation);
+  } else {
+    console.warn("LAST_COMPLETED_EDUCATION_ENTRY_ID is a placeholder. This field will not be submitted.");
+  }
+  if (ENGLISH_PROFICIENCY_TEST_ENTRY_ID !== 'REPLACE_WITH_YOUR_ENGLISH_TEST_FIELD_ENTRY_ID') {
+    formData.append(ENGLISH_PROFICIENCY_TEST_ENTRY_ID, data.englishProficiencyTest);
+  } else {
+    console.warn("ENGLISH_PROFICIENCY_TEST_ENTRY_ID is a placeholder. This field will not be submitted.");
+  }
+  if (PREFERRED_STUDY_DESTINATION_ENTRY_ID !== 'REPLACE_WITH_YOUR_DESTINATION_FIELD_ENTRY_ID') {
+    formData.append(PREFERRED_STUDY_DESTINATION_ENTRY_ID, data.preferredStudyDestination);
+  } else {
+    console.warn("PREFERRED_STUDY_DESTINATION_ENTRY_ID is a placeholder. This field will not be submitted.");
+  }
   
-  if (data.additionalNotes && ADDITIONAL_NOTES_ENTRY_ID !== 'REPLACE_WITH_YOUR_ADDITIONAL_NOTES_FIELD_ENTRY_ID') {
+  if (data.additionalNotes && ADDITIONAL_NOTES_ENTRY_ID !== 'REPLACE_WITH_YOUR_ADDITIONAL_NOTES_FIELD_ENTRY_ID' && ADDITIONAL_NOTES_ENTRY_ID !== 'entry.1135205593' /* Check ensures it's not the placeholder if actually set to the new one */ ) {
+      formData.append(ADDITIONAL_NOTES_ENTRY_ID, data.additionalNotes);
+  } else if (data.additionalNotes && ADDITIONAL_NOTES_ENTRY_ID === 'entry.1135205593') {
     formData.append(ADDITIONAL_NOTES_ENTRY_ID, data.additionalNotes);
   } else if (data.additionalNotes) {
-     console.warn("ADDITIONAL_NOTES_ENTRY_ID is not configured or is a placeholder. 'Additional Notes' field will not be submitted to Google Sheet unless the ID is correctly provided.");
+     console.warn("ADDITIONAL_NOTES_ENTRY_ID is a placeholder or not configured for general contact. 'Additional Notes' field might not be submitted correctly for general inquiries unless the ID is explicitly set to a non-placeholder value.");
   }
+
 
   try {
     await fetch(GOOGLE_FORM_ACTION_URL, { method: 'POST', body: formData, mode: 'no-cors' });
@@ -90,18 +106,19 @@ const preparationClassFormSchema = z.object({
 });
 type PreparationClassFormValues = z.infer<typeof preparationClassFormSchema>;
 
+// Entry IDs specific to the Preparation Class Booking form (map to new columns in the SAME Google Form)
+const PREFERRED_TEST_ENTRY_ID = 'entry.418517897'; // From your new link
+const PREFERRED_START_DATE_ENTRY_ID = 'entry.894006407'; // From your new link
+
+
 async function submitToPrepClassGoogleSheet(data: PreparationClassFormValues): Promise<{ success: boolean; message: string }> {
-  // IMPORTANT: If submitting to the SAME Google Sheet, use GOOGLE_FORM_ACTION_URL
-  // If submitting to a DIFFERENT Google Sheet, uncomment and use the line below:
-  // const PREP_CLASS_FORM_ACTION_URL = 'REPLACE_WITH_YOUR_DIFFERENT_PREP_CLASS_GOOGLE_FORM_ACTION_URL';
-  
   if (GOOGLE_FORM_ACTION_URL.startsWith('REPLACE_WITH_')) {
     console.error("Preparation Class Booking Google Form URL is not configured.");
     return { success: false, message: "Class booking service is temporarily unavailable. Please contact us directly." };
   }
 
   const formData = new FormData();
-  // Use the same entry IDs for common fields
+  // Use the same entry IDs for common fields, already defined above
   formData.append(NAME_ENTRY_ID, data.name);
   formData.append(EMAIL_ENTRY_ID, data.email);
   formData.append(PHONE_NUMBER_ENTRY_ID, data.phoneNumber);
@@ -120,15 +137,13 @@ async function submitToPrepClassGoogleSheet(data: PreparationClassFormValues): P
   }
 
   if (data.additionalNotes && ADDITIONAL_NOTES_ENTRY_ID !== 'REPLACE_WITH_YOUR_ADDITIONAL_NOTES_FIELD_ENTRY_ID') {
-    // Use the same entry ID as the general form if this field is intended to be the same
     formData.append(ADDITIONAL_NOTES_ENTRY_ID, data.additionalNotes);
   } else if (data.additionalNotes) {
-     console.warn("ADDITIONAL_NOTES_ENTRY_ID is not configured or is a placeholder for prep class form. 'Additional Notes' field will not be submitted to Google Sheet unless the ID is correctly provided.");
+     console.warn("ADDITIONAL_NOTES_ENTRY_ID is a placeholder or not configured for prep class form. 'Additional Notes' field will not be submitted correctly unless the ID is explicitly set to a non-placeholder value.");
   }
 
   try {
     await fetch(GOOGLE_FORM_ACTION_URL, { method: 'POST', body: formData, mode: 'no-cors' });
-    // Note: If using a DIFFERENT prep class form URL, use that in the fetch above.
     return { success: true, message: "Your booking request has been sent! We'll contact you shortly to confirm." };
   } catch (error) {
     console.error('Error submitting to Prep Class Booking Google Sheet:', error);
