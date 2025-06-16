@@ -495,15 +495,12 @@ export const fieldsOfStudy: string[] = [
   "Zoology",
 ];
 
-
+// Updated to match user's Google Form options
 export const allEducationLevels = [ 
-  { name: "High School Diploma or Equivalent (e.g., +2, A-Levels)", value: "High School Diploma or Equivalent" },
+  { name: "10+2", value: "10+2" },
   { name: "Diploma", value: "Diploma" },
-  { name: "Postgraduate Diploma", value: "Postgraduate Diploma" },
-  { name: "Associate Degree", value: "Associate Degree" },
   { name: "Bachelor's Degree", value: "Bachelor's Degree" },
   { name: "Master's Degree", value: "Master's Degree" },
-  { name: "Doctorate (PhD)", value: "Doctorate (PhD)" },
 ];
 
 export const educationLevelOptions = [ 
@@ -513,8 +510,27 @@ export const educationLevelOptions = [
   { value: "Master's Degree", label: "Seeking Master's Degree" },
 ];
 
+// Updated to match user's Google Form options
+export const englishTestOptions = [
+  { value: "IELTS", label: "IELTS" },
+  { value: "PTE", label: "PTE" },
+  { value: "TOEFL", label: "TOEFL" },
+  { value: "DUOLINGO", label: "DUOLINGO" },
+  { value: "Not Taken Yet", label: "Not Taken Yet" },
+];
 
-// Data for Appointment Booking
+// Updated to match user's Google Form options
+// The `value` will be the country name, `label` will include the flag.
+export const studyDestinationOptions = [
+  { value: "USA", label: "🇺🇸 USA" },
+  { value: "New Zealand", label: "🇳🇿 New Zealand" },
+  { value: "Australia", label: "🇦🇺 Australia" },
+  { value: "Canada", label: "🇨🇦 Canada" },
+  { value: "UK", label: "🇬🇧 UK" },
+];
+
+
+// Data for Appointment Booking (ensure these match your needs if used elsewhere)
 export const appointmentServices = [
   { value: 'ielts_class_inquiry', label: 'IELTS Class Inquiry' },
   { value: 'pte_class_inquiry', label: 'PTE Class Inquiry' },
@@ -563,25 +579,4 @@ export const gpaScaleOptions = [
   { value: "2.5-2.9", label: "2.5 - 2.9 (or equivalent)" },
   { value: "Below 2.5", label: "Below 2.5 (or equivalent)" },
   { value: "N/A", label: "Not Applicable / Varies" },
-];
-
-export const englishTestOptions = [
-  { value: "IELTS", label: "IELTS" },
-  { value: "TOEFL", label: "TOEFL iBT" },
-  { value: "PTE", label: "PTE Academic" },
-  { value: "Duolingo", label: "Duolingo English Test" },
-  { value: "Not Taken Yet", label: "Not Taken Yet / Planning" },
-  { value: "Other", label: "Other" },
-];
-
-export const studyDestinationOptions = [
-  { value: "USA", label: "USA" },
-  { value: "Canada", label: "Canada" },
-  { value: "Australia", label: "Australia" },
-  { value: "UK", label: "UK" },
-  { value: "New Zealand", label: "New Zealand" },
-  { value: "Europe (General)", label: "Europe (General)" },
-  { value: "Germany", label: "Germany" },
-  { value: "France", label: "France" },
-  { value: "Other", label: "Other" },
 ];
