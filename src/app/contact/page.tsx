@@ -11,7 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import SectionTitle from '@/components/ui/section-title';
-import { Mail, MapPin, Phone, MessageSquare, Send, Loader2, BookUser, Target, Languages, GraduationCap, StickyNote } from 'lucide-react';
+import { Mail, MapPin, Phone, MessageSquare, Send, Loader2, BookUser, StickyNote, Target, Languages, GraduationCap } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { useState } from 'react';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
@@ -31,19 +31,18 @@ const contactFormSchema = z.object({
 
 type ContactFormValues = z.infer<typeof contactFormSchema>;
 
-// IMPORTANT: Replace these placeholders with your actual Google Form Action URL and Entry IDs
-const GOOGLE_FORM_ACTION_URL = 'REPLACE_WITH_YOUR_GOOGLE_FORM_ACTION_URL'; // e.g., https://docs.google.com/forms/d/e/YOUR_FORM_ID/formResponse
-const NAME_ENTRY_ID = 'REPLACE_WITH_NAME_FIELD_ENTRY_ID'; 
-const EMAIL_ENTRY_ID = 'REPLACE_WITH_EMAIL_FIELD_ENTRY_ID';
-const PHONE_NUMBER_ENTRY_ID = 'REPLACE_WITH_PHONE_NUMBER_FIELD_ENTRY_ID';
-const EDUCATION_ENTRY_ID = 'REPLACE_WITH_EDUCATION_FIELD_ENTRY_ID';
-const ENGLISH_TEST_ENTRY_ID = 'REPLACE_WITH_ENGLISH_TEST_FIELD_ENTRY_ID';
-const DESTINATION_ENTRY_ID = 'REPLACE_WITH_DESTINATION_FIELD_ENTRY_ID';
-const MESSAGE_ENTRY_ID = 'REPLACE_WITH_MESSAGE_FIELD_ENTRY_ID'; 
-const ADDITIONAL_NOTES_ENTRY_ID = 'REPLACE_WITH_ADDITIONAL_NOTES_FIELD_ENTRY_ID'; // Was SUBJECT_ENTRY_ID
+const GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScmMqPLB4NX_BZSSS4C3_2_9wNga-GBmbznGc9nNCs231IeaA/formResponse';
+const NAME_ENTRY_ID = 'entry.381136677';
+const EMAIL_ENTRY_ID = 'entry.897898403';
+const PHONE_NUMBER_ENTRY_ID = 'entry.1344864969';
+const EDUCATION_ENTRY_ID = 'entry.2085503739';
+const ENGLISH_TEST_ENTRY_ID = 'entry.1325410288';
+const DESTINATION_ENTRY_ID = 'entry.22741016';
+const MESSAGE_ENTRY_ID = 'REPLACE_WITH_MESSAGE_FIELD_ENTRY_ID'; // Get this from your form's pre-filled link with message field
+const ADDITIONAL_NOTES_ENTRY_ID = 'REPLACE_WITH_ADDITIONAL_NOTES_FIELD_ENTRY_ID'; // Get this from your form's pre-filled link with additional notes field
 
 async function submitToGoogleSheet(data: ContactFormValues): Promise<{ success: boolean; message: string }> {
-  if (GOOGLE_FORM_ACTION_URL === 'REPLACE_WITH_YOUR_GOOGLE_FORM_ACTION_URL' || !NAME_ENTRY_ID.startsWith('entry.')) {
+  if (GOOGLE_FORM_ACTION_URL.startsWith('REPLACE_WITH_') || !NAME_ENTRY_ID.startsWith('entry.')) {
     console.error("Google Form URL or critical Entry IDs are not configured. Please update them in src/app/contact/page.tsx");
     return { success: false, message: "Form submission is not configured correctly. Please contact support." };
   }
@@ -55,10 +54,19 @@ async function submitToGoogleSheet(data: ContactFormValues): Promise<{ success: 
   formData.append(EDUCATION_ENTRY_ID, data.lastCompletedEducation);
   formData.append(ENGLISH_TEST_ENTRY_ID, data.englishProficiencyTest);
   formData.append(DESTINATION_ENTRY_ID, data.preferredStudyDestination);
-  formData.append(MESSAGE_ENTRY_ID, data.message);
-  if (data.additionalNotes) {
-    formData.append(ADDITIONAL_NOTES_ENTRY_ID, data.additionalNotes);
+  
+  if (MESSAGE_ENTRY_ID !== 'REPLACE_WITH_MESSAGE_FIELD_ENTRY_ID') {
+    formData.append(MESSAGE_ENTRY_ID, data.message);
+  } else {
+    console.warn("MESSAGE_ENTRY_ID is not configured. 'Message' field will not be submitted to Google Sheet.");
   }
+
+  if (data.additionalNotes && ADDITIONAL_NOTES_ENTRY_ID !== 'REPLACE_WITH_ADDITIONAL_NOTES_FIELD_ENTRY_ID') {
+    formData.append(ADDITIONAL_NOTES_ENTRY_ID, data.additionalNotes);
+  } else if (data.additionalNotes) {
+     console.warn("ADDITIONAL_NOTES_ENTRY_ID is not configured. 'Additional Notes' field will not be submitted to Google Sheet.");
+  }
+
 
   try {
     await fetch(GOOGLE_FORM_ACTION_URL, {
