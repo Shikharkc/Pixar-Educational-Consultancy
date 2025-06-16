@@ -113,7 +113,7 @@ export const services: Service[] = [
     description: 'Comprehensive support for all your application paperwork.',
     longDescription: 'Navigating the complex documentation requirements for international university applications can be daunting. We provide meticulous assistance with preparing, organizing, and reviewing all necessary documents, including transcripts, recommendation letters, statements of purpose, and financial proofs. Our goal is to ensure your application is complete, accurate, and compelling.',
     icon: Briefcase,
-    imageUrl: '/da.png',
+    imageUrl: '/services/da.png',
     dataAiHint: 'documents application',
     keyFeatures: [
       "Application form completion strategy",
@@ -128,7 +128,7 @@ export const services: Service[] = [
     description: 'Tailored advice to match your academic goals and preferences.',
     longDescription: 'Every student is unique, with different aspirations and academic backgrounds. We offer personalized guidance sessions to understand your specific needs, help you choose the right courses and universities, and develop a strategic application plan. Our experienced counselors provide insights into various education systems and career pathways.',
     icon: Lightbulb,
-    imageUrl: '/pg.jpg',
+    imageUrl: '/services/pg.jpg',
     dataAiHint: 'student guidance',
     keyFeatures: [
       "One-on-one counseling sessions",
@@ -143,7 +143,7 @@ export const services: Service[] = [
     description: 'Expert help with visa applications and pre-departure preparations.',
     longDescription: 'Securing a student visa and preparing for life in a new country are crucial steps. We offer expert assistance with visa applications, including mock interviews and document checklists. Additionally, we provide comprehensive pre-departure briefings covering accommodation, cultural adaptation, and essential travel tips to ensure a smooth transition.',
     icon: Users, 
-    imageUrl: '/vsa.jpg',
+    imageUrl: '/services/vsa.jpg',
     dataAiHint: 'travel preparation',
     keyFeatures: [
       "Student visa application assistance for various countries",
@@ -179,7 +179,7 @@ export interface TeamMember {
 }
 
 export const teamMembers: TeamMember[] = [
-  {
+ {
     id: 'team-13',
     name: 'Pradeep Khadka',
     role: 'Founder & CEO',
@@ -192,7 +192,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Pawan Acharya',
     role: 'Managing Director',
     bio: 'Oversees the operational and strategic direction of Pixar Educational Consultancy, ensuring service excellence.',
-    imageUrl: '/pawan.jpg',
+    imageUrl: '/teams/pawan.jpg',
     dataAiHint: 'director man',
   },
   {
@@ -200,7 +200,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Anisha Thapa',
     role: 'Prep Class Head',
     bio: 'Leads our English language test preparation programs (IELTS, PTE, TOEFL, Duolingo), ensuring high-quality coaching.',
-    imageUrl: 'https://placehold.co/300x300.png',
+    imageUrl: 'https://placehold.co/300x300.png', // Placeholder
     dataAiHint: 'teacher woman',
   },
   {
@@ -208,39 +208,39 @@ export const teamMembers: TeamMember[] = [
     name: 'Shikhar KC',
     role: 'IT Head',
     bio: 'Manages our IT infrastructure and digital platforms, ensuring smooth technological operations.',
-    imageUrl: '/shikhar.jpg',
+    imageUrl: '/teams/shikhar.jpg',
     dataAiHint: 'tech professional',
   },
-  {
-    id: 'team-9',
-    name: 'Sabina Thapa',
-    role: 'Australia Counselor',
-    bio: 'Provides specialized counseling for students aspiring to study in Australia, focusing on admissions and visas.',
-    imageUrl: '/sabina.jpg',
-    dataAiHint: 'counselor woman',
-  },
-  {
-    id: 'team-3',
-    name: 'Mujal Amatya',
-    role: 'USA Counselor',
-    bio: 'Expert in U.S. university applications, scholarships, and F-1 visa procedures.',
-    imageUrl: 'https://placehold.co/300x300.png',
-    dataAiHint: 'advisor man',
+   {
+    id: 'team-1',
+    name: 'Saubhana Bhandari',
+    role: 'Front Desk Officer',
+    bio: 'Manages front office operations and assists students with initial inquiries, ensuring a welcoming experience.',
+    imageUrl: 'https://placehold.co/300x300.png', // Placeholder
+    dataAiHint: 'professional woman',
   },
   {
     id: 'team-2',
     name: 'Shyam Babu Ojha',
     role: 'New Zealand Counselor',
     bio: 'Specializes in New Zealand university admissions and visa processes, providing expert guidance.',
-    imageUrl: 'https://placehold.co/300x300.png',
+    imageUrl: 'https://placehold.co/300x300.png', // Placeholder
     dataAiHint: 'counselor man',
+  },
+  {
+    id: 'team-3',
+    name: 'Mujal Amatya',
+    role: 'USA Counselor',
+    bio: 'Expert in U.S. university applications, scholarships, and F-1 visa procedures.',
+    imageUrl: 'https://placehold.co/300x300.png', // Placeholder
+    dataAiHint: 'advisor man',
   },
   {
     id: 'team-4',
     name: 'Sonima Rijal',
     role: 'Application Officer',
     bio: 'Assists students with the university application process, ensuring all documents are perfectly prepared.',
-    imageUrl: 'https://placehold.co/300x300.png',
+    imageUrl: 'https://placehold.co/300x300.png', // Placeholder
     dataAiHint: 'officer woman',
   },
   {
@@ -248,7 +248,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Sujata Nepal',
     role: 'Application Officer',
     bio: 'Dedicated to helping students meticulously complete their applications for various universities.',
-    imageUrl: 'https://placehold.co/300x300.png',
+    imageUrl: 'https://placehold.co/300x300.png', // Placeholder
     dataAiHint: 'professional portrait',
   },
   {
@@ -256,37 +256,36 @@ export const teamMembers: TeamMember[] = [
     name: 'Mamata Chapagain',
     role: 'Documents Officer',
     bio: 'Expert in managing and verifying student documentation for smooth application submissions.',
-    imageUrl: 'https://placehold.co/300x300.png',
+    imageUrl: 'https://placehold.co/300x300.png', // Placeholder
     dataAiHint: 'woman team',
-  },
-  {
-    id: 'team-1',
-    name: 'Saubhana Bhandari',
-    role: 'Front Desk Officer',
-    bio: 'Manages front office operations and assists students with initial inquiries, ensuring a welcoming experience.',
-    imageUrl: 'https://placehold.co/300x300.png',
-    dataAiHint: 'professional woman',
-  },
-  {
-    id: 'team-11',
-    name: 'Ram Babu Ojha',
-    role: 'Video Editor',
-    bio: 'Creates engaging video content for our promotional and informational materials.',
-    imageUrl: 'https://placehold.co/300x300.png',
-    dataAiHint: 'creative man',
   },
   {
     id: 'team-7',
     name: 'Sunita Khadka',
     role: 'Office Caretaker',
     bio: 'Ensures a clean, organized, and welcoming office environment for students and staff.',
-    imageUrl: 'https://placehold.co/300x300.png',
+    imageUrl: 'https://placehold.co/300x300.png', // Placeholder
     dataAiHint: 'office staff',
+  },
+  {
+    id: 'team-9',
+    name: 'Sabina Thapa',
+    role: 'Australia Counselor',
+    bio: 'Provides specialized counseling for students aspiring to study in Australia, focusing on admissions and visas.',
+    imageUrl: '/teams/sabina.jpg',
+    dataAiHint: 'counselor woman',
+  },
+  {
+    id: 'team-11',
+    name: 'Ram Babu Ojha',
+    role: 'Video Editor',
+    bio: 'Creates engaging video content for our promotional and informational materials.',
+    imageUrl: 'https://placehold.co/300x300.png', // Placeholder
+    dataAiHint: 'creative man',
   },
 ];
 
-
-export interface Certification {
+export interface Accreditation {
   id: string;
   name: string;
   issuingBody: string;
@@ -294,22 +293,17 @@ export interface Certification {
   dataAiHint?: string;
 }
 
-export const certifications: Certification[] = [
-  {
-    id: '1',
-    name: 'Certified Education Consultant',
-    issuingBody: 'Global Education Council',
-    logoUrl: 'https://placehold.co/150x100.png',
-    dataAiHint: 'certificate award',
-  },
-  {
-    id: '2',
-    name: 'International Student Advisor',
-    issuingBody: 'Association of International Educators',
-    logoUrl: 'https://placehold.co/150x100.png',
-    dataAiHint: 'badge education',
-  },
+export const accreditations: Accreditation[] = [
+  { id: 'acc-1', name: 'Accreditation Name 1', issuingBody: 'Issuing Body 1', logoUrl: '/accreditations/placeholder1.jpg', dataAiHint: 'logo badge' },
+  { id: 'acc-2', name: 'Accreditation Name 2', issuingBody: 'Issuing Body 2', logoUrl: '/accreditations/placeholder2.jpg', dataAiHint: 'logo certificate' },
+  { id: 'acc-3', name: 'Accreditation Name 3', issuingBody: 'Issuing Body 3', logoUrl: '/accreditations/placeholder3.jpg', dataAiHint: 'award seal' },
+  { id: 'acc-4', name: 'Accreditation Name 4', issuingBody: 'Issuing Body 4', logoUrl: '/accreditations/placeholder4.jpg', dataAiHint: 'official logo' },
+  { id: 'acc-5', name: 'Accreditation Name 5', issuingBody: 'Issuing Body 5', logoUrl: '/accreditations/placeholder5.jpg', dataAiHint: 'recognition badge' },
+  { id: 'acc-6', name: 'Accreditation Name 6', issuingBody: 'Issuing Body 6', logoUrl: '/accreditations/placeholder6.jpg', dataAiHint: 'certification mark' },
+  { id: 'acc-7', name: 'Accreditation Name 7', issuingBody: 'Issuing Body 7', logoUrl: '/accreditations/placeholder7.jpg', dataAiHint: 'partner logo' },
+  { id: 'acc-8', name: 'Accreditation Name 8', issuingBody: 'Issuing Body 8', logoUrl: '/accreditations/placeholder8.jpg', dataAiHint: 'approval logo' },
 ];
+
 
 export interface University {
   name: string;

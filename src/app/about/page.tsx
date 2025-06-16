@@ -4,8 +4,8 @@ import Image from 'next/image';
 import SectionTitle from '@/components/ui/section-title';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Target, Users, Award, CheckCircle, Building, Heart, Handshake, Goal, Lightbulb, UsersRound } from 'lucide-react';
-import { teamMembers, certifications } from '@/lib/data.tsx';
-import type { TeamMember, Certification } from '@/lib/data.tsx';
+import { teamMembers, accreditations } from '@/lib/data.tsx'; // Updated import
+import type { TeamMember, Accreditation } from '@/lib/data.tsx'; // Updated import
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -219,29 +219,38 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Certifications Section */}
+      {/* Accreditations Section */}
       <section ref={s6Ref} className={cn("transition-all duration-700 ease-out", s6Visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
         <div className="container mx-auto px-4">
           <SectionTitle title="Our Accreditations" subtitle="Recognized for excellence and professionalism in educational consultancy." />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 items-center justify-items-center">
-            {certifications.map((cert: Certification, index: number) => {
-              const [certRef, certVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.2 });
-              return (
-              <div key={cert.id} ref={certRef} className={cn("text-center p-4 rounded-lg bg-card shadow-md hover:shadow-lg transition-shadow w-full transition-all duration-500 ease-out", certVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 100}ms`}}>
-                <Image
-                  src={cert.logoUrl}
-                  alt={cert.name}
-                  width={120}
-                  height={80}
-                  className="mx-auto mb-3 object-contain"
-                  data-ai-hint={cert.dataAiHint || 'logo badge'}
-                />
-                <h4 className="font-semibold text-primary text-sm md:text-base">{cert.name}</h4>
-                <p className="text-xs text-foreground/70">{cert.issuingBody}</p>
-              </div>
-              );
-            })}
-          </div>
+          {accreditations.length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 justify-items-stretch">
+              {accreditations.map((accred: Accreditation, index: number) => {
+                const [itemRef, itemVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
+                return (
+                  <div key={accred.id} ref={itemRef} className={cn("transition-all duration-500 ease-out", itemVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 70}ms`}}>
+                    <div className="text-center p-4 rounded-lg bg-card shadow-md hover:shadow-lg transition-shadow h-full flex flex-col items-center justify-start"> {/* Changed justify-center to justify-start */}
+                      <div className="relative w-full h-32 mb-4"> {/* Image container with fixed height */}
+                        <Image
+                          src={accred.logoUrl} // You will replace this path
+                          alt={accred.name}
+                          layout="fill"
+                          objectFit="contain" // Key for mixed orientations
+                          data-ai-hint={accred.dataAiHint || 'accreditation logo'}
+                        />
+                      </div>
+                      <div className="mt-auto w-full"> {/* Ensures text is at the bottom and takes full width for text-center */}
+                        <h4 className="font-semibold text-primary text-sm">{accred.name}</h4>
+                        <p className="text-xs text-foreground/70">{accred.issuingBody}</p>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-center text-foreground/70">Details about our accreditations will be updated soon.</p>
+          )}
         </div>
       </section>
     </div>
