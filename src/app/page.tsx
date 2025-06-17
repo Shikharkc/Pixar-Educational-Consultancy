@@ -20,6 +20,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { cn } from '@/lib/utils';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { format, differenceInCalendarMonths, addMonths, differenceInCalendarWeeks, startOfDay, differenceInDays } from 'date-fns';
+import { gsap } from 'gsap';
 
 
 const pathwayFormSchema = z.object({
@@ -38,7 +39,7 @@ const taglines = [
   "Your Bridge to World-Class Universities",
 ];
 
-const FADE_DURATION_MS = 300;
+const FADE_DURATION_MS = 500; // Increased slightly for GSAP smoothness
 const DISPLAY_DURATION_MS = 2500;
 
 const selectableCountriesHomepage = [
@@ -104,13 +105,16 @@ export default function HomePage() {
   const [heroAnimated, setHeroAnimated] = useState(false);
 
   const [currentTaglineText, setCurrentTaglineText] = useState(taglines[0]);
-  const [isTaglineVisible, setIsTaglineVisible] = useState(false);
+  const [isTaglineVisible, setIsTaglineVisible] = useState(false); // Still useful for timing GSAP
 
   const [showResultsArea, setShowResultsArea] = useState(false);
   const [resultsContainerAnimatedIn, setResultsContainerAnimatedIn] = useState(false);
 
   const [intakeTimes, setIntakeTimes] = useState<Record<string, TimeRemaining>>({});
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const heroTitleRef = useRef<HTMLDivElement>(null);
+  const taglineRef = useRef<HTMLHeadingElement>(null);
 
   const [heroSectionRef, isHeroSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.05, initialVisible: true });
   const [pathwaySearchSectionRef, isPathwaySearchSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.02, initialVisible: false });
@@ -125,25 +129,60 @@ export default function HomePage() {
     return () => clearTimeout(timer);
   }, []);
 
+  // GSAP animation for the main hero title
+  useEffect(() => {
+    if (heroAnimated && heroTitleRef.current) {
+      gsap.fromTo(
+        heroTitleRef.current,
+        { autoAlpha: 0, y: 30 },
+        { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power3.out', delay: 0.2 }
+      );
+    }
+  }, [heroAnimated]);
+
+  // Tagline cycling logic (unchanged)
   useEffect(() => {
     if (!heroAnimated) {
-      setIsTaglineVisible(false);
       return;
     }
+    // Initial tagline display
+    setIsTaglineVisible(true); 
 
-    setIsTaglineVisible(true);
     let currentIdx = 0;
     const cycleTime = DISPLAY_DURATION_MS + FADE_DURATION_MS;
     const intervalId = setInterval(() => {
-      setIsTaglineVisible(false);
+      setIsTaglineVisible(false); // Trigger fade out
       setTimeout(() => {
         currentIdx = (currentIdx + 1) % taglines.length;
         setCurrentTaglineText(taglines[currentIdx]);
-        setIsTaglineVisible(true);
+        setIsTaglineVisible(true); // Trigger fade in
       }, FADE_DURATION_MS);
     }, cycleTime);
     return () => clearInterval(intervalId);
   }, [heroAnimated]);
+
+  // GSAP animation for taglines
+  useEffect(() => {
+    if (heroAnimated && taglineRef.current) {
+      if (isTaglineVisible) {
+        gsap.fromTo(
+          taglineRef.current,
+          { autoAlpha: 0, y: 20 },
+          { autoAlpha: 1, y: 0, duration: FADE_DURATION_MS / 1000, ease: 'power2.out' }
+        );
+      } else {
+        // Only animate out if it's not the initial hide
+        if (gsap.getProperty(taglineRef.current, "autoAlpha") > 0) { 
+            gsap.to(taglineRef.current, {
+            autoAlpha: 0,
+            y: -20,
+            duration: FADE_DURATION_MS / 1000,
+            ease: 'power2.in',
+            });
+        }
+      }
+    }
+  }, [currentTaglineText, isTaglineVisible, heroAnimated]);
   
   useEffect(() => {
     const newIntakeTimes: Record<string, TimeRemaining> = {};
@@ -318,20 +357,22 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-black opacity-70"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <div
+            ref={heroTitleRef}
             className={`text-5xl md:text-7xl font-headline font-bold text-primary-foreground mb-4 transition-all ease-out duration-700 ${
               heroAnimated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}
+            style={{ willChange: 'transform, opacity' }} // Hint for GSAP
           >
             Pixar Education
           </div>
           <h1
+            ref={taglineRef}
             className={cn(
               "text-4xl md:text-5xl font-headline font-bold text-primary-foreground mb-6 h-[5rem] md:min-h-[6rem] flex items-center justify-center", 
-              "transition-transform ease-out duration-700 delay-100",
-              heroAnimated ? "translate-y-0" : "translate-y-10 opacity-0",
-              "transition-opacity ease-in-out"
+              "transition-transform ease-out duration-700 delay-100", // Keep base transform for block animation
+              heroAnimated ? "translate-y-0" : "translate-y-10 opacity-0"
             )}
-            style={{ transitionDuration: `${FADE_DURATION_MS}ms`, opacity: isTaglineVisible && heroAnimated ? 1 : 0 }}
+            style={{ willChange: 'transform, opacity' }} // Hint for GSAP
           >
             <span>{currentTaglineText}</span>
           </h1>
