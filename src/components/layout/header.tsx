@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image'; // Added Image import
-import { Home, Info, Briefcase, MapPin, Sparkles, Mail, ChevronDown, Menu, Wand2, HelpCircle, CheckSquare, MessageCircleQuestion, Share2 } from 'lucide-react'; // Added Share2
+import { Home, Info, Briefcase, MapPin, Sparkles, Mail, ChevronDown, Menu, Wand2, HelpCircle, CheckSquare, MessageCircleQuestion, Share2, Newspaper } from 'lucide-react'; // Added Newspaper
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -20,8 +20,9 @@ const navItems = [
   { href: '/about', label: 'About Us', icon: Info },
   { href: '/services', label: 'Services', icon: Briefcase },
   { href: '/country-guides', label: 'Country Guides', icon: MapPin },
-  { 
-    label: 'Student Hub', 
+  { href: '/blog', label: 'Blog', icon: Newspaper }, // NEW top-level Blog link
+  {
+    label: 'Student Hub',
     icon: Sparkles,
     subItems: [
       { href: '/ai-assistants', label: 'Smart Tools', icon: Wand2 },
@@ -30,7 +31,7 @@ const navItems = [
       { href: '/interview-qa', label: 'Interview Q&A', icon: MessageCircleQuestion },
     ],
   },
-  { href: '/connect', label: 'Social Media', icon: Share2 }, // Changed "Connect" to "Social Media"
+  { href: '/connect', label: 'Social Media', icon: Share2 },
   { href: '/contact', label: 'Contact Us', icon: Mail },
 ];
 
@@ -119,8 +120,8 @@ export default function Header() {
     );
   };
 
-  const renderNavItems = (isMobile: boolean = false) => navItems.map((item: any) => { 
-    if (item.subItems) { 
+  const renderNavItems = (isMobile: boolean = false) => navItems.map((item: any) => {
+    if (item.subItems) {
       if (isMobile) {
         return (
           <div key={item.label} className="flex flex-col w-full">
@@ -128,7 +129,7 @@ export default function Header() {
               <item.icon className="h-5 w-5" />
               <span>{item.label}</span>
             </div>
-            {item.subItems.map((subItem: any) => ( 
+            {item.subItems.map((subItem: any) => (
                <Link key={subItem.href} href={subItem.href} passHref>
                 <Button variant="ghost" className="w-full justify-start flex items-center space-x-2 text-foreground hover:bg-accent hover:text-accent-foreground pl-8 py-2.5" onClick={() => setIsMobileMenuOpen(false)}>
                   <subItem.icon className="h-5 w-5" />

@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { GraduationCap, Mail, Phone, MapPin, ShieldCheck, FileText, CheckSquare, MessageCircleQuestion, Users, Search, Info, Briefcase as BriefcaseIcon } from 'lucide-react'; // Added Info, BriefcaseIcon
+import { GraduationCap, Mail, Phone, MapPin, ShieldCheck, FileText, Users, Info, Briefcase as BriefcaseIcon, Newspaper, MessageCircleQuestion } from 'lucide-react'; // Added Newspaper, MessageCircleQuestion
 
 export default function Footer() {
   const importantLinks = [
@@ -8,6 +8,7 @@ export default function Footer() {
     { href: '/services', label: 'Services', icon: BriefcaseIcon },
     { href: '/country-guides', label: 'Country Guides', icon: MapPin },
     { href: '/ai-assistants', label: 'Student Hub', icon: Users }, // Points to Smart Tools
+    { href: '/blog', label: 'Blog', icon: Newspaper }, // Added Blog link
     { href: '/faq', label: 'FAQ', icon: MessageCircleQuestion },
     { href: '/contact', label: 'Contact Us', icon: Mail },
   ];
