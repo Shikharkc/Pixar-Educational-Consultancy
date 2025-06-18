@@ -158,7 +158,7 @@ export const services: Service[] = [
     description: 'Ace IELTS, TOEFL, PTE & Duolingo with our tailored coaching.',
     longDescription: "Our comprehensive English test preparation programs are designed to equip you with the skills and strategies needed to achieve your target scores. We offer specialized coaching for IELTS, TOEFL iBT, PTE Academic, and the Duolingo English Test. Our experienced instructors provide personalized feedback, mock tests, and focused training on all test sections – Reading, Writing, Listening, and Speaking. Join us to build your confidence and master the exam.",
     icon: BookMarked,
-    imageUrl: '/english-prep-class.jpg',
+    imageUrl: '/services/pixarclasses.jpg',
     dataAiHint: "classroom students learning",
     keyFeatures: [
       "Tailored coaching for IELTS, TOEFL, PTE, Duolingo",

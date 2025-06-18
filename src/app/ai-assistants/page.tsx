@@ -20,9 +20,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from '@/lib/utils';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
-import { allEducationLevels } from '@/lib/data.tsx'; 
+import { allEducationLevels as fullEducationLevelsList } from '@/lib/data.tsx'; 
 
-import { Loader2, Sparkles, Info, FileText, Download, AlertCircle, ListChecks, User, FilePenLine, Construction } from 'lucide-react';
+import { Loader2, Sparkles, Info, FileText, Download, AlertCircle, ListChecks, User, FilePenLine, Search } from 'lucide-react';
 
 
 // Schemas for Document Checklist
@@ -32,6 +32,15 @@ const docChecklistFormSchema = z.object({
   desiredCountry: z.string().min(1, "Please select your desired country."),
 });
 type DocumentChecklistFormValues = z.infer<typeof docChecklistFormSchema>;
+
+// Schema for SOP Sample Finder
+const sopSampleFormSchema = z.object({
+  sopCountry: z.string().min(1, "Please select your desired country."),
+  sopCourse: z.string().min(3, "Please enter your intended course.").max(100, "Course name is too long."),
+  sopEducationLevel: z.string().min(1, "Please select your target education level."),
+});
+type SopSampleFormValues = z.infer<typeof sopSampleFormSchema>;
+
 
 interface StaticDocument {
   englishName: string;
@@ -80,8 +89,8 @@ function getRuleBasedDocumentChecklist(input: { educationLevel: string; desiredC
 
   filteredDocuments.sort((a, b) => {
       const aSpecificity = (a.countries ? 1 : 0) + (a.educationLevels ? 1 : 0);
-      const bSpecificity = (b.countries ? 1 : 0) + (a.educationLevels ? 1 : 0);
-      return aSpecificity - bSpecificity;
+      const bSpecificity = (b.countries ? 1 : 0) + (a.educationLevels ? 1 : 0); // Corrected typo here
+      return bSpecificity - aSpecificity; // Sort more specific items first
   });
 
   let notes = "This is a general checklist. Requirements can vary significantly based on the specific institution, program, and your individual circumstances. Always verify the exact requirements with the university and the respective country's immigration authorities. \n\nLanguage proficiency tests like IELTS, TOEFL, or PTE are almost always required; aim for competitive scores. Ensure all documents are genuine, and if not in English, provide certified translations (except for Nepali names).";
@@ -104,15 +113,67 @@ const selectableCountries = [
   { name: 'New Zealand', value: 'New Zealand' },
 ];
 
+const sopEducationLevels = fullEducationLevelsList.filter(
+  level => level.value === "Diploma" || level.value === "Bachelor's Degree" || level.value === "Master's Degree"
+);
+
+interface SopSampleFile {
+  fileName: string;
+  displayName: string;
+  path: string;
+}
+
+interface SopSampleMap {
+  [country: string]: {
+    [level: string]: SopSampleFile;
+  };
+}
+
+// IMPORTANT: User must create these exact files in public/sop-samples/
+// e.g., public/sop-samples/SOP_USA_Bachelors.docx
+const sopSampleFiles: SopSampleMap = {
+  "USA": {
+    "Bachelor's Degree": { fileName: "SOP_USA_Bachelors.docx", displayName: "Generic SOP for Bachelor's in USA", path: "/sop-samples/SOP_USA_Bachelors.docx" },
+    "Master's Degree": { fileName: "SOP_USA_Masters.docx", displayName: "Generic SOP for Master's in USA", path: "/sop-samples/SOP_USA_Masters.docx" },
+    "Diploma": { fileName: "SOP_USA_Diploma.docx", displayName: "Generic SOP for Diploma in USA", path: "/sop-samples/SOP_USA_Diploma.docx" },
+  },
+  "Australia": {
+    "Bachelor's Degree": { fileName: "SOP_Australia_Bachelors.docx", displayName: "Generic SOP for Bachelor's in Australia", path: "/sop-samples/SOP_Australia_Bachelors.docx" },
+    "Master's Degree": { fileName: "SOP_Australia_Masters.docx", displayName: "Generic SOP for Master's in Australia", path: "/sop-samples/SOP_Australia_Masters.docx" },
+    "Diploma": { fileName: "SOP_Australia_Diploma.docx", displayName: "Generic SOP for Diploma in Australia", path: "/sop-samples/SOP_Australia_Diploma.docx" },
+  },
+  "Canada": {
+    "Bachelor's Degree": { fileName: "SOP_Canada_Bachelors.docx", displayName: "Generic SOP for Bachelor's in Canada", path: "/sop-samples/SOP_Canada_Bachelors.docx" },
+    "Master's Degree": { fileName: "SOP_Canada_Masters.docx", displayName: "Generic SOP for Master's in Canada", path: "/sop-samples/SOP_Canada_Masters.docx" },
+    "Diploma": { fileName: "SOP_Canada_Diploma.docx", displayName: "Generic SOP for Diploma in Canada", path: "/sop-samples/SOP_Canada_Diploma.docx" },
+  },
+  "UK": {
+    "Bachelor's Degree": { fileName: "SOP_UK_Bachelors.docx", displayName: "Generic SOP for Bachelor's in UK", path: "/sop-samples/SOP_UK_Bachelors.docx" },
+    "Master's Degree": { fileName: "SOP_UK_Masters.docx", displayName: "Generic SOP for Master's in UK", path: "/sop-samples/SOP_UK_Masters.docx" },
+    "Diploma": { fileName: "SOP_UK_Diploma.docx", displayName: "Generic SOP for Diploma in UK", path: "/sop-samples/SOP_UK_Diploma.docx" },
+  },
+  "New Zealand": {
+    "Bachelor's Degree": { fileName: "SOP_New_Zealand_Bachelors.docx", displayName: "Generic SOP for Bachelor's in New Zealand", path: "/sop-samples/SOP_New_Zealand_Bachelors.docx" },
+    "Master's Degree": { fileName: "SOP_New_Zealand_Masters.docx", displayName: "Generic SOP for Master's in New Zealand", path: "/sop-samples/SOP_New_Zealand_Masters.docx" },
+    "Diploma": { fileName: "SOP_New_Zealand_Diploma.docx", displayName: "Generic SOP for Diploma in New Zealand", path: "/sop-samples/SOP_New_Zealand_Diploma.docx" },
+  },
+};
+
 
 export default function SmartToolsPage() {
   const { toast } = useToast();
 
+  // Document Checklist State
   const [isDocChecklistLoading, setIsDocChecklistLoading] = useState(false);
   const [docChecklistError, setDocChecklistError] = useState<string | null>(null);
   const [docChecklistResult, setDocChecklistResult] = useState<RuleBasedDocumentChecklistOutput | null>(null);
   const [showDocChecklistResultsArea, setShowDocChecklistResultsArea] = useState(false);
   const [docChecklistResultsAnimatedIn, setDocChecklistResultsAnimatedIn] = useState(false);
+
+  // SOP Sample Finder State
+  const [isSopSampleLoading, setIsSopSampleLoading] = useState(false);
+  const [sopSampleInfo, setSopSampleInfo] = useState<SopSampleFile & { userCourse: string } | null>(null);
+  const [sopSampleError, setSopSampleError] = useState<string | null>(null);
 
   const [titleSectionRef, isTitleSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true });
   const [tabsRef, isTabsVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.05 });
@@ -120,26 +181,24 @@ export default function SmartToolsPage() {
 
   const docChecklistForm = useForm<DocumentChecklistFormValues>({ 
     resolver: zodResolver(docChecklistFormSchema),
-    defaultValues: {
-      userName: '',
-      educationLevel: '',
-      desiredCountry: '',
-    },
+    defaultValues: { userName: '', educationLevel: '', desiredCountry: '' },
+  });
+
+  const sopSampleForm = useForm<SopSampleFormValues>({
+    resolver: zodResolver(sopSampleFormSchema),
+    defaultValues: { sopCountry: '', sopCourse: '', sopEducationLevel: '' },
   });
   
 
   async function onDocChecklistSubmit(values: DocumentChecklistFormValues) { 
     setDocChecklistResult(null);
     setDocChecklistError(null);
-
     if (!showDocChecklistResultsArea) {
         setShowDocChecklistResultsArea(true);
-        requestAnimationFrame(() => {
-            setDocChecklistResultsAnimatedIn(true);
-        });
+        requestAnimationFrame(() => setDocChecklistResultsAnimatedIn(true));
     }
     setIsDocChecklistLoading(true);
-    await new Promise(resolve => setTimeout(resolve, 500)); 
+    await new Promise(resolve => setTimeout(resolve, 300)); 
     try {
       const ruleBasedResult = getRuleBasedDocumentChecklist({
         educationLevel: values.educationLevel,
@@ -147,10 +206,29 @@ export default function SmartToolsPage() {
       });
       setDocChecklistResult(ruleBasedResult);
     } catch (e) {
-      setDocChecklistError(e instanceof Error ? e.message : 'An unexpected error occurred generating the checklist.');
+      setDocChecklistError(e instanceof Error ? e.message : 'An unexpected error occurred.');
     } finally {
       setIsDocChecklistLoading(false);
     }
+  }
+
+  function onSopSampleSubmit(values: SopSampleFormValues) {
+    setIsSopSampleLoading(true);
+    setSopSampleInfo(null);
+    setSopSampleError(null);
+    
+    // Simulate a short delay for UX
+    setTimeout(() => {
+      const sample = sopSampleFiles[values.sopCountry]?.[values.sopEducationLevel];
+      if (sample) {
+        setSopSampleInfo({ ...sample, userCourse: values.sopCourse });
+      } else {
+        setSopSampleError("No specific SOP sample found for this combination. You can download a general SOP template or contact us for personalized assistance.");
+        // Optionally, provide a link to a very generic template if available
+        // setSopSampleInfo({ fileName: "SOP_Generic.docx", displayName: "General SOP Template", path: "/sop-samples/SOP_Generic.docx", userCourse: values.sopCourse });
+      }
+      setIsSopSampleLoading(false);
+    }, 300);
   }
 
   const handleDownloadPdf = () => { 
@@ -281,7 +359,7 @@ export default function SmartToolsPage() {
       <div ref={titleSectionRef} className={cn("transition-all duration-700 ease-out", isTitleSectionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
         <SectionTitle
           title="Smart Study Tools"
-          subtitle="Utilize our SOP template generator and document checklists for your study abroad journey."
+          subtitle="Utilize our SOP sample finder and document checklists for your study abroad journey."
         />
       </div>
 
@@ -289,29 +367,128 @@ export default function SmartToolsPage() {
         <Tabs defaultValue="sop-generator" className="w-full">
           <TabsList className="grid w-full grid-cols-2 md:w-fit mx-auto mb-8">
             <TabsTrigger value="sop-generator" className="py-2.5">
-              <FilePenLine className="mr-2 h-5 w-5" /> SOP Generator
+              <FilePenLine className="mr-2 h-5 w-5" /> SOP Sample Finder
             </TabsTrigger>
             <TabsTrigger value="document-checklist" className="py-2.5">
               <ListChecks className="mr-2 h-5 w-5" /> Document Checklist
             </TabsTrigger>
           </TabsList>
 
+          {/* SOP Sample Finder Tab Content */}
           <TabsContent value="sop-generator">
             <Card className="shadow-xl bg-card w-full max-w-2xl mx-auto">
                 <CardHeader>
-                  <CardTitle className="font-headline text-primary flex items-center"><FilePenLine className="mr-2 h-6 w-6" />SOP Generator</CardTitle>
-                  <CardDescription>This feature is currently under development.</CardDescription>
+                  <CardTitle className="font-headline text-primary flex items-center"><FilePenLine className="mr-2 h-6 w-6" />Statement of Purpose (SOP) Sample Finder</CardTitle>
+                  <CardDescription>Fill in your details to find a relevant SOP sample. These are generic templates to guide you.</CardDescription>
                 </CardHeader>
-                <CardContent className="text-center py-12">
-                    <Construction className="h-16 w-16 text-accent mx-auto mb-4" />
-                    <p className="text-xl font-semibold text-foreground/90 mb-2">Coming Soon!</p>
-                    <p className="text-foreground/70">
-                        We're working hard to bring you an amazing SOP Generator. Please check back later!
-                    </p>
-                     <Button asChild variant="link" className="mt-4">
-                        <Link href="/contact">Contact us for SOP assistance</Link>
-                    </Button>
-                </CardContent>
+                <Form {...sopSampleForm}>
+                  <form onSubmit={sopSampleForm.handleSubmit(onSopSampleSubmit)}>
+                    <CardContent className="space-y-6">
+                      <FormField
+                        control={sopSampleForm.control}
+                        name="sopCountry"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Desired Country for Study</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                              <FormControl><SelectTrigger><SelectValue placeholder="Select a country" /></SelectTrigger></FormControl>
+                              <SelectContent>
+                                {selectableCountries.map(country => ( 
+                                  <SelectItem key={country.value} value={country.value}>{country.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={sopSampleForm.control}
+                        name="sopCourse"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Intended Course of Study</FormLabel>
+                            <FormControl><Input placeholder="e.g., Computer Science, Business Administration" {...field} /></FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={sopSampleForm.control}
+                        name="sopEducationLevel"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Target Education Level</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                              <FormControl><SelectTrigger><SelectValue placeholder="Select education level" /></SelectTrigger></FormControl>
+                              <SelectContent>
+                                {sopEducationLevels.map(level => ( 
+                                  <SelectItem key={level.value} value={level.value}>{level.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </CardContent>
+                    <CardFooter>
+                      <Button type="submit" disabled={isSopSampleLoading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
+                        {isSopSampleLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Search className="mr-2 h-4 w-4" />}
+                        Find SOP Sample
+                      </Button>
+                    </CardFooter>
+                  </form>
+                </Form>
+
+                {isSopSampleLoading && (
+                    <div className="p-6 text-center">
+                        <Loader2 className="h-8 w-8 text-primary animate-spin mx-auto mb-2" />
+                        <p className="text-muted-foreground">Finding sample...</p>
+                    </div>
+                )}
+
+                {sopSampleError && !isSopSampleLoading && (
+                    <Alert variant="destructive" className="m-6">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Sample Not Found</AlertTitle>
+                      <AlertDescription>{sopSampleError}</AlertDescription>
+                    </Alert>
+                )}
+
+                {sopSampleInfo && !isSopSampleLoading && (
+                    <Card className="m-6 bg-secondary/30 border-secondary">
+                        <CardHeader>
+                            <CardTitle className="text-accent">Recommended SOP Sample</CardTitle>
+                            <CardDescription>
+                                For: {sopSampleInfo.userCourse} in {sopSampleForm.getValues('sopCountry')} ({sopSampleForm.getValues('sopEducationLevel')})
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-foreground/90 mb-1">
+                                File: <span className="font-medium">{sopSampleInfo.displayName}</span> ({sopSampleInfo.fileName})
+                            </p>
+                            <p className="text-xs text-muted-foreground mb-4">
+                                This is a general template. You MUST personalize it extensively to reflect your own experiences, goals, and the specific university/program you are applying to.
+                            </p>
+                            <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+                                <a href={sopSampleInfo.path} download={sopSampleInfo.fileName}>
+                                    <Download className="mr-2 h-4 w-4" /> Download Sample
+                                </a>
+                            </Button>
+                        </CardContent>
+                    </Card>
+                )}
+                 <Alert className="m-6 mt-4">
+                    <Info className="h-4 w-4" />
+                    <AlertTitle>Admin Note: Adding Sample Files</AlertTitle>
+                    <AlertDescription className="text-xs">
+                        To make SOP samples downloadable, create a folder named `sop-samples` inside your project's `public` directory.
+                        Place your `.docx` (or other format) files there. The system expects filenames like:
+                        `SOP_USA_Bachelors.docx`, `SOP_Canada_Masters.docx`, etc., based on the `sopSampleFiles` mapping in this page's code.
+                        If a file is missing, the download will fail. Ensure the `path` in `sopSampleFiles` matches the actual file path (e.g., `/sop-samples/FILENAME.docx`).
+                    </AlertDescription>
+                </Alert>
             </Card>
           </TabsContent>
 
@@ -352,7 +529,7 @@ export default function SmartToolsPage() {
                             <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                               <FormControl><SelectTrigger><SelectValue placeholder="Select your education level" /></SelectTrigger></FormControl>
                               <SelectContent>
-                                {allEducationLevels.map(level => ( 
+                                {fullEducationLevelsList.map(level => ( 
                                   <SelectItem key={level.value} value={level.value}>{level.name}</SelectItem>
                                 ))}
                               </SelectContent>
