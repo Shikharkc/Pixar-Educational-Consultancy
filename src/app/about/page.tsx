@@ -8,14 +8,13 @@ import { teamMembers, accreditations } from '@/lib/data.tsx';
 import type { TeamMember, Accreditation } from '@/lib/data.tsx'; 
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
-// Removed Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, ScrollArea, useState as they are no longer needed for the team section popup.
 
 export default function AboutPage() {
   const whyChooseUsPoints = [
-    { text: "Expertise in U.S.A Education: Our team specializes in U.S. student visa counselling, guiding you through every step of the application process with precision and care.", icon: Award },
-    { text: "Unlimited Interview Preparation: We are proud to be the only consultancy in Nepal offering unlimited visa interview preparation classes, ensuring you feel confident and ready for your big day.", icon: Users },
+    { text: "Expertise Across Key Destinations: Our team specializes in comprehensive visa counselling for the USA, Australia, UK, Canada, and New Zealand, guiding you meticulously through each step.", icon: Award },
+    { text: "Comprehensive Interview Preparation: We provide extensive visa interview preparation for all our destination countries, with specialized unlimited sessions for U.S. aspirants, ensuring you feel confident and ready.", icon: Users },
     { text: "End-to-End Assistance: From choosing the right universities to handling complex visa procedures, we are with you at every stage of your journey.", icon: Handshake },
-    { text: "Proven Success: With a stellar track record, we take pride in the success stories of our students who are now thriving in prestigious U.S. universities.", icon: CheckCircle },
+    { text: "Proven Success: With a stellar track record, we take pride in the success stories of our students who are now thriving in prestigious universities worldwide.", icon: CheckCircle },
   ];
 
   const valuesPoints = [
@@ -34,7 +33,6 @@ export default function AboutPage() {
   const [s5Ref, s5Visible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true });
   const [s6Ref, s6Visible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true });
 
-  // Slicing team members for the new layout
   const firstRowTeamMembers = teamMembers.slice(0, 6);
   const secondRowTeamMembers = teamMembers.slice(6, 12);
   const lastRowTeamMember = teamMembers.length > 12 ? teamMembers[12] : null;
@@ -82,13 +80,13 @@ export default function AboutPage() {
           </div>
           <div className="space-y-6">
             <p className="text-lg text-foreground/80">
-              Pixar Educational Consultancy, Nepal’s trusted guide to fulfilling your dreams of studying in the United States of America 🇺🇸. Established in 2013, we have been at the forefront of student visa counselling for over a decade, helping countless Nepali students unlock life-changing opportunities in the USA 🇺🇸.
+              Pixar Educational Consultancy, Nepal’s trusted guide to fulfilling your dreams of studying in premier destinations including the USA 🇺🇸, Australia 🇦🇺, UK 🇬🇧, Canada 🇨🇦, and New Zealand 🇳🇿. Established in 2013, we have been at the forefront of student visa counselling for over a decade, helping countless Nepali students unlock life-changing opportunities in these leading study destinations.
             </p>
             <p className="text-foreground/70">
-              Located in the heart of Nepal, Pixar Educational Consultancy is more than just a consultancy—we are your partners in turning your dreams into reality. With a decade of experience and an unwavering commitment to excellence, we are dedicated to helping you navigate the complexities of studying in The U.S.A 🇺🇸 with ease.
+              Located in the heart of Nepal, Pixar Educational Consultancy is more than just a consultancy—we are your partners in turning your dreams into reality. With a decade of experience and an unwavering commitment to excellence, we are dedicated to helping you navigate the complexities of studying abroad with ease.
             </p>
             <p className="text-foreground/70">
-              Whether you're at the start of your journey or preparing for your visa interview, we are here to guide, support, and inspire. Together, let’s make your U.S.A 🇺🇸 education dreams come true!
+              Whether you're at the start of your journey or preparing for your visa interview, we are here to guide, support, and inspire. Together, let’s make your international education dreams come true!
             </p>
           </div>
         </div>
@@ -97,7 +95,7 @@ export default function AboutPage() {
       {/* Why Choose Us Section */}
       <section ref={s2Ref} className={cn("bg-secondary/30 py-16 rounded-lg shadow-inner transition-all duration-700 ease-out", s2Visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
         <div className="container mx-auto px-4">
-          <SectionTitle title="Why Choose Pixar Edu?" subtitle="Dedicated to your success in U.S. education." />
+          <SectionTitle title="Why Choose Pixar Edu?" subtitle="Dedicated to your success in global education." />
           <div className="grid md:grid-cols-2 gap-8">
             {whyChooseUsPoints.map((point, index) => {
               const [cardRef, cardVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.2 });
@@ -259,4 +257,3 @@ export default function AboutPage() {
     </div>
   );
 }
-

@@ -40,6 +40,7 @@ type UniversitySuggestion = Exclude<PathwayPlannerOutput['universitySuggestions'
 const taglines = [
   "Unlock Your Global Education Journey",
   "Your Bridge to World-Class Universities",
+  "Study in USA, AUS, UK, CAN, NZ with Us",
 ];
 
 const FADE_DURATION_MS = 500;
@@ -119,8 +120,8 @@ export default function HomePage() {
   const taglineRef = useRef<HTMLHeadingElement>(null);
   
   const svgStageRef = useRef<SVGSVGElement>(null);
-  const heroBackgroundPathRef = useRef<SVGPathElement>(null);
-  const heroAnimatedElementRef = useRef<SVGGElement>(null); 
+  const heroBackgroundPathRef = useRef<SVGPathElement>(null); // This will be the invisible guide path
+  const heroAnimatedElementRef = useRef<SVGGElement>(null); // This is the plane
 
   const [heroSectionRef, isHeroSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.05, initialVisible: true });
   const [pathwaySearchSectionRef, isPathwaySearchSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.02, initialVisible: false });
@@ -179,7 +180,6 @@ export default function HomePage() {
   
   useEffect(() => {
     if (heroAnimated && heroAnimatedElementRef.current && heroBackgroundPathRef.current && svgStageRef.current) {
-      // Fade in the entire SVG stage
       gsap.to(svgStageRef.current, {
         opacity: 1,
         duration: 1.5,
@@ -187,16 +187,15 @@ export default function HomePage() {
         ease: "power1.inOut"
       });
 
-      // Animate the plane along the single complex path
-      gsap.to(heroAnimatedElementRef.current, { // Targetting the plane group
-        duration: 12,         // Faster duration
-        repeat: -1,           // Infinite loop
-        ease: "linear",       // Constant speed
+      gsap.to(heroAnimatedElementRef.current, {
+        duration: 12, // Faster duration for one loop
+        repeat: -1,   // Infinite loop
+        ease: "linear", // Constant speed
         motionPath: {
           path: heroBackgroundPathRef.current,
           align: heroBackgroundPathRef.current,
-          alignOrigin: [0.5, 0.5], // Center of the plane on the path
-          autoRotate: true,       // Plane orients along the path
+          alignOrigin: [0.5, 0.5], 
+          autoRotate: true,
         }
       });
     }
@@ -368,11 +367,11 @@ export default function HomePage() {
         className={cn(
           "relative py-20 md:py-32 rounded-lg shadow-xl overflow-hidden",
           isHeroSectionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10",
-          "transition-all duration-700 ease-out bg-card" // Added bg-card for a base if image fails
+          "transition-all duration-700 ease-out bg-card"
         )}
       >
         <Image
-          src="/main.jpg" // This should be the path to your main background image
+          src="/main.jpg"
           alt="Global Education Journey Background"
           layout="fill"
           objectFit="cover"
@@ -394,22 +393,18 @@ export default function HomePage() {
           >
             <defs>
               <linearGradient id="grad" x1="154" x2="160" y1="49" y2="132" gradientUnits="userSpaceOnUse">
-                {/* Using CSS variables for theme-aware gradient */}
                 <stop offset="0" stopColor="hsl(var(--primary))"></stop> 
                 <stop offset="1" stopColor="hsl(var(--accent))"></stop>
               </linearGradient>
             </defs>
-            {/* The motion path for the plane - stroke is transparent to hide it */}
             <path 
               ref={heroBackgroundPathRef}
               className="mp" 
               fill="none" 
-              stroke="transparent" // Path line is hidden
-              strokeWidth="2" // Still give it a strokeWidth for GSAP calculations if needed
+              stroke="transparent" 
+              strokeWidth="2" 
               d="M-92 17.713c154.32 237.253 348.7 486.913 585.407 466.93 137.542-17.257 247.733-123.595 279.259-239.307 27.368-100.43-21.323-229.59-140.017-241.76-118.693-12.172-208.268 98.897-231.122 199.803-34.673 151.333 12.324 312.301 125.096 429.074C639.395 749.225 815.268 819.528 995 819"
             />
-            
-            {/* The plane group - this is what gets animated */}
             <g ref={heroAnimatedElementRef} className="plane"> 
               <path fill="url(#grad)" opacity="0.3" d="m82.8 35 215.9 94.6L79 92l3.8-57Z"/>
               <path fill="url(#grad)" d="m82.8 35 52-23.5 163.9 118.1-216-94.5Z"/>
@@ -442,7 +437,7 @@ export default function HomePage() {
               heroAnimated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
             }`}
           >
-            Your trusted partner for international studies, specializing in guiding Nepali students to U.S. success. 🇺🇸 Start your adventure today!
+            Your trusted partner for international studies, guiding Nepali students to success in the USA 🇺🇸, Australia 🇦🇺, UK 🇬🇧, Canada 🇨🇦, & New Zealand 🇳🇿. Start your adventure today!
           </p>
           <div
              className={cn(
@@ -687,9 +682,9 @@ export default function HomePage() {
         <SectionTitle title="Why Choose Pixar Edu?" subtitle="Your success is our priority. We offer unparalleled support and expertise." />
         <div className="grid md:grid-cols-3 gap-8">
           {[
-            { title: "Expert Guidance", description: "Experienced counselors providing personalized advice.", icon: <CheckCircle className="h-10 w-10 text-accent mb-4" /> },
-            { title: "Global Network", description: "Access to a wide range of universities and programs.", icon: <CheckCircle className="h-10 w-10 text-accent mb-4" /> },
-            { title: "Proven Success", description: "High success rates in admissions and visa applications.", icon: <CheckCircle className="h-10 w-10 text-accent mb-4" /> },
+            { title: "Expert Guidance", description: "Experienced counselors providing personalized advice for global destinations.", icon: <CheckCircle className="h-10 w-10 text-accent mb-4" /> },
+            { title: "Global University Network", description: "Access to a wide range of universities and programs in the USA, Australia, UK, Canada & NZ.", icon: <CheckCircle className="h-10 w-10 text-accent mb-4" /> },
+            { title: "Proven Success Record", description: "High success rates in admissions and visa applications across multiple countries.", icon: <CheckCircle className="h-10 w-10 text-accent mb-4" /> },
           ].map((item, index) => {
             const [cardRef, isCardVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
             return (
