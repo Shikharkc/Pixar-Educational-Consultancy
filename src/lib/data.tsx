@@ -201,7 +201,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Shyam Babu Ojha',
     role: 'New Zealand Counselor',
     bio: 'Specializes in New Zealand university admissions and visa processes, providing expert guidance.',
-    imageUrl: 'https://placehold.co/300x300.png', 
+    imageUrl: '/teams/shyam.jpg', 
     dataAiHint: 'counselor man',
   },
   {
