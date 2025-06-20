@@ -39,29 +39,41 @@ export default function AboutPage() {
   const lastRowTeamMember = teamMembers.length > 12 ? teamMembers[12] : null;
 
 
-  const renderTeamMemberCard = (member: TeamMember) => (
-    <Card className="text-center overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card h-full flex flex-col group">
-      <div className="pt-4 px-4">
-        <div className="relative w-24 h-24 mx-auto rounded-md overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow">
-          <Image
-            src={member.imageUrl}
-            alt={member.name}
-            layout="fill"
-            objectFit="cover"
-            className="transition-transform duration-300 ease-out group-hover:scale-105"
-            data-ai-hint={member.dataAiHint || 'professional portrait'}
-          />
+  const renderTeamMemberCard = (member: TeamMember) => {
+    const isPradeep = member.id === 'team-13'; // Pradeep Khadka's ID
+    const imageSizeClass = isPradeep ? "w-24 h-24" : "w-28 h-28 sm:w-32 sm:h-32"; // Original for Pradeep, larger for others
+    const bioLineClampClass = isPradeep ? "line-clamp-3" : "line-clamp-2"; // Original for Pradeep, shorter for others
+
+    return (
+      <Card className="text-center overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card h-full flex flex-col group">
+        <div className="pt-4 px-4">
+          <div className={cn(
+            "relative mx-auto rounded-md overflow-hidden shadow-sm group-hover:shadow-lg transition-shadow",
+            imageSizeClass
+          )}>
+            <Image
+              src={member.imageUrl}
+              alt={member.name}
+              layout="fill"
+              objectFit="cover"
+              className="transition-transform duration-300 ease-out group-hover:scale-105"
+              data-ai-hint={member.dataAiHint || 'professional portrait'}
+            />
+          </div>
         </div>
-      </div>
-      <CardHeader className="pt-3 pb-1 flex-grow">
-        <CardTitle className="font-headline text-base text-primary">{member.name}</CardTitle>
-        <p className="text-xs text-accent font-medium">{member.role}</p>
-      </CardHeader>
-      <CardContent className="px-3 pb-3 text-xs">
-        <p className="text-foreground/70 leading-snug line-clamp-3">{member.bio}</p>
-      </CardContent>
-    </Card>
-  );
+        <CardHeader className="pt-3 pb-1 flex-grow">
+          <CardTitle className="font-headline text-base text-primary">{member.name}</CardTitle>
+          <p className="text-xs text-accent font-medium">{member.role}</p>
+        </CardHeader>
+        <CardContent className="px-3 pb-3 text-xs">
+          <p className={cn(
+            "text-foreground/70 leading-snug",
+            bioLineClampClass
+          )}>{member.bio}</p>
+        </CardContent>
+      </Card>
+    );
+  };
 
   return (
     <div className="space-y-16 md:space-y-24">

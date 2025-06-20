@@ -185,7 +185,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Pawan Acharya',
     role: 'Managing Director',
     bio: 'Oversees the operational and strategic direction of Pixar Educational Consultancy, ensuring service excellence.',
-    imageUrl: '/teams/pawan.jpg',
+    imageUrl: '/teams/pawan.jpeg',
     dataAiHint: 'director man',
   },
   {
@@ -193,7 +193,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Mujal Amatya',
     role: 'USA Counselor',
     bio: 'Expert in U.S. university applications, scholarships, and F-1 visa procedures.',
-    imageUrl: 'https://placehold.co/300x300.png', 
+    imageUrl: '/teams/mujal.jpeg', 
     dataAiHint: 'advisor man',
   },
   {
@@ -201,7 +201,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Shyam Babu Ojha',
     role: 'New Zealand Counselor',
     bio: 'Specializes in New Zealand university admissions and visa processes, providing expert guidance.',
-    imageUrl: '/teams/shyam.jpg', 
+    imageUrl: '/teams/shyam.jpeg', 
     dataAiHint: 'counselor man',
   },
   {
@@ -209,7 +209,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Sabina Thapa',
     role: 'Australia Counselor',
     bio: 'Provides specialized counseling for students aspiring to study in Australia, focusing on admissions and visas.',
-    imageUrl: '/teams/sabina.jpg',
+    imageUrl: '/teams/sabina.jpeg',
     dataAiHint: 'counselor woman',
   },
   {
@@ -217,7 +217,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Sonima Rijal',
     role: 'Application Officer',
     bio: 'Assists students with the university application process, ensuring all documents are perfectly prepared.',
-    imageUrl: 'https://placehold.co/300x300.png', 
+    imageUrl: '/teams/sonima.jpeg', 
     dataAiHint: 'officer woman',
   },
   {
@@ -225,7 +225,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Sujata Nepal',
     role: 'Application Officer',
     bio: 'Dedicated to helping students meticulously complete their applications for various universities.',
-    imageUrl: 'https://placehold.co/300x300.png', 
+    imageUrl: '/teams/sujata.jpeg', 
     dataAiHint: 'professional portrait',
   },
   {
@@ -233,7 +233,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Anisha Thapa',
     role: 'Academic Head - IELTS & PTE', // Role updated
     bio: 'Leads our English language test preparation programs (IELTS, PTE, TOEFL, Duolingo), ensuring high-quality coaching.',
-    imageUrl: 'https://placehold.co/300x300.png', 
+    imageUrl: '/teams/anisha.jpeg', 
     dataAiHint: 'teacher woman',
   },
   {
@@ -241,7 +241,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Saubhana Bhandari',
     role: 'Frontdesk Officer', // Role updated
     bio: 'Manages front office operations and assists students with initial inquiries, ensuring a welcoming experience.',
-    imageUrl: 'https://placehold.co/300x300.png', 
+    imageUrl: '/teams/saubhana.jpeg', 
     dataAiHint: 'professional woman',
   },
   {
@@ -249,7 +249,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Mamata Chapagain',
     role: 'Documents Officer',
     bio: 'Expert in managing and verifying student documentation for smooth application submissions.',
-    imageUrl: 'https://placehold.co/300x300.png', 
+    imageUrl: '/teams/mamata.jpeg', 
     dataAiHint: 'woman team',
   },
   {
@@ -257,7 +257,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Sunita Khadka',
     role: 'Office Caretaker',
     bio: 'Ensures a clean, organized, and welcoming office environment for students and staff.',
-    imageUrl: 'https://placehold.co/300x300.png', 
+    imageUrl: '/teams/sunita.JPG', 
     dataAiHint: 'office staff',
   },
   {
@@ -273,7 +273,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Ram Babu Ojha',
     role: 'Video Editor',
     bio: 'Creates engaging video content for our promotional and informational materials.',
-    imageUrl: 'https://placehold.co/300x300.png', 
+    imageUrl: '/teams/rambabu.jpg', 
     dataAiHint: 'creative man',
   },
   {
@@ -281,7 +281,7 @@ export const teamMembers: TeamMember[] = [
     name: 'Pradeep Khadka',
     role: 'Chief Executive Officer', // Role updated
     bio: 'With over 15 years of experience in international education, Pradeep is passionate about helping students achieve their academic dreams.',
-    imageUrl: '/co.jpg', 
+    imageUrl: '/teams/pradeep.jpeg', 
     dataAiHint: 'ceo man',
   },
 ];
