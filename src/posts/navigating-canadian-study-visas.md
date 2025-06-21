@@ -34,7 +34,7 @@ Here are several compelling reasons why students worldwide, including many from 
     *   Our [Canada Country Guide](/country-guides#canada) offers more details on PR.
 5.  **Affordable Cost of Living & Tuition (Relatively)**:
     *   Compared to other top study destinations like the USA or UK, tuition fees and living expenses in Canada can be more manageable for Nepalese students.
-    *   Scholarship opportunities are also available, though competitive. (See our [scholarship tracker blog](/blog/scholarship-tracker-2025-–-downloadable-google-sheet) for general tips).
+    *   Scholarship opportunities are also available, though competitive. (See our [scholarship tracker blog](/blog/scholarship-tracker-2025-downloadable-google-sheet) for general tips).
 
 > **Important Note:** "Canada offers a unique blend of urban excitement and natural beauty. Many students find the lifestyle very appealing and balanced." - PixarEdu Insights.
 

@@ -10,7 +10,7 @@ meta_description: "A guide for Nepalese students on finding and applying for sch
 
 Securing scholarships can significantly ease the financial burden of studying abroad for Nepalese students. While highly competitive, numerous scholarships are available across various countries and fields of study. This guide provides an overview of common scholarship types and tips for finding and applying for them for the 2025-2026 academic years.
 
-Use our [Scholarship Tracker guide & template](/blog/scholarship-tracker-2025-–-downloadable-google-sheet) to stay organized!
+Use our [Scholarship Tracker guide & template](/blog/scholarship-tracker-2025-downloadable-google-sheet) to stay organized!
 
 ## Types of Scholarships for International Students
 

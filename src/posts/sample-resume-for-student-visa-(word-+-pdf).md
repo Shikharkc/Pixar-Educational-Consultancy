@@ -16,7 +16,7 @@ This guide provides a sample structure and tips for creating an effective studen
 ## When Might You Need a Resume/CV?
 
 *   **Postgraduate Applications:** Most Master's and PhD programs require a CV.
-*   **Scholarship Applications:** Often requested to assess your achievements. (See our [scholarship tracker blog](/blog/scholarship-tracker-2025-–-downloadable-google-sheet) for planning).
+*   **Scholarship Applications:** Often requested to assess your achievements. (See our [scholarship tracker blog](/blog/scholarship-tracker-2025-downloadable-google-sheet) for planning).
 *   **Some Undergraduate Programs:** Certain competitive undergraduate courses or universities might ask for one.
 *   **Visa Applications (Selectively):** While not a primary document for all visas, it can sometimes supplement your application, especially if you have significant work experience or a study gap to explain. Always prioritize the official [document checklist for your target country's visa](/ai-assistants#document-checklist).
 
@@ -80,7 +80,7 @@ For student purposes, the terms are often used interchangeably, but aim for the 
 *   **Action Verbs:** Start bullet points with strong action verbs (e.g., Managed, Developed, Analyzed, Led, Collaborated).
 *   **Quantify Achievements:** Use numbers to demonstrate impact where possible.
 *   **Tailor It:** Adjust your CV slightly for different programs or universities, highlighting the most relevant experiences and skills.
-*   **Formatting:** Keep it professional, clean, and easy to read. Use consistent formatting (font, size, spacing). Avoid fancy graphics or colors. PDF format is usually best for submission.
+*   **Formatting:** Keep it professional, clean, and easy to read. Use consistent formatting (font, size, spacing). PDF format is usually best for submission.
 *   **Proofread Meticulously:** Typos and grammatical errors create a poor impression. Ask someone to review it.
 *   **Honesty:** All information must be truthful and verifiable.
 
