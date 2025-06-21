@@ -4,10 +4,10 @@
 import Link from 'next/link';
 import { type PostData } from '@/lib/posts';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarDays, UserCircle, BookOpen, Filter as FilterIcon, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, UserCircle, BookOpen, Filter as FilterIcon, Search, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { format, isAfter, subDays, subMonths, subYears, startOfDay } from 'date-fns';
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
@@ -32,12 +32,13 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
   const [currentPage, setCurrentPage] = useState(1);
   const [postsPerPage, setPostsPerPage] = useState(10);
   
-  // State for the posts that are actually displayed, and for pagination
-  const [displayedPosts, setDisplayedPosts] = useState<PostData[]>(initialPosts.slice(0, postsPerPage));
-  const [totalPages, setTotalPages] = useState(Math.ceil(initialPosts.length / postsPerPage));
+  // Initialize with empty state to guarantee no hydration mismatch.
+  const [displayedPosts, setDisplayedPosts] = useState<PostData[]>([]);
+  const [totalPages, setTotalPages] = useState(0);
+  const [isClientLoaded, setIsClientLoaded] = useState(false);
 
   useEffect(() => {
-    // This effect runs on the client after hydration, and whenever filters change
+    // All filtering and pagination logic now runs only on the client side.
     let posts = initialPosts;
 
     if (searchQuery) {
@@ -48,7 +49,7 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
     }
 
     if (selectedTimeFilter !== 'all') {
-      const now = new Date(); // This is now safe inside useEffect
+      const now = new Date(); // Safe to use new Date() inside useEffect
       let startDate: Date;
 
       switch (selectedTimeFilter) {
@@ -72,35 +73,28 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
       });
     }
 
-    // After filtering, calculate pagination for the *filtered* list
     const newTotalPages = Math.ceil(posts.length / postsPerPage);
     setTotalPages(newTotalPages);
     
-    // Ensure currentPage is valid if filters change the total number of pages
-    const newCurrentPage = Math.max(1, Math.min(currentPage, newTotalPages));
-    if (currentPage !== newCurrentPage) {
-        setCurrentPage(newCurrentPage);
-    }
-    
-    const startIndex = (newCurrentPage - 1) * postsPerPage;
+    const startIndex = (currentPage - 1) * postsPerPage;
     setDisplayedPosts(posts.slice(startIndex, startIndex + postsPerPage));
+    setIsClientLoaded(true); // Mark client as loaded to remove loading message
 
   }, [initialPosts, searchQuery, selectedTimeFilter, postsPerPage, currentPage]);
   
-  // Handlers
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
-    setCurrentPage(1); // Reset to first page on new search
+    setCurrentPage(1);
   };
   
   const handleTimeFilterChange = (value: string) => {
     setSelectedTimeFilter(value);
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1);
   };
 
   const handlePostsPerPageChange = (value: string) => {
     setPostsPerPage(Number(value));
-    setCurrentPage(1); // Reset to first page
+    setCurrentPage(1);
   };
 
   return (
@@ -153,7 +147,12 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
       </div>
 
       {/* Blog List */}
-      {displayedPosts.length > 0 ? (
+      {!isClientLoaded ? (
+        <div className="text-center py-16 bg-card border rounded-lg flex items-center justify-center">
+           <Loader2 className="mr-2 h-6 w-6 animate-spin text-primary" />
+           <p className="text-xl text-foreground/70">Loading posts...</p>
+        </div>
+      ) : displayedPosts.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {displayedPosts.map((post: PostData) => (
             <Card key={post.id} className="flex flex-col bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -197,7 +196,7 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
       )}
 
       {/* Pagination Controls */}
-      {totalPages > 1 && (
+      {isClientLoaded && totalPages > 1 && (
         <div className="mt-12 flex justify-center items-center space-x-4">
           <Button
             variant="outline"
