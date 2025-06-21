@@ -4,94 +4,159 @@
 import Link from 'next/link';
 import { type PostData } from '@/lib/posts';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { CalendarDays, UserCircle, BookOpen, Filter as FilterIcon } from 'lucide-react';
+import { CalendarDays, UserCircle, BookOpen, Filter as FilterIcon, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { format, isAfter, subMonths, subYears, startOfDay } from 'date-fns';
-import { useState, useEffect } from 'react';
+import { format, isAfter, subDays, subMonths, subYears, startOfDay } from 'date-fns';
+import { useState, useMemo } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 
 interface BlogListWithFilterProps {
   initialPosts: PostData[];
 }
 
-const filterOptions = [
+const timeFilterOptions = [
   { value: 'all', label: 'All Time' },
-  { value: '1m', label: 'Last Month' },
-  { value: '3m', label: 'Last 3 Months' },
-  { value: '6m', label: 'Last 6 Months' },
+  { value: '7d', label: 'Last 7 Days' },
+  { value: '30d', label: 'Last 30 Days' },
+  { value: '90d', label: 'Last 3 Months' },
   { value: '1y', label: 'Last Year' },
 ];
 
+const postsPerPageOptions = [10, 20, 50];
+
 export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterProps) {
-  const [selectedFilter, setSelectedFilter] = useState<string>('all');
-  const [filteredPosts, setFilteredPosts] = useState<PostData[]>(initialPosts);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedTimeFilter, setSelectedTimeFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [postsPerPage, setPostsPerPage] = useState(10);
 
-  useEffect(() => {
-    if (selectedFilter === 'all') {
-      setFilteredPosts(initialPosts);
-      return;
+  const filteredPosts = useMemo(() => {
+    let posts = initialPosts;
+
+    // Apply search filter
+    if (searchQuery) {
+      posts = posts.filter(post =>
+        post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.excerpt?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
 
-    const now = new Date();
-    let startDate: Date;
+    // Apply time filter
+    if (selectedTimeFilter !== 'all') {
+      const now = new Date();
+      let startDate: Date;
 
-    switch (selectedFilter) {
-      case '1m':
-        startDate = subMonths(now, 1);
-        break;
-      case '3m':
-        startDate = subMonths(now, 3);
-        break;
-      case '6m':
-        startDate = subMonths(now, 6);
-        break;
-      case '1y':
-        startDate = subYears(now, 1);
-        break;
-      default:
-        setFilteredPosts(initialPosts);
-        return;
-    }
-    
-    const startOfFilterDate = startOfDay(startDate);
-
-    const newFilteredPosts = initialPosts.filter(post => {
-      try {
-        const postDate = startOfDay(new Date(post.date));
-        return isAfter(postDate, startOfFilterDate) || postDate.getTime() === startOfFilterDate.getTime();
-      } catch (e) {
-        console.error("Error parsing date for post:", post.title, post.date, e);
-        return false; // Exclude posts with invalid dates
+      switch (selectedTimeFilter) {
+        case '7d':
+          startDate = subDays(now, 7);
+          break;
+        case '30d':
+          startDate = subDays(now, 30);
+          break;
+        case '90d':
+          startDate = subMonths(now, 3);
+          break;
+        case '1y':
+          startDate = subYears(now, 1);
+          break;
+        default:
+          startDate = new Date(0); // Should not happen
       }
-    });
-    setFilteredPosts(newFilteredPosts);
-  }, [selectedFilter, initialPosts]);
+      
+      const startOfFilterDate = startOfDay(startDate);
+
+      posts = posts.filter(post => {
+        try {
+          const postDate = startOfDay(new Date(post.date));
+          return isAfter(postDate, startOfFilterDate) || postDate.getTime() === startOfFilterDate.getTime();
+        } catch (e) {
+          console.error("Error parsing date for post:", post.title, post.date, e);
+          return false;
+        }
+      });
+    }
+
+    return posts;
+  }, [initialPosts, searchQuery, selectedTimeFilter]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  const paginatedPosts = useMemo(() => {
+    const startIndex = (currentPage - 1) * postsPerPage;
+    return filteredPosts.slice(startIndex, startIndex + postsPerPage);
+  }, [filteredPosts, currentPage, postsPerPage]);
+  
+  // Handlers
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(event.target.value);
+    setCurrentPage(1); // Reset to first page on new search
+  };
+  
+  const handleTimeFilterChange = (value: string) => {
+    setSelectedTimeFilter(value);
+    setCurrentPage(1); // Reset to first page on filter change
+  };
+
+  const handlePostsPerPageChange = (value: string) => {
+    setPostsPerPage(Number(value));
+    setCurrentPage(1); // Reset to first page
+  };
 
   return (
     <div>
-      <div className="mb-8 flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div className="flex items-center space-x-2">
-          <FilterIcon className="h-5 w-5 text-primary" />
-          <Label htmlFor="timeFilter" className="text-md font-medium">Filter by Date:</Label>
+      {/* Top Controls: Search and Filters */}
+      <div className="mb-8 p-4 bg-card border rounded-lg shadow-sm space-y-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input
+            type="text"
+            placeholder="Search blog posts..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="w-full pl-10"
+          />
         </div>
-        <Select value={selectedFilter} onValueChange={setSelectedFilter}>
-          <SelectTrigger id="timeFilter" className="w-full sm:w-[200px] bg-card">
-            <SelectValue placeholder="Select time range" />
-          </SelectTrigger>
-          <SelectContent>
-            {filterOptions.map(option => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="flex flex-col sm:flex-row gap-4 justify-between">
+          <div className="flex items-center space-x-2">
+            <FilterIcon className="h-5 w-5 text-primary" />
+            <Label htmlFor="timeFilter" className="text-md font-medium">Filter by Date:</Label>
+            <Select value={selectedTimeFilter} onValueChange={handleTimeFilterChange}>
+              <SelectTrigger id="timeFilter" className="w-[180px]">
+                <SelectValue placeholder="Select time range" />
+              </SelectTrigger>
+              <SelectContent>
+                {timeFilterOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="postsPerPage" className="text-md font-medium">Posts per page:</Label>
+             <Select value={String(postsPerPage)} onValueChange={handlePostsPerPageChange}>
+              <SelectTrigger id="postsPerPage" className="w-[80px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {postsPerPageOptions.map(option => (
+                  <SelectItem key={option} value={String(option)}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
-      {filteredPosts.length > 0 ? (
+      {/* Blog List */}
+      {paginatedPosts.length > 0 ? (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredPosts.map((post: PostData) => (
+          {paginatedPosts.map((post: PostData) => (
             <Card key={post.id} className="flex flex-col bg-card shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardHeader>
                 <Link href={`/blog/${post.id}`} className="hover:text-accent">
@@ -126,12 +191,34 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
           ))}
         </div>
       ) : (
-        <div className="text-center py-10">
-          <p className="text-xl text-foreground/70">No blog posts found for the selected filter.</p>
-          <p className="text-muted-foreground mt-2">Try adjusting the filter or view all posts.</p>
+        <div className="text-center py-16 bg-card border rounded-lg">
+          <p className="text-xl text-foreground/70">No blog posts found.</p>
+          <p className="text-muted-foreground mt-2">Try adjusting your search or filters.</p>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="mt-12 flex justify-center items-center space-x-4">
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+          >
+            <ChevronLeft className="mr-2 h-4 w-4" /> Previous
+          </Button>
+          <span className="text-sm font-medium text-muted-foreground">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            variant="outline"
+            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+          >
+            Next <ChevronRight className="ml-2 h-4 w-4" />
+          </Button>
         </div>
       )}
     </div>
   );
 }
-
