@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -32,7 +31,7 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
   const [currentPage, setCurrentPage] = useState(1);
   const [postsPerPage, setPostsPerPage] = useState(10);
   
-  // Initialize with empty state to guarantee no hydration mismatch.
+  // These states will be populated on the client-side to prevent hydration errors.
   const [displayedPosts, setDisplayedPosts] = useState<PostData[]>([]);
   const [totalPages, setTotalPages] = useState(0);
   const [isClientLoaded, setIsClientLoaded] = useState(false);
@@ -49,7 +48,7 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
     }
 
     if (selectedTimeFilter !== 'all') {
-      const now = new Date(); // Safe to use new Date() inside useEffect
+      const now = new Date();
       let startDate: Date;
 
       switch (selectedTimeFilter) {
@@ -76,26 +75,37 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
     const newTotalPages = Math.ceil(posts.length / postsPerPage);
     setTotalPages(newTotalPages);
     
+    // Reset to page 1 if current page is out of bounds after filtering
+    if (currentPage > newTotalPages && newTotalPages > 0) {
+        setCurrentPage(1);
+    }
+    
     const startIndex = (currentPage - 1) * postsPerPage;
     setDisplayedPosts(posts.slice(startIndex, startIndex + postsPerPage));
-    setIsClientLoaded(true); // Mark client as loaded to remove loading message
+    setIsClientLoaded(true); // Mark client as loaded to show content
 
   }, [initialPosts, searchQuery, selectedTimeFilter, postsPerPage, currentPage]);
   
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on new search
   };
   
   const handleTimeFilterChange = (value: string) => {
     setSelectedTimeFilter(value);
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on filter change
   };
 
   const handlePostsPerPageChange = (value: string) => {
     setPostsPerPage(Number(value));
-    setCurrentPage(1);
+    setCurrentPage(1); // Reset to first page on page size change
   };
+
+  const handlePageChange = (newPage: number) => {
+    if(newPage > 0 && newPage <= totalPages) {
+        setCurrentPage(newPage);
+    }
+  }
 
   return (
     <div>
@@ -148,7 +158,7 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
 
       {/* Blog List */}
       {!isClientLoaded ? (
-        <div className="text-center py-16 bg-card border rounded-lg flex items-center justify-center">
+        <div className="text-center py-16 bg-card border rounded-lg flex items-center justify-center min-h-[300px]">
            <Loader2 className="mr-2 h-6 w-6 animate-spin text-primary" />
            <p className="text-xl text-foreground/70">Loading posts...</p>
         </div>
@@ -189,7 +199,7 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
           ))}
         </div>
       ) : (
-        <div className="text-center py-16 bg-card border rounded-lg">
+        <div className="text-center py-16 bg-card border rounded-lg min-h-[300px] flex flex-col justify-center items-center">
           <p className="text-xl text-foreground/70">No blog posts found.</p>
           <p className="text-muted-foreground mt-2">Try adjusting your search or filters.</p>
         </div>
@@ -200,7 +210,7 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
         <div className="mt-12 flex justify-center items-center space-x-4">
           <Button
             variant="outline"
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 1}
           >
             <ChevronLeft className="mr-2 h-4 w-4" /> Previous
@@ -210,7 +220,7 @@ export default function BlogListWithFilter({ initialPosts }: BlogListWithFilterP
           </span>
           <Button
             variant="outline"
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
           >
             Next <ChevronRight className="ml-2 h-4 w-4" />

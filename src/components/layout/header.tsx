@@ -20,7 +20,6 @@ const navItems = [
   { href: '/about', label: 'About Us', icon: Info },
   { href: '/services', label: 'Services', icon: Briefcase },
   { href: '/country-guides', label: 'Country Guides', icon: MapPin },
-  { href: '/blog', label: 'Blog', icon: Newspaper }, // Enabled the Blog link
   {
     label: 'Student Hub',
     icon: Sparkles,
