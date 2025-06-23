@@ -1,9 +1,8 @@
-
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image'; // Added Image import
-import { Home, Info, Briefcase, MapPin, Sparkles, Mail, ChevronDown, Menu, Wand2, HelpCircle, CheckSquare, MessageCircleQuestion, Share2, Newspaper } from 'lucide-react'; // Added Newspaper
+import Image from 'next/image';
+import { Home, Info, Briefcase, MapPin, Sparkles, Mail, ChevronDown, Menu, Wand2, HelpCircle, CheckSquare, MessageCircleQuestion, Share2, Newspaper } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -23,6 +22,7 @@ const navItems = [
   {
     label: 'Student Hub',
     icon: Sparkles,
+    isPromoted: true, // Flag to make this item stand out
     subItems: [
       { href: '/ai-assistants', label: 'Smart Tools', icon: Wand2 },
       { href: '/book-appointment', label: 'English Test Guide', icon: HelpCircle },
@@ -39,7 +39,6 @@ const MD_BREAKPOINT = 768; // Tailwind's 'md' breakpoint
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  // Effect to close mobile menu if window is resized to desktop width
   useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= MD_BREAKPOINT && isMobileMenuOpen) {
@@ -59,7 +58,7 @@ export default function Header() {
     </Link>
   );
 
-  const NavDropdown = ({ label, icon: Icon, subItems }: { label: string; icon: React.ElementType; subItems: { href: string; label: string; icon: React.ElementType }[] }) => {
+  const NavDropdown = ({ label, icon: Icon, subItems, isPromoted = false }: { label: string; icon: React.ElementType; subItems: { href: string; label: string; icon: React.ElementType }[]; isPromoted?: boolean; }) => {
     const [isOpen, setIsOpen] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -87,11 +86,16 @@ export default function Header() {
 
     return (
       <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave} className="relative">
-        <DropdownMenu open={isOpen} >
+        <DropdownMenu open={isOpen}>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="flex items-center space-x-2 text-foreground hover:bg-accent hover:text-accent-foreground">
+            <Button variant={isPromoted ? "secondary" : "ghost"} className={cn("flex items-center space-x-2", isPromoted ? "text-secondary-foreground" : "text-foreground hover:bg-accent hover:text-accent-foreground")}>
               <Icon className="h-5 w-5" />
               <span>{label}</span>
+              {isPromoted && (
+                <span className="ml-1.5 animate-pulse rounded-full bg-destructive px-2 py-0.5 text-xs font-semibold text-destructive-foreground">
+                  NEW
+                </span>
+              )}
               <ChevronDown className={cn("h-4 w-4 transition-transform", isOpen && "rotate-180")} />
             </Button>
           </DropdownMenuTrigger>
@@ -124,9 +128,14 @@ export default function Header() {
       if (isMobile) {
         return (
           <div key={item.label} className="flex flex-col w-full">
-            <div className="flex items-center space-x-2 text-foreground px-4 py-2.5 font-medium">
+            <div className={cn("flex items-center space-x-2 px-4 py-2.5 font-medium", item.isPromoted ? "text-accent" : "text-foreground")}>
               <item.icon className="h-5 w-5" />
               <span>{item.label}</span>
+              {item.isPromoted && (
+                 <span className="ml-1.5 rounded-full bg-destructive px-2 py-0.5 text-xs font-semibold text-destructive-foreground">
+                  NEW
+                </span>
+              )}
             </div>
             {item.subItems.map((subItem: any) => (
                <Link key={subItem.href} href={subItem.href} passHref>
@@ -139,11 +148,10 @@ export default function Header() {
           </div>
         );
       }
-      return <NavDropdown key={item.label} label={item.label} icon={item.icon} subItems={item.subItems} />;
+      return <NavDropdown key={item.label} label={item.label} icon={item.icon} subItems={item.subItems} isPromoted={item.isPromoted} />;
     }
     return <NavLink key={item.href || item.label} href={item.href!} icon={item.icon}>{item.label}</NavLink>;
   });
-
 
   return (
     <header className="bg-card shadow-md sticky top-0 z-50">
@@ -180,4 +188,3 @@ export default function Header() {
     </header>
   );
 }
-    
