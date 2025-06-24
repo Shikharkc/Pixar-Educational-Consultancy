@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import Header from './header';
 import Footer from './footer';
 import { Info } from 'lucide-react'; // Import the Info icon
+import FirebaseInitializer from '../firebase/initializer';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -16,6 +17,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <FirebaseInitializer />
       <Header />
       {showSiteStatusMessage && (
         <div className="bg-primary/10 text-primary border-b border-primary/20 p-3 text-center text-sm shadow-sm">
