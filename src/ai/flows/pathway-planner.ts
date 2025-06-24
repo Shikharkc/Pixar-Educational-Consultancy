@@ -1,4 +1,3 @@
-
 // src/ai/flows/pathway-planner.ts
 'use server';
 
@@ -29,6 +28,7 @@ export type PathwayPlannerInput = z.infer<typeof PathwayPlannerInputSchema>;
 const UniversitySuggestionSchema = z.object({
   name: z.string().describe("The name of the suggested university."),
   category: z.string().describe("The main category or specialization of the university (e.g., Engineering, Arts, Business)."),
+  reasoning: z.string().describe("A brief, one-sentence explanation of why this university is a good match for the student's profile, mentioning specific strengths like research focus, program uniqueness, or suitability for the provided GPA."),
   logoDataAiHint: z.string().optional().describe("A 1-2 word hint for the university's logo for placeholder generation (e.g., 'university shield', 'modern building')."),
   website: z.string().describe("The official website URL of the university. Provide the most direct and commonly known official URL."),
   programDuration: z.string().describe("The typical duration for a relevant program in the field of study, e.g., '3-4 years', '18 months', '2 years full-time'."),
@@ -43,7 +43,8 @@ const UniversitySuggestionSchema = z.object({
 const PathwayPlannerOutputSchema = z.object({
   universitySuggestions: z
     .array(UniversitySuggestionSchema)
-    .describe('A list of suggested universities with their details, relevant to the chosen country, field of study, GPA, and target education level. These suggestions are based on general knowledge and common information about universities.'),
+    .min(15)
+    .describe('A comprehensive list of at least 15-20 suggested universities with their details, relevant to the chosen country, field of study, GPA, and target education level. These suggestions are based on general knowledge and common information about universities.'),
   searchSummary: z.string().optional().describe("A brief summary of the search results or any general advice based on the query. For example, 'Here are some leading Engineering universities in the USA known for strong research programs that might be suitable for a student with a {{{gpa}}} GPA seeking a {{{targetEducationLevel}}}.' Acknowledge the GPA's and target education level's influence if relevant."),
 });
 
@@ -55,23 +56,27 @@ export async function pathwayPlanner(input: PathwayPlannerInput): Promise<Pathwa
 
 const pathwayPlannerPrompt = ai.definePrompt({
   name: 'pathwayPlannerPrompt',
+  model: 'googleai/gemini-1.5-pro-latest',
   input: {schema: PathwayPlannerInputSchema},
   output: {schema: PathwayPlannerOutputSchema},
-  prompt: `You are an expert educational consultant with a vast knowledge base about universities worldwide. Your goal is to provide students with relevant university suggestions as if you are referencing official university information, but without actually accessing external websites or real-time data. Rely on your training data.
+  prompt: `You are a highly advanced AI educational consultant powered by Google's Vertex AI. You have access to a vast, comprehensive database of information about universities worldwide. Your task is to act as an expert advisor, providing detailed and precise university suggestions for a student.
 
-  A student is seeking university suggestions based on their desired country ('{{{country}}}'), field of study ('{{{fieldOfStudy}}}'), GPA ('{{{gpa}}}'), and target education level ('{{{targetEducationLevel}}}').
+  The student's details are:
+  - Desired Country: {{{country}}}
+  - Desired Field of Study: {{{fieldOfStudy}}}
+  - Student's GPA/Academic Standing: {{{gpa}}}
+  - Student's Target Education Level: {{{targetEducationLevel}}}
 
-  IMPORTANT INSTRUCTIONS:
-  1.  **Knowledge Base**: Base your suggestions on generally known information about universities, their programs, typical requirements, and reputations.
-  2.  **Official Tone**: Frame your responses as if the information is derived from reliable sources like university websites, but do not claim to have accessed them in real-time.
-  3.  **Accuracy Focus**: Prioritize information that is commonly known and widely accepted about institutions. For details like tuition fees or intake dates, provide estimates or typical ranges if generally known; otherwise, it's better to omit the specific field or use "Unknown"/"Varies" for categories. Do NOT invent specific numbers if they are not part of your general knowledge.
-  4.  **GPA and Level Consideration**: Consider the student's GPA ('{{{gpa}}}') and their target education level ('{{{targetEducationLevel}}}') when suggesting universities. Aim for institutions where a student with this academic standing might generally be competitive for programs at their desired level.
-  5.  **Diversity of Suggestions**: Provide a DIVERSE range of suitable universities. While you can include well-known institutions, also make an effort to suggest other strong universities that might be excellent fits but perhaps less globally famous. The goal is to offer a broad spectrum of choices relevant to the student's criteria.
-  6.  **Website Links**: For each university, provide the most common, official website URL.
+  CRITICAL INSTRUCTIONS:
+  1.  **Provide a Large, Diverse List**: You MUST return a list of **at least 15-20 university suggestions**. The list should include a mix of top-tier, mid-range, and more accessible universities that are a good fit for the student's GPA. Do not just list famous universities; include lesser-known but strong institutions.
+  2.  **Detailed and Precise Information**: For each university, you must provide accurate details based on your extensive knowledge base. Do not invent information. If a detail is not commonly known, it is better to omit the specific field or use "Unknown"/"Varies" for categories.
+  3.  **GPA and Profile Matching**: Your suggestions MUST be relevant to the student's GPA ('{{{gpa}}}') and their target education level ('{{{targetEducationLevel}}}'). The \`reasoning\` field for each university should explicitly mention why it's a suitable match (e.g., "Good fit for a {{{gpa}}} GPA with strong research in {{{fieldOfStudy}}}").
+  4.  **Strict Adherence to Schema**: Populate all fields in the output schema precisely.
 
   For each university suggestion, provide the following details strictly adhering to the output schema:
   - 'name': The official name of the university.
   - 'category': The main academic category or specialization relevant to the field of study.
+  - 'reasoning': A brief, one-sentence explanation of why this university is a good match for the student's profile, mentioning specific strengths or suitability for the provided GPA.
   - 'logoDataAiHint': A very short (1-2 words) hint for a placeholder logo.
   - 'website': The official website URL.
   - 'programDuration': Typical duration for a relevant program at the target education level.
@@ -83,15 +88,8 @@ const pathwayPlannerPrompt = ai.definePrompt({
   - 'nextIntakeDate': (Optional) CONCISE typical intake info if commonly known, e.g., "Fall 2025 (Apply by Jan 2025)".
 
   Only list universities located within the specified country ('{{{country}}}').
-  Provide as many relevant suggestions as you can find for the given criteria based on your knowledge.
 
-  Student's Query:
-  - Desired Country: {{{country}}}
-  - Desired Field of Study: {{{fieldOfStudy}}}
-  - Student's GPA/Academic Standing: {{{gpa}}}
-  - Student's Target Education Level: {{{targetEducationLevel}}}
-
-  Finally, include a brief 'searchSummary' if you have any overarching comments on the results for the given query. Acknowledge the GPA's and target education level's influence on university suitability in your summary if relevant.
+  Finally, include a brief 'searchSummary' to provide an overarching comment on the search results, acknowledging the student's profile.
   `,
 });
 

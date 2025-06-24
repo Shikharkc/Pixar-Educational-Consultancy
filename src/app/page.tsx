@@ -525,6 +525,13 @@ export default function HomePage() {
                                         </h4>
                                         <p className="text-xs text-muted-foreground mb-2 ml-7">{uni.category || 'N/A'}</p>
 
+                                        {uni.reasoning && (
+                                            <p className="text-sm text-foreground/80 my-2 pl-1 flex items-start border-l-2 border-accent/50 ml-6 pl-3">
+                                                <InfoIcon className="mr-2 h-4 w-4 text-accent flex-shrink-0 mt-1" />
+                                                <span className="italic">{uni.reasoning}</span>
+                                            </p>
+                                        )}
+
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-sm mb-3">
                                             <div className="flex items-start" title="University Location">
                                                 <MapPin className="mr-1.5 h-4 w-4 text-accent/80 flex-shrink-0 mt-0.5" />
