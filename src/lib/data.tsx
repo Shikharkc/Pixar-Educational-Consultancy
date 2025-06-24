@@ -108,21 +108,6 @@ export interface Service {
 
 export const services: Service[] = [
   {
-    id: 'documentation-assistance',
-    title: 'Documentation Assistance',
-    description: 'Comprehensive support for all your application paperwork.',
-    longDescription: 'Navigating the complex documentation requirements for international university applications can be daunting. We provide meticulous assistance with preparing, organizing, and reviewing all necessary documents, including transcripts, recommendation letters, statements of purpose, and financial proofs. Our goal is to ensure your application is complete, accurate, and compelling.',
-    icon: Briefcase,
-    imageUrl: '/services/da.png',
-    dataAiHint: 'documents application',
-    keyFeatures: [
-      "Application form completion strategy",
-      "Statement of Purpose (SOP/Essay) review & feedback",
-      "Financial document checklist & guidance",
-      "Letter of Recommendation (LOR) advice"
-    ]
-  },
-  {
     id: 'personalized-guidance',
     title: 'Personalized Guidance',
     description: 'Tailored advice to match your academic goals and preferences.',
@@ -138,18 +123,18 @@ export const services: Service[] = [
     ]
   },
   {
-    id: 'visa-support',
-    title: 'Visa & Pre-Departure Support',
-    description: 'Expert help with visa applications and pre-departure preparations.',
-    longDescription: 'Securing a student visa and preparing for life in a new country are crucial steps. We offer expert assistance with visa applications, including mock interviews and document checklists. Additionally, we provide comprehensive pre-departure briefings covering accommodation, cultural adaptation, and essential travel tips to ensure a smooth transition.',
-    icon: Users, 
-    imageUrl: '/services/vsa.jpg',
-    dataAiHint: 'travel preparation',
+    id: 'documentation-assistance',
+    title: 'Documentation Assistance',
+    description: 'Comprehensive support for all your application paperwork.',
+    longDescription: 'Navigating the complex documentation requirements for international university applications can be daunting. We provide meticulous assistance with preparing, organizing, and reviewing all necessary documents, including transcripts, recommendation letters, statements of purpose, and financial proofs. Our goal is to ensure your application is complete, accurate, and compelling.',
+    icon: Briefcase,
+    imageUrl: '/services/da.png',
+    dataAiHint: 'documents application',
     keyFeatures: [
-      "Student visa application assistance for various countries",
-      "Mock visa interview preparation",
-      "Pre-departure briefings and checklist",
-      "Guidance on accommodation and travel arrangements"
+      "Application form completion strategy",
+      "Statement of Purpose (SOP/Essay) review & feedback",
+      "Financial document checklist & guidance",
+      "Letter of Recommendation (LOR) advice"
     ]
   },
   {
@@ -165,6 +150,21 @@ export const services: Service[] = [
       "Experienced instructors & personalized feedback",
       "Comprehensive mock tests and practice materials",
       "Small class sizes for focused attention"
+    ]
+  },
+  {
+    id: 'visa-support',
+    title: 'Visa & Pre-Departure Support',
+    description: 'Expert help with visa applications and pre-departure preparations.',
+    longDescription: 'Securing a student visa and preparing for life in a new country are crucial steps. We offer expert assistance with visa applications, including mock interviews and document checklists. Additionally, we provide comprehensive pre-departure briefings covering accommodation, cultural adaptation, and essential travel tips to ensure a smooth transition.',
+    icon: Users, 
+    imageUrl: '/services/vsa.jpg',
+    dataAiHint: 'travel preparation',
+    keyFeatures: [
+      "Student visa application assistance for various countries",
+      "Mock visa interview preparation",
+      "Pre-departure briefings and checklist",
+      "Guidance on accommodation and travel arrangements"
     ]
   },
 ];
