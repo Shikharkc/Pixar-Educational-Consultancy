@@ -22,6 +22,8 @@ import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { format, differenceInCalendarMonths, addMonths, differenceInCalendarWeeks, startOfDay, differenceInDays } from 'date-fns';
 import { gsap } from 'gsap';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
+import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 gsap.registerPlugin(MotionPathPlugin);
 
@@ -103,6 +105,7 @@ function calculateTimeRemaining(targetDateString: string): TimeRemaining {
 
 
 export default function HomePage() {
+  const { toast } = useToast();
   const [isLoadingPathway, setIsLoadingPathway] = useState(false);
   const [pathwayError, setPathwayError] = useState<string | null>(null);
   const [pathwayResult, setPathwayResult] = useState<PathwayPlannerOutput | null>(null);
@@ -130,6 +133,26 @@ export default function HomePage() {
   const [servicesOverviewSectionRef, isServicesOverviewSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
   const [testimonialsSectionRef, isTestimonialsSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
 
+  const loadingMessages = useMemo(() => [
+    "Consulting global university databases...",
+    "Analyzing your academic profile...",
+    "Cross-referencing course requirements...",
+    "Shortlisting top institutions...",
+    "Compiling personalized suggestions...",
+  ], []);
+  const [currentLoadingMessage, setCurrentLoadingMessage] = useState(loadingMessages[0]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isLoadingPathway) {
+      let i = 0;
+      interval = setInterval(() => {
+        i = (i + 1) % loadingMessages.length;
+        setCurrentLoadingMessage(loadingMessages[i]);
+      }, 2000);
+    }
+    return () => clearInterval(interval);
+  }, [isLoadingPathway, loadingMessages]);
 
   useEffect(() => {
     const timer = setTimeout(() => setHeroAnimated(true), 100);
@@ -221,6 +244,24 @@ export default function HomePage() {
   });
 
   async function onPathwaySubmit(values: PathwayFormValues) {
+    if (typeof window !== 'undefined') {
+      const now = Date.now();
+      const requests = JSON.parse(localStorage.getItem('pathwayRequests') || '[]');
+      const requestsInLastHour = requests.filter((timestamp: number) => now - timestamp < 60 * 60 * 1000);
+
+      if (requestsInLastHour.length >= 5) {
+        toast({
+          title: "Rate Limit Exceeded",
+          description: "You've made too many requests. Please try again in an hour.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const newRequests = [...requestsInLastHour, now];
+      localStorage.setItem('pathwayRequests', JSON.stringify(newRequests));
+    }
+
     setPathwayResult(null);
     setPathwayError(null);
 
@@ -488,10 +529,28 @@ export default function HomePage() {
                 resultsContainerAnimatedIn ? "opacity-100" : "opacity-0 pointer-events-none"
             )}>
                 {isLoadingPathway && (
-                <Card className="shadow-xl bg-card flex flex-col items-center justify-center flex-grow min-h-[200px] p-6 w-full">
-                    <Loader2 className="h-12 w-12 text-primary animate-spin" />
-                    <p className="text-muted-foreground mt-2">Finding universities...</p>
-                </Card>
+                  <Card className="shadow-xl bg-card flex flex-col flex-grow w-full p-6 space-y-4">
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <Loader2 className="h-10 w-10 text-primary animate-spin" />
+                      <p className="text-lg font-semibold text-primary mt-3">{currentLoadingMessage}</p>
+                      <p className="text-sm text-muted-foreground">Our AI is crafting your personalized university list...</p>
+                    </div>
+                    <div className="space-y-4 pt-4">
+                      {[...Array(3)].map((_, i) => (
+                        <div key={i} className="flex space-x-4 p-4 border rounded-lg bg-background/50">
+                          <Skeleton className="h-20 w-32 rounded" />
+                          <div className="flex-1 space-y-2">
+                            <Skeleton className="h-5 w-3/4" />
+                            <Skeleton className="h-4 w-1/2" />
+                            <div className="flex gap-4 pt-2">
+                               <Skeleton className="h-4 w-1/3" />
+                               <Skeleton className="h-4 w-1/3" />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </Card>
                 )}
                 {pathwayError && !isLoadingPathway && (
                 <Alert variant="destructive" className="bg-card w-full">
