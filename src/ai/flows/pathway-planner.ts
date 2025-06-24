@@ -36,8 +36,8 @@ const UniversitySuggestionSchema = z.object({
   location: z.string().describe("The city and state/region of the university (e.g., 'Cambridge, MA', 'Sydney, NSW')."),
   tuitionCategory: z.enum(["Affordable", "Mid-Range", "Premium", "Varies", "Unknown"]).describe("A category for the estimated annual tuition. Affordable: typically <$15,000 USD/year or equivalent. Mid-Range: $15,000-$30,000 USD/year or equivalent. Premium: >$30,000 USD/year or equivalent. Use 'Varies' if it's highly variable or 'Unknown' if not determinable."),
   tuitionFeeRange: z.string().optional().describe("ONLY the estimated annual tuition fee range if available based on general knowledge, e.g., '$10,000 - $15,000 USD' OR '€8,000 - €12,000'. Do NOT include any additional sentences, explanations, or disclaimers. Strictly the fee range. If unknown, omit this field."),
-  englishTestRequirements: z.string().optional().describe("CONCISE typical English proficiency test scores required (e.g., 'IELTS: 6.5+', 'TOEFL iBT: 90+'). Keep this information brief, based on general knowledge. If unknown, omit this field."),
-  nextIntakeDate: z.string().optional().describe("CONCISE typical next intake period or application deadline information, e.g., 'Fall 2025 (Apply by Jan 2025)', 'Rolling Admissions', 'Intakes: Jan, May, Sep'. Be CONCISE. Provide this if commonly known. If unknown, omit this field."),
+  englishTestRequirements: z.string().optional().describe("Provide the typical English proficiency test scores required (e.g., 'IELTS: 6.5+', 'TOEFL iBT: 90+'). This is important information for the student. Provide based on general knowledge."),
+  nextIntakeDate: z.string().optional().describe("Provide the typical next intake period or application deadline information (e.g., 'Fall 2025 (Apply by Jan 2025)', 'Rolling Admissions'). This is important for student planning. Provide if commonly known."),
 });
 
 const PathwayPlannerOutputSchema = z.object({
@@ -82,8 +82,8 @@ const pathwayPlannerPrompt = ai.definePrompt({
   - 'location': City and state/region.
   - 'tuitionCategory': "Affordable", "Mid-Range", "Premium", "Varies", or "Unknown".
   - 'tuitionFeeRange': (Optional) ONLY the estimated annual tuition range if commonly known, e.g., '$10,000 - $15,000 USD'. No extra text.
-  - 'englishTestRequirements': (Optional) CONCISE typical scores if commonly known, e.g., "IELTS: 6.5+".
-  - 'nextIntakeDate': (Optional) CONCISE typical intake info if commonly known, e.g., "Fall 2025 (Apply by Jan 2025)".
+  - 'englishTestRequirements': (Optional) Provide CONCISE typical scores if commonly known, e.g., "IELTS: 6.5+". This is very helpful for the student, so try your best to include it.
+  - 'nextIntakeDate': (Optional) Provide CONCISE typical intake info if commonly known, e.g., "Fall 2025 (Apply by Jan 2025)". This is very helpful for planning, so try your best to include it.
 
   Only list universities located within the specified country ('{{{country}}}').
 
