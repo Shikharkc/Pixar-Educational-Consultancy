@@ -108,6 +108,21 @@ export interface Service {
 
 export const services: Service[] = [
   {
+    id: 'english-prep',
+    title: 'Expert English Test Preparation',
+    description: 'Ace IELTS, TOEFL, PTE & Duolingo with our tailored coaching.',
+    longDescription: "Our comprehensive English test preparation programs are designed to equip you with the skills and strategies needed to achieve your target scores. We offer specialized coaching for IELTS, TOEFL iBT, PTE Academic, and the Duolingo English Test. Our experienced instructors provide personalized feedback, mock tests, and focused training on all test sections – Reading, Writing, Listening, and Speaking. Join us to build your confidence and master the exam.",
+    icon: BookMarked,
+    imageUrl: '/services/pixarclasses.jpg',
+    dataAiHint: "classroom students learning",
+    keyFeatures: [
+      "Tailored coaching for IELTS, TOEFL, PTE, Duolingo",
+      "Experienced instructors & personalized feedback",
+      "Comprehensive mock tests and practice materials",
+      "Small class sizes for focused attention"
+    ]
+  },
+  {
     id: 'personalized-guidance',
     title: 'Personalized Guidance',
     description: 'Tailored advice to match your academic goals and preferences.',
@@ -135,21 +150,6 @@ export const services: Service[] = [
       "Statement of Purpose (SOP/Essay) review & feedback",
       "Financial document checklist & guidance",
       "Letter of Recommendation (LOR) advice"
-    ]
-  },
-  {
-    id: 'english-prep',
-    title: 'Expert English Test Preparation',
-    description: 'Ace IELTS, TOEFL, PTE & Duolingo with our tailored coaching.',
-    longDescription: "Our comprehensive English test preparation programs are designed to equip you with the skills and strategies needed to achieve your target scores. We offer specialized coaching for IELTS, TOEFL iBT, PTE Academic, and the Duolingo English Test. Our experienced instructors provide personalized feedback, mock tests, and focused training on all test sections – Reading, Writing, Listening, and Speaking. Join us to build your confidence and master the exam.",
-    icon: BookMarked,
-    imageUrl: '/services/pixarclasses.jpg',
-    dataAiHint: "classroom students learning",
-    keyFeatures: [
-      "Tailored coaching for IELTS, TOEFL, PTE, Duolingo",
-      "Experienced instructors & personalized feedback",
-      "Comprehensive mock tests and practice materials",
-      "Small class sizes for focused attention"
     ]
   },
   {
@@ -524,22 +524,12 @@ export const testPreparationOptions = [
   { value: "General English", label: "General English" },
 ];
 
-
-const getFlagEmoji = (countryCode: string): string => {
-  if (!countryCode || countryCode.length !== 2) return '🏳️'; 
-  const codePoints = countryCode
-    .toUpperCase()
-    .split('')
-    .map(char => 127397 + char.charCodeAt(0));
-  return String.fromCodePoint(...codePoints);
-};
-
 export const studyDestinationOptions = [
-  { value: "USA", label: `${getFlagEmoji("US")} USA` },
-  { value: "New Zealand", label: `${getFlagEmoji("NZ")} New Zealand` },
-  { value: "Australia", label: `${getFlagEmoji("AU")} Australia` },
-  { value: "Canada", label: `${getFlagEmoji("CA")} Canada` },
-  { value: "UK", label: `${getFlagEmoji("GB")} UK` },
+  { value: "USA", label: "🇺🇸 USA" },
+  { value: "New Zealand", label: "🇳🇿 New Zealand" },
+  { value: "Australia", label: "🇦🇺 Australia" },
+  { value: "Canada", label: "🇨🇦 Canada" },
+  { value: "UK", label: "🇬🇧 UK" },
 ];
 
 export const gpaScaleOptions = [
@@ -566,7 +556,7 @@ export const upcomingIntakeData: IntakeInfo[] = [
   {
     countrySlug: 'usa',
     countryName: 'USA',
-    flagEmoji: getFlagEmoji("US"),
+    flagEmoji: '🇺🇸',
     nextIntakeDate: '2026-01-15',
     intakeNote: 'Spring 2026 Intake',
     icon: CalendarDays,
@@ -574,7 +564,7 @@ export const upcomingIntakeData: IntakeInfo[] = [
   {
     countrySlug: 'australia',
     countryName: 'Australia',
-    flagEmoji: getFlagEmoji("AU"),
+    flagEmoji: '🇦🇺',
     nextIntakeDate: '2026-02-20',
     intakeNote: 'Major Intake: Feb 2026',
     icon: CalendarDays,
@@ -582,7 +572,7 @@ export const upcomingIntakeData: IntakeInfo[] = [
   {
     countrySlug: 'canada',
     countryName: 'Canada',
-    flagEmoji: getFlagEmoji("CA"),
+    flagEmoji: '🇨🇦',
     nextIntakeDate: '2026-01-10',
     intakeNote: 'Winter 2026 Intake',
     icon: CalendarDays,
@@ -590,7 +580,7 @@ export const upcomingIntakeData: IntakeInfo[] = [
   {
     countrySlug: 'uk',
     countryName: 'UK',
-    flagEmoji: getFlagEmoji("GB"),
+    flagEmoji: '🇬🇧',
     nextIntakeDate: '2025-09-20',
     intakeNote: 'Fall 2025 Intake',
     icon: CalendarDays,
@@ -598,7 +588,7 @@ export const upcomingIntakeData: IntakeInfo[] = [
   {
     countrySlug: 'new-zealand',
     countryName: 'New Zealand',
-    flagEmoji: getFlagEmoji("NZ"),
+    flagEmoji: '🇳🇿',
     nextIntakeDate: '2026-02-25',
     intakeNote: 'Semester 1, 2026 Intake',
     icon: CalendarDays,
