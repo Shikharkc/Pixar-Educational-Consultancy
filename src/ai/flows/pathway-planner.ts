@@ -1,4 +1,3 @@
-
 // src/ai/flows/pathway-planner.ts
 'use server';
 
@@ -99,7 +98,7 @@ const pathwayPlannerPrompt = ai.definePrompt({
   - 'type': "Public", "Private", or "Unknown".
   - 'location': City and state/region.
   - 'tuitionCategory': "Affordable", "Mid-Range", "Premium", "Varies", or "Unknown".
-  - 'tuitionFeeRange': (Optional) ONLY the estimated annual tuition range if commonly known, e.g., '$10,000 - $15,000 USD'. No extra text.
+  - 'tuitionFeeRange': (Optional) ONLY the estimated annual tuition range if commonly known, e.g., '$10,000 - $15,000 USD'. No extra text. This is very helpful for student planning, so try your best to include it.
   - 'englishTestRequirements': (Optional) Provide CONCISE typical scores if commonly known, e.g., "IELTS: 6.5+". This is very helpful for the student, so try your best to include it.
   - 'nextIntakeDate': (Optional) Provide CONCISE typical intake info if commonly known, e.g., "Fall 2025 (Apply by Jan 2025)". This is very helpful for planning, so try your best to include it.
 
