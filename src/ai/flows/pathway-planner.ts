@@ -43,7 +43,7 @@ const UniversitySuggestionSchema = z.object({
 const PathwayPlannerOutputSchema = z.object({
   universitySuggestions: z
     .array(UniversitySuggestionSchema)
-    .describe('A comprehensive list of at least 15-20 suggested universities with their details, relevant to the chosen country, field of study, GPA, and target education level. These suggestions are based on general knowledge and common information about universities.'),
+    .describe('A comprehensive list of up to 13 suggested universities with their details, relevant to the chosen country, field of study, GPA, and target education level. These suggestions are based on general knowledge and common information about universities.'),
   searchSummary: z.string().optional().describe("A brief summary of the search results or any general advice based on the query. For example, 'Here are some leading Engineering universities in the USA known for strong research programs that might be suitable for a student with a {{{gpa}}} GPA seeking a {{{targetEducationLevel}}}.' Acknowledge the GPA's and target education level's influence if relevant."),
 });
 
@@ -55,7 +55,7 @@ export async function pathwayPlanner(input: PathwayPlannerInput): Promise<Pathwa
 
 const pathwayPlannerPrompt = ai.definePrompt({
   name: 'pathwayPlannerPrompt',
-  model: 'googleai/gemini-1.5-pro-latest',
+  model: 'googleai/gemini-1.5-flash-latest',
   input: {schema: PathwayPlannerInputSchema},
   output: {schema: PathwayPlannerOutputSchema},
   prompt: `You are a highly advanced AI educational consultant powered by Google's Vertex AI. You have access to a vast, comprehensive database of information about universities worldwide. Your task is to act as an expert advisor, providing detailed and precise university suggestions for a student.
@@ -67,7 +67,7 @@ const pathwayPlannerPrompt = ai.definePrompt({
   - Student's Target Education Level: {{{targetEducationLevel}}}
 
   CRITICAL INSTRUCTIONS:
-  1.  **Provide a Large, Diverse List**: You MUST return a list of **at least 15-20 university suggestions**. The list should include a mix of top-tier, mid-range, and more accessible universities that are a good fit for the student's GPA. Do not just list famous universities; include lesser-known but strong institutions.
+  1.  **Provide a Diverse List**: You MUST return a list of **up to 13 university suggestions**. The list should include a mix of top-tier, mid-range, and more accessible universities that are a good fit for the student's GPA. Do not just list famous universities; include lesser-known but strong institutions.
   2.  **Detailed and Precise Information**: For each university, you must provide accurate details based on your extensive knowledge base. Do not invent information. If a detail is not commonly known, it is better to omit the specific field or use "Unknown"/"Varies" for categories.
   3.  **GPA and Profile Matching**: Your suggestions MUST be relevant to the student's GPA ('{{{gpa}}}') and their target education level ('{{{targetEducationLevel}}}'). The \`reasoning\` field for each university should explicitly mention why it's a suitable match (e.g., "Good fit for a {{{gpa}}} GPA with strong research in {{{fieldOfStudy}}}").
   4.  **Strict Adherence to Schema**: Populate all fields in the output schema precisely.
