@@ -1,5 +1,5 @@
 
-import React, { Fragment, type ReactNode, type ElementType } from 'react';
+import React, { Fragment, type ReactNode, type ElementType, type SVGProps } from 'react';
 import { 
   Award as AwardIconLucide,
   Briefcase, 
@@ -32,7 +32,10 @@ import {
   BookMarked, 
   KeyRound, 
   Activity,
-  CalendarDays 
+  CalendarDays,
+  Facebook,
+  Instagram,
+  Youtube,
 } from 'lucide-react';
 
 export interface Testimonial {
@@ -117,38 +120,38 @@ export const visaSuccesses: VisaSuccessesByCountry = {
     { name: "Pooja Nepali", destination: "Webster University, USA" },
     { name: "Sunil Prakash Yadav", destination: "Webster University, USA" },
     { name: "Sulab Bhandari", destination: "Louisiana Tech University, USA" },
-    { name: "Sadikshya Tiwari", destination: "University Of Central Arkansas, USA" },
-    { name: "Meera Koirala", destination: "St. Cloud State University, USA" },
-    { name: "Biprashna Gochhe Shrestha", destination: "University Of Central Arkansas, USA" },
-    { name: "Ujwal Thapa", destination: "Westcliff University, USA" },
-    { name: "Rojina Shrestha", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Binod Khatri", destination: "Arkansas State University, USA" },
-    { name: "Kushum Bhattrai", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Nabaraj Singh", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Sanjip Ghalan", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Samir Gurung", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Karuna Chettri", destination: "University OF South Dakota, USA" },
-    { name: "Shuprava Pandey", destination: "Louisiana Tech University, USA" },
-    { name: "Binita Karki", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Laxmi Kumari Teli", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Bikash Yadav", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Sabina Khatri", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Kamana Dhital", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Nobel Regmi", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Kritika Khati", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Swastika Shrestha", destination: "Southeast Missouri State University, USA" },
-    { name: "Anjila Shahi", destination: "Wright State University, USA" },
-    { name: "Manav Adhikari", destination: "Wichita State University, USA" },
-    { name: "Vikash Kumar", destination: "Montana State University, USA" },
+    { name: "Sadikshya Tiwari", destination: " University Of Central Arkansas,USA" },
+    { name: "Meera Koirala", destination: "St.Cloud State University,USA" },
+    { name: "Biprashna Gochhe Shrestha", destination: " University Of Central Arkansas,USA" },
+    { name: "Ujwal Thapa", destination: "Westcliff University,USA" },
+    { name: "Rojina Shrestha", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Binod Khatri", destination: "Arkansas State University,USA" },
+    { name: "Kushum Bhattrai", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Nabaraj Singh", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Sanjip Ghalan", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Samir Gurung", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Karuna Chettri", destination: " University OF South Dakota,USA" },
+    { name: "Shuprava Pandey", destination: "Louisiana Tech University ,USA" },
+    { name: "Binita Karki", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Laxmi Kumari Teli", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Bikash Yadav", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Sabina Khatri", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Kamana Dhital", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Nobel Regmi", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Kritika Khati", destination: "Washington University Of Science And Technology,USA" },
+    { name: "Swastika Shrestha", destination: "Southeast Missouri State University,USA" },
+    { name: "Anjila Shahi", destination: "Wright State University,USA" },
+    { name: "Manav Adhikari", destination: "Wichita State University ,USA" },
+    { name: "Vikash Kumar", destination: "Montana State University,USA" },
     { name: "Asif Mohammad", destination: "Midwestern State University, USA" },
-    { name: "Suvanga Rawal", destination: "University Of Central Arkansas, USA" },
-    { name: "Aayushma Thapa", destination: "Wright State University, USA" },
-    { name: "Saroj Oli", destination: "University Of Central Arkansas, USA" },
-    { name: "Jhakku Prasad Chalaune", destination: "University of Central Arkansas, USA" },
-    { name: "Nabin Rana", destination: "Arkansas State University, USA" },
-    { name: "Aruna Thapa", destination: "Westcliff University, USA" },
-    { name: "Janam Paijo Gurung", destination: "Southeast Missouri State University, USA" },
-    { name: "Purnima Dulal", destination: "Southeast Missouri State University, USA" }
+    { name: "Suvanga Rawal", destination: "University Of Central Arkansas,USA" },
+    { name: "Aayushma Thapa", destination: "Wright State University,USA" },
+    { name: "Saroj Oli", destination: "University Of Central Arkansas ,USA" },
+    { name: "Jhakku Prasad Chalaune", destination: "University of Central Arkansas,USA" },
+    { name: "Nabin Rana", destination: "Arkansas State University ,USA" },
+    { name: "Aruna Thapa", destination: "Westcliff University ,USA" },
+    { name: "Janam Paijo Gurung", destination: "Southeast Missouri,USA" },
+    { name: "Purnima Dulal", destination: "Southeast Missouri,USA" }
   ],
   "Australia": [
     { name: "Arju Pokhrel", destination: "University of New Castle, Australia" },
@@ -676,4 +679,24 @@ export const upcomingIntakeData: IntakeInfo[] = [
     intakeNote: 'Semester 1, 2026 Intake',
     icon: CalendarDays,
   },
+];
+
+export const TikTokIcon = (props: SVGProps<SVGSVGElement>) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 28 32"
+    fill="currentColor"
+    width="1em"
+    height="1em"
+    {...props}
+  >
+    <path d="M20.656.001H24.4c.115 2.148.882 4.322 2.447 5.836 1.566 1.555 3.782 2.27 5.932 2.1.07.923.084 1.847.084 2.773-.014 1.858-.028 3.708-.028 5.566s.014 3.708.028 5.566c-.028 2.127-.868 4.273-2.42 5.787-1.553 1.51-3.727 2.21-5.892 2.07-.07.923-.084 1.847-.084 2.773-.014 1.858-.028 3.708-.028-5.566s.014 3.708.028 5.566c-1.647.042-3.294.042-4.94.042-1.48 0-2.968.028-4.45.028-.168-2.155-.868-4.28-2.433-5.82-1.58-1.556-3.78-2.24-5.92-2.1-.07-.923-.084-1.847-.084-2.773-.014-1.858-.028-3.708-.028-5.566s.014-3.708.028-5.566c.028-2.127.868-4.273 2.42-5.787 1.553-1.51 3.727-2.21 5.892-2.07.07-.923.084-1.847.084-2.773.014-1.858-.028-3.708-.028-5.566s-.014-3.708-.028-5.566c1.68-.056 3.358-.056 5.037-.056.112-.882.112-1.778.098-2.664.0-0.125.0-0.252.014-0.378H20.656zM23.186 26.09c-1.663 0-3.014 1.35-3.014 3.014s1.35 3.014 3.014 3.014 3.014-1.35 3.014-3.014-1.35-3.014-3.014-3.014zm0-14.84c-1.663 0-3.014 1.35-3.014 3.014s1.35 3.014 3.014 3.014 3.014-1.35 3.014-3.014-1.35-3.014-3.014-3.014z"/>
+  </svg>
+);
+
+export const socialPlatforms = [
+  { name: 'Facebook', icon: Facebook, url: 'https://www.facebook.com/pixaredu', colorClass: 'hover:text-blue-600', dataAiHint: 'facebook logo' },
+  { name: 'TikTok', icon: TikTokIcon, url: 'https://www.tiktok.com/@pixareducation?_t=ZS-8xBncYemVFt&_r=1', colorClass: 'hover:text-black dark:hover:text-white', dataAiHint: 'tiktok logo' },
+  { name: 'YouTube', icon: Youtube, url: 'https://www.youtube.com/@pixareducation', colorClass: 'hover:text-red-600', dataAiHint: 'youtube logo' },
+  { name: 'Instagram', icon: Instagram, url: 'https://www.instagram.com/pixar.education?igsh=MXE5ZWJhZ2tmNTMybQ==', colorClass: 'hover:text-pink-500', dataAiHint: 'instagram logo' },
 ];

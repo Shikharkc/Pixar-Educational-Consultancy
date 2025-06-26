@@ -3,6 +3,7 @@ import Header from './header';
 import Footer from './footer';
 import { Info } from 'lucide-react'; // Import the Info icon
 import FirebaseInitializer from '../firebase/initializer';
+import SocialSidebar from './SocialSidebar';
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -28,6 +29,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         </div>
       )}
       <main className="flex-grow container mx-auto px-4 py-8">{children}</main>
+      <SocialSidebar />
       <Footer />
     </div>
   );
