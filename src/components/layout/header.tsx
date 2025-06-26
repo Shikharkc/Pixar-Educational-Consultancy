@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Home, Info, Briefcase, MapPin, Sparkles, Mail, ChevronDown, Menu, Wand2, HelpCircle, CheckSquare, MessageCircleQuestion, Share2, Newspaper } from 'lucide-react';
+import { Home, Info, Briefcase, MapPin, Sparkles, Mail, ChevronDown, Menu, Wand2, HelpCircle, CheckSquare, MessageCircleQuestion, Share2, Newspaper, Award } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,8 +16,15 @@ import { cn } from '@/lib/utils';
 
 const navItems = [
   { href: '/', label: 'Home', icon: Home },
-  { href: '/about', label: 'About Us', icon: Info },
-  { href: '/services', label: 'Services', icon: Briefcase },
+  {
+    label: 'About',
+    icon: Info,
+    subItems: [
+      { href: '/about', label: 'About Us', icon: Info },
+      { href: '/services', label: 'Our Services', icon: Briefcase },
+    ],
+  },
+  { href: '/success-stories', label: 'Success Stories', icon: Award },
   { href: '/country-guides', label: 'Country Guides', icon: MapPin },
   {
     label: 'Student Hub',
