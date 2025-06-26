@@ -109,18 +109,12 @@ export default function Header() {
           <DropdownMenuContent className="bg-card border-border shadow-lg w-56">
             {subItems.map((item) => (
               <DropdownMenuItem key={item.href} asChild>
-                <Link href={item.href} passHref>
-                  <Button
-                    variant="ghost"
-                    className="w-full justify-start flex items-center space-x-2 text-foreground hover:bg-accent hover:text-accent-foreground px-2 py-1.5"
-                    onClick={() => {
-                      setIsOpen(false);
-                      setIsMobileMenuOpen(false);
-                    }}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span>{item.label}</span>
-                  </Button>
+                <Link
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <item.icon className="h-5 w-5 mr-2" />
+                  <span>{item.label}</span>
                 </Link>
               </DropdownMenuItem>
             ))}
@@ -145,11 +139,14 @@ export default function Header() {
               )}
             </div>
             {item.subItems.map((subItem: any) => (
-               <Link key={subItem.href} href={subItem.href} passHref>
-                <Button variant="ghost" className="w-full justify-start flex items-center space-x-2 text-foreground hover:bg-accent hover:text-accent-foreground pl-8 py-2.5" onClick={() => setIsMobileMenuOpen(false)}>
-                  <subItem.icon className="h-5 w-5" />
-                  <span>{subItem.label}</span>
-                </Button>
+               <Link
+                key={subItem.href}
+                href={subItem.href}
+                className="w-full justify-start flex items-center space-x-2 text-foreground hover:bg-accent hover:text-accent-foreground pl-8 py-2.5 rounded-md"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <subItem.icon className="h-5 w-5" />
+                <span>{subItem.label}</span>
               </Link>
             ))}
           </div>
