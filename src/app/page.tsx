@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import SectionTitle from '@/components/ui/section-title';
-import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info as InfoIcon, Search, ExternalLink, Wand2, Briefcase, DollarSign, ClipboardCheck, CalendarDays, Award as AwardIconFromData, Clock, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, CheckCircle, Star, Loader2, Sparkles, MapPin, BookOpen, University as UniversityIconLucide, Info as InfoIcon, Search, ExternalLink, Wand2, Briefcase, DollarSign, ClipboardCheck, CalendarDays, Award as AwardIconFromData, Clock, ChevronLeft, ChevronRight, GraduationCap, Building2, Globe, FileText, Users, Award } from 'lucide-react';
 import { testimonials, services, fieldsOfStudy, gpaScaleOptions, educationLevelOptions, upcomingIntakeData } from '@/lib/data.tsx';
 import type { Testimonial, Service, IntakeInfo } from '@/lib/data.tsx';
 import { useState, useEffect, useMemo, useRef } from 'react';
@@ -24,6 +24,7 @@ import { gsap } from 'gsap';
 import { MotionPathPlugin } from 'gsap/MotionPathPlugin';
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+import Counter from '@/components/ui/counter';
 
 gsap.registerPlugin(MotionPathPlugin);
 
@@ -129,7 +130,7 @@ export default function HomePage() {
   const [heroSectionRef, isHeroSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.05, initialVisible: true });
   const [pathwaySearchSectionRef, isPathwaySearchSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.02, initialVisible: false });
   const [upcomingIntakesSectionRef, isUpcomingIntakesSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
-  const [whyChooseUsSectionRef, isWhyChooseUsSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
+  const [whyChooseUsSectionRef, isWhyChooseUsSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: false, threshold: 0.1, once: true });
   const [servicesOverviewSectionRef, isServicesOverviewSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
   const [testimonialsSectionRef, isTestimonialsSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
 
@@ -399,6 +400,17 @@ export default function HomePage() {
       </Form>
     </Card>
   );
+
+  const stats = [
+    { icon: CheckCircle, value: 1500, label: 'Visas Approved', suffix: '+' },
+    { icon: GraduationCap, value: 1200, label: 'Students Enrolled', suffix: '+' },
+    { icon: Building2, value: 250, label: 'Partner Institutions', suffix: '+' },
+    { icon: Globe, value: 5, label: 'Countries Served' },
+    { icon: FileText, value: 5000, label: 'SOPs Reviewed', suffix: '+' },
+    { icon: Users, value: 10000, label: 'Consultations Given', suffix: '+' },
+    { icon: BookOpen, value: 2000, label: 'Test Prep Students', suffix: '+' },
+    { icon: Award, value: new Date().getFullYear() - 2013, label: 'Years of Experience', suffix: '+' },
+  ];
 
   return (
     <div className="space-y-16 md:space-y-24">
@@ -741,30 +753,30 @@ export default function HomePage() {
       <section
         ref={whyChooseUsSectionRef}
         className={cn(
-          "transition-all duration-700 ease-out",
+          "bg-secondary/50 py-16 rounded-lg shadow-inner transition-all duration-700 ease-out",
           isWhyChooseUsSectionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
         )}
       >
-        <SectionTitle title="Why Choose Pixar Edu?" subtitle="Your success is our priority. We offer unparalleled support and expertise." />
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            { title: "Expert Guidance", description: "Experienced counselors providing personalized advice for global destinations.", icon: <CheckCircle className="h-10 w-10 text-accent mb-4" /> },
-            { title: "Global University Network", description: "Access to a wide range of universities and programs in the USA, Australia, UK, Canada & NZ.", icon: <CheckCircle className="h-10 w-10 text-accent mb-4" /> },
-            { title: "Proven Success Record", description: "High success rates in admissions and visa applications across multiple countries.", icon: <CheckCircle className="h-10 w-10 text-accent mb-4" /> },
-          ].map((item, index) => {
-            const [cardRef, isCardVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
-            return (
-              <div key={item.title} ref={cardRef} className={cn("transition-all duration-700 ease-out", isCardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{transitionDelay: `${index * 100}ms`}}>
-                <Card className="text-center shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card h-full">
-                  <CardContent className="p-6 pt-8">
-                    {item.icon}
-                    <h3 className="text-xl font-headline font-semibold text-primary mb-2">{item.title}</h3>
-                    <p className="text-foreground/80">{item.description}</p>
-                  </CardContent>
-                </Card>
-              </div>
-            );
-          })}
+        <SectionTitle title="Why Choose Pixar Edu?" subtitle="Our track record speaks for itself. We are committed to student success." />
+        <div className="container mx-auto px-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 text-center">
+              {stats.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <div key={index} className="flex flex-col items-center p-4 bg-card rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
+                    <Icon className="h-10 w-10 md:h-12 md:w-12 text-primary mb-3" />
+                    <div className="text-3xl md:text-4xl font-bold text-accent">
+                      <Counter 
+                        target={stat.value}
+                        isInView={isWhyChooseUsSectionVisible}
+                        suffix={stat.suffix || ''}
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground mt-1 text-balance h-10 flex items-center">{stat.label}</p>
+                  </div>
+                );
+              })}
+            </div>
         </div>
       </section>
 
@@ -795,7 +807,7 @@ export default function HomePage() {
                     <p className="text-foreground/80">{service.longDescription || service.description}</p>
                   </CardContent>
                   <CardFooter>
-                    <Button asChild variant="link" className="text-accent p-0">
+                    <Button asChild variant="link" className="text-accent p-0 hover:text-primary">
                       <Link href={`/services#${service.id}`}>Learn More <ArrowRight className="ml-1 h-4 w-4" /></Link>
                     </Button>
                   </CardFooter>
