@@ -8,12 +8,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const timelineData = [
-  { year: 2013, title: 'Founded', description: 'Pixar Educational Consultancy was established in Kathmandu with a mission to guide Nepalese students.', icon: Building },
-  { year: 2015, title: 'First 100 Visas', description: 'Celebrated a major milestone, having successfully guided over 100 students to their study destinations.', icon: Award },
-  { year: 2017, title: 'Expanded Services', description: 'Introduced comprehensive in-house IELTS and PTE preparation classes to better serve our students.', icon: TrendingUp },
-  { year: 2019, title: 'New Office Branch', description: 'Opened a new branch in Lalitpur to increase accessibility for students in the valley.', icon: Milestone },
-  { year: 2021, title: 'Digital Transformation', description: 'Launched our first website and digital counseling services to adapt to the new global environment.', icon: Globe },
-  { year: 2024, title: 'AI-Powered Tools', description: 'Integrated AI tools like the Pathway Planner to provide instant, personalized guidance to students worldwide.', icon: Users },
+  { year: 2013, title: 'Founded', description: 'Pixar Educational Consultancy was established in Kathmandu with a core mission to provide ethical and comprehensive guidance to Nepalese students aspiring for international education.', icon: Building },
+  { year: 2015, title: 'First 100 Visas', description: 'Achieved a significant milestone by successfully guiding over 100 students through their visa processes, establishing a strong foundation of trust and success.', icon: Award },
+  { year: 2017, title: 'Expanded Services', description: 'Expanded our service portfolio by launching in-house IELTS and PTE preparation classes, providing an integrated support system for our students.', icon: TrendingUp },
+  { year: 2019, title: 'New Office Branch', description: 'To enhance accessibility and serve a growing number of students, we inaugurated a new branch office in the key location of Lalitpur.', icon: Milestone },
+  { year: 2021, title: 'Digital Transformation', description: 'Embraced digital transformation by launching our official website and offering virtual counseling services, adapting to global changes and expanding our reach.', icon: Globe },
+  { year: 2024, title: 'AI-Powered Tools', description: 'Pioneered the use of technology in consultancy by integrating advanced AI tools like the Pathway Planner, offering instant and personalized university suggestions to students globally.', icon: Users },
 ];
 
 export default function InteractiveTimeline() {
