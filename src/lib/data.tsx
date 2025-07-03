@@ -53,7 +53,7 @@ export const testimonials: Testimonial[] = [
     name: 'Bhawana Paneru',
     studyDestination: 'University of Central Arkansas, USA',
     text: "Pixar Edu provided excellent support throughout my application process to the USA. Highly recommended for their professionalism!",
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxzdHVkZW50JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzUxNTQ3MjI4fDA&ixlib=rb-4.1.0&q=80&w=1080',
     dataAiHint: 'student portrait',
   },
   {
@@ -61,7 +61,7 @@ export const testimonials: Testimonial[] = [
     name: 'Pratik B K',
     studyDestination: 'Georgian College, Canada',
     text: "My journey to Canada was made much smoother thanks to the Pixar Edu team. Their guidance on visa and college selection was top-notch.",
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: 'https://images.unsplash.com/photo-1584012961506-b6fc4c9f3105?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8c3R1ZGVudCUyMHNtaWxpbmd8ZW58MHx8fHwxNzUxNTQ3MjI4fDA&ixlib=rb-4.1.0&q=80&w=1080',
     dataAiHint: 'student smiling',
   },
   {
@@ -69,7 +69,7 @@ export const testimonials: Testimonial[] = [
     name: 'Prashana Thapa Magar',
     studyDestination: 'Cardiff Metropolitan University, UK',
     text: "The counselors at Pixar Edu were incredibly helpful in securing my admission and visa for the UK. A truly professional service!",
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: 'https://images.unsplash.com/photo-1560439450-57df7ac6dbef?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxoYXBweSUyMHN0dWRlbnR8ZW58MHx8fHwxNzUxNTQ3MjI4fDA&ixlib=rb-4.1.0&q=80&w=1080',
     dataAiHint: 'happy student',
   },
   {
@@ -77,7 +77,7 @@ export const testimonials: Testimonial[] = [
     name: 'Arju Pokhrel',
     studyDestination: 'University of New Castle, Australia',
     text: "I'm grateful to Pixar Edu for their expert advice on studying in Australia. They made a complex process seem easy.",
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: 'https://images.unsplash.com/photo-1644091792174-bb6f90e04dbd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Z3JhZHVhdGUlMjBzdHVkZW50fGVufDB8fHx8MTc1MTU0NzIyOHww&ixlib=rb-4.1.0&q=80&w=1080',
     dataAiHint: 'graduate student',
   },
   {
@@ -85,7 +85,7 @@ export const testimonials: Testimonial[] = [
     name: 'Srijana Rana',
     studyDestination: 'Eastern Institute of Technology, New Zealand',
     text: "Choosing Pixar Edu was the best decision for my New Zealand study plans. Their support was exceptional from start to finish.",
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: 'https://images.unsplash.com/photo-1591218214141-45545921d2d9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxzdHVkZW50JTIwZXhjaXRlZHxlbnwwfHx8fDE3NTE1NDcyMjh8MA&ixlib=rb-4.1.0&q=80&w=1080',
     dataAiHint: 'student excited',
   },
   {
@@ -93,7 +93,7 @@ export const testimonials: Testimonial[] = [
     name: 'Bivusha Gautam',
     studyDestination: 'Arkansas State University, USA',
     text: "Thanks to Pixar Edu, I am now pursuing my dream course in the USA. Their visa guidance was particularly helpful.",
-    avatarUrl: 'https://placehold.co/100x100.png',
+    avatarUrl: 'https://images.unsplash.com/photo-1522951657911-1d13d070d883?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxmb2N1c2VkJTIwc3R1ZGVudHxlbnwwfHx8fDE3NTE1NDcyMjh8MA&ixlib=rb-4.1.0&q=80&w=1080',
     dataAiHint: 'focused student',
   },
 ];
