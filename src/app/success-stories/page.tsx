@@ -80,6 +80,7 @@ export default function SuccessStoriesPage() {
         id: `vs-${index}`,
         name: student.name,
         studyDestination: student.destination,
+        text: student.text, // Now includes the testimonial text
       }));
 
     const allTestimonials: SuccessStory[] = testimonials.map(t => ({

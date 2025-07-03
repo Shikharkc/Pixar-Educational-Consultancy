@@ -101,6 +101,7 @@ export const testimonials: Testimonial[] = [
 export interface VisaSuccess {
   name: string;
   destination: string;
+  text: string;
 }
 
 export interface VisaSuccessesByCountry {
@@ -109,75 +110,75 @@ export interface VisaSuccessesByCountry {
 
 export const visaSuccesses: VisaSuccessesByCountry = {
   "USA": [
-    { name: "Bhawana Paneru", destination: "University of Central Arkansas, USA" },
-    { name: "Bivusha Gautam", destination: "Arkansas State University, USA" },
-    { name: "Rajan Yadav", destination: "University of Central Missouri, USA" },
-    { name: "Indra Bahadur Air", destination: "Murray State University, USA" },
-    { name: "Aryan Raj Pokhrel", destination: "Harrisburg University, USA" },
-    { name: "Safal Tamang Pakhrin", destination: "Washington University Of Science And Technology, USA" },
-    { name: "Anish Khadka", destination: "Wright State University, USA" },
-    { name: "Roshi Pandey", destination: "NorthWest Missouri State University, USA" },
-    { name: "Pooja Nepali", destination: "Webster University, USA" },
-    { name: "Sunil Prakash Yadav", destination: "Webster University, USA" },
-    { name: "Sulab Bhandari", destination: "Louisiana Tech University, USA" },
-    { name: "Sadikshya Tiwari", destination: " University Of Central Arkansas,USA" },
-    { name: "Meera Koirala", destination: "St.Cloud State University,USA" },
-    { name: "Biprashna Gochhe Shrestha", destination: " University Of Central Arkansas,USA" },
-    { name: "Ujwal Thapa", destination: "Westcliff University,USA" },
-    { name: "Rojina Shrestha", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Binod Khatri", destination: "Arkansas State University,USA" },
-    { name: "Kushum Bhattrai", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Nabaraj Singh", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Sanjip Ghalan", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Samir Gurung", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Karuna Chettri", destination: " University OF South Dakota,USA" },
-    { name: "Shuprava Pandey", destination: "Louisiana Tech University ,USA" },
-    { name: "Binita Karki", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Laxmi Kumari Teli", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Bikash Yadav", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Sabina Khatri", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Kamana Dhital", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Nobel Regmi", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Kritika Khati", destination: "Washington University Of Science And Technology,USA" },
-    { name: "Swastika Shrestha", destination: "Southeast Missouri State University,USA" },
-    { name: "Anjila Shahi", destination: "Wright State University,USA" },
-    { name: "Manav Adhikari", destination: "Wichita State University ,USA" },
-    { name: "Vikash Kumar", destination: "Montana State University,USA" },
-    { name: "Asif Mohammad", destination: "Midwestern State University, USA" },
-    { name: "Suvanga Rawal", destination: "University Of Central Arkansas,USA" },
-    { name: "Aayushma Thapa", destination: "Wright State University,USA" },
-    { name: "Saroj Oli", destination: "University Of Central Arkansas ,USA" },
-    { name: "Jhakku Prasad Chalaune", destination: "University of Central Arkansas,USA" },
-    { name: "Nabin Rana", destination: "Arkansas State University ,USA" },
-    { name: "Aruna Thapa", destination: "Westcliff University ,USA" },
-    { name: "Janam Paijo Gurung", destination: "Southeast Missouri,USA" },
-    { name: "Purnima Dulal", destination: "Southeast Missouri,USA" }
+    { name: "Bhawana Paneru", destination: "University of Central Arkansas, USA", text: "PixarEdu's guidance was invaluable for my US visa. Highly recommended!" },
+    { name: "Bivusha Gautam", destination: "Arkansas State University, USA", text: "Thanks to Pixar, I'm studying in the USA. Their visa support is excellent." },
+    { name: "Rajan Yadav", destination: "University of Central Missouri, USA", text: "The team at PixarEdu made my US study dream a reality. Very professional." },
+    { name: "Indra Bahadur Air", destination: "Murray State University, USA", text: "A smooth and successful visa process for the USA. Thank you, PixarEdu!" },
+    { name: "Aryan Raj Pokhrel", destination: "Harrisburg University, USA", text: "Excellent counseling and visa preparation for the United States." },
+    { name: "Safal Tamang Pakhrin", destination: "Washington University Of Science And Technology, USA", text: "Grateful for the step-by-step guidance which led to my US visa approval." },
+    { name: "Anish Khadka", destination: "Wright State University, USA", text: "I highly recommend PixarEdu for their expertise in US university admissions." },
+    { name: "Roshi Pandey", destination: "NorthWest Missouri State University, USA", text: "My US student visa was approved smoothly. The mock interviews were very helpful." },
+    { name: "Pooja Nepali", destination: "Webster University, USA", text: "A truly professional consultancy that helped me get to the USA." },
+    { name: "Sunil Prakash Yadav", destination: "Webster University, USA", text: "My dream of studying in the USA came true thanks to the amazing team at PixarEdu." },
+    { name: "Sulab Bhandari", destination: "Louisiana Tech University, USA", text: "The entire process was seamless. Thank you PixarEdu for the US visa success." },
+    { name: "Sadikshya Tiwari", destination: "University Of Central Arkansas, USA", text: "From college selection to visa approval, PixarEdu was with me every step of the way." },
+    { name: "Meera Koirala", destination: "St.Cloud State University, USA", text: "I am thrilled to be studying in the USA, all thanks to PixarEdu's support." },
+    { name: "Biprashna Gochhe Shrestha", destination: "University Of Central Arkansas, USA", text: "A big thank you to PixarEdu for their expert advice and assistance." },
+    { name: "Ujwal Thapa", destination: "Westcliff University, USA", text: "Their professional approach made the complex US visa process simple." },
+    { name: "Rojina Shrestha", destination: "Washington University Of Science And Technology, USA", text: "Highly recommend PixarEdu for any student aspiring to study in the USA." },
+    { name: "Binod Khatri", destination: "Arkansas State University, USA", text: "The visa guidance was top-notch. So glad I chose PixarEdu for my US studies." },
+    { name: "Kushum Bhattrai", destination: "Washington University Of Science And Technology, USA", text: "Achieved my dream of studying in the USA. PixarEdu's team is fantastic." },
+    { name: "Nabaraj Singh", destination: "Washington University Of Science And Technology, USA", text: "PixarEdu provided excellent support for my US visa application." },
+    { name: "Sanjip Ghalan", destination: "Washington University Of Science And Technology, USA", text: "Professional, reliable, and supportive. Thank you for the visa success!" },
+    { name: "Samir Gurung", destination: "Washington University Of Science And Technology, USA", text: "My US study journey started with PixarEdu, and I couldn't be happier." },
+    { name: "Karuna Chettri", destination: "University OF South Dakota, USA", text: "The team is knowledgeable and guided me perfectly for my US student visa." },
+    { name: "Shuprava Pandey", destination: "Louisiana Tech University, USA", text: "I'm grateful for the personalized attention that led to my visa approval." },
+    { name: "Binita Karki", destination: "Washington University Of Science And Technology, USA", text: "A seamless experience from application to visa. Highly recommended." },
+    { name: "Laxmi Kumari Teli", destination: "Washington University Of Science And Technology, USA", text: "PixarEdu's expertise was key to my successful US visa application." },
+    { name: "Bikash Yadav", destination: "Washington University Of Science And Technology, USA", text: "Thank you PixarEdu for making my American dream possible." },
+    { name: "Sabina Khatri", destination: "Washington University Of Science And Technology, USA", text: "Their mock interview sessions were incredibly helpful for my US visa." },
+    { name: "Kamana Dhital", destination: "Washington University Of Science And Technology, USA", text: "Professional guidance and a successful outcome. Very happy with the service." },
+    { name: "Nobel Regmi", destination: "Washington University Of Science And Technology, USA", text: "Chose the right consultancy for my US studies. Thank you, PixarEdu!" },
+    { name: "Kritika Khati", destination: "Washington University Of Science And Technology, USA", text: "The support I received from PixarEdu was exceptional. Now I'm in the USA!" },
+    { name: "Swastika Shrestha", destination: "Southeast Missouri State University, USA", text: "An efficient and trustworthy consultancy that delivered on their promise." },
+    { name: "Anjila Shahi", destination: "Wright State University, USA", text: "The process was made simple and clear. Very grateful for their help." },
+    { name: "Manav Adhikari", destination: "Wichita State University, USA", text: "My US visa success is a testament to their hard work and expertise." },
+    { name: "Vikash Kumar", destination: "Montana State University, USA", text: "I'm glad I trusted PixarEdu with my US study plans. It paid off!" },
+    { name: "Asif Mohammad", destination: "Midwestern State University, USA", text: "From start to finish, the support was amazing. Highly recommend." },
+    { name: "Suvanga Rawal", destination: "University Of Central Arkansas, USA", text: "Thank you for the excellent guidance and for helping me get my US visa." },
+    { name: "Aayushma Thapa", destination: "Wright State University, USA", text: "The counselors are knowledgeable and genuinely helpful. Great experience." },
+    { name: "Saroj Oli", destination: "University Of Central Arkansas, USA", text: "A smooth journey to the USA, all thanks to the dedicated team at PixarEdu." },
+    { name: "Jhakku Prasad Chalaune", destination: "University of Central Arkansas, USA", text: "Their visa interview preparation is the best. It made all the difference." },
+    { name: "Nabin Rana", destination: "Arkansas State University, USA", text: "Achieved my goal of studying in the US with PixarEdu's fantastic support." },
+    { name: "Aruna Thapa", destination: "Westcliff University, USA", text: "I am grateful for their professional services which led to my visa approval." },
+    { name: "Janam Paijo Gurung", destination: "Southeast Missouri, USA", text: "A reliable consultancy that I would recommend to anyone planning for US studies." },
+    { name: "Purnima Dulal", destination: "Southeast Missouri, USA", text: "So happy to have received my visa for the USA. Thank you PixarEdu team!" }
   ],
   "Australia": [
-    { name: "Arju Pokhrel", destination: "University of New Castle, Australia" },
-    { name: "Sushruti Sharma", destination: "University of Wollongong, Australia" },
-    { name: "Rohit Sha Kanu", destination: "Flinders University, Australia" },
-    { name: "Rajan Gharti", destination: "Victoria University, Australia" },
-    { name: "Rahul Rumba", destination: "Flinders University, Australia" },
-    { name: "Bejil Shrestha", destination: "University of Wollongong, Australia" },
-    { name: "Hari Sharan Puri", destination: "La Trobe University, Australia" },
-    { name: "Janak Budhathoki", destination: "La Trobe University, Australia" },
-    { name: "Aanchal Thapa", destination: "Victoria University, Australia" },
-    { name: "Abhineet Sah", destination: "University of Wollongong, Australia" },
-    { name: "Bikash Shrestha", destination: "TIIS, Australia" }
+    { name: "Arju Pokhrel", destination: "University of New Castle, Australia", text: "Grateful for the expert advice on studying in Australia. A smooth process!" },
+    { name: "Sushruti Sharma", destination: "University of Wollongong, Australia", text: "PixarEdu's guidance on the GTE was crucial for my Australian visa success." },
+    { name: "Rohit Sha Kanu", destination: "Flinders University, Australia", text: "A professional service that made my dream of studying in Australia come true." },
+    { name: "Rajan Gharti", destination: "Victoria University, Australia", text: "Highly recommend for Australian university applications. Great support." },
+    { name: "Rahul Rumba", destination: "Flinders University, Australia", text: "The team is knowledgeable about Australian education and visa policies." },
+    { name: "Bejil Shrestha", destination: "University of Wollongong, Australia", text: "My journey to Australia was seamless thanks to their expert guidance." },
+    { name: "Hari Sharan Puri", destination: "La Trobe University, Australia", text: "Thank you PixarEdu for helping me secure my visa for Australia." },
+    { name: "Janak Budhathoki", destination: "La Trobe University, Australia", text: "Excellent support and very transparent process. Happy to be in Australia." },
+    { name: "Aanchal Thapa", destination: "Victoria University, Australia", text: "Their assistance with documentation was top-notch. Highly professional." },
+    { name: "Abhineet Sah", destination: "University of Wollongong, Australia", text: "I'm thankful for the personalized counseling and support I received." },
+    { name: "Bikash Shrestha", destination: "TIIS, Australia", text: "A great consultancy that genuinely cares about student success in Australia." }
   ],
   "Canada": [
-    { name: "Pratik B K", destination: "Georgian College, Canada" }
+    { name: "Pratik B K", destination: "Georgian College, Canada", text: "My journey to Canada was made much smoother with PixarEdu. Their guidance on the visa process was excellent." }
   ],
   "UK": [
-    { name: "Prashana Thapa Magar", destination: "Cardiff Metropolitan University, UK" }
+    { name: "Prashana Thapa Magar", destination: "Cardiff Metropolitan University, UK", text: "The counselors at PixarEdu were incredibly helpful in securing my admission and visa for the UK." }
   ],
   "New Zealand": [
-    { name: "Srijana Rana", destination: "Eastern Institute of Technology, New Zealand" },
-    { name: "Shulav Dangi", destination: "Otago Polytechnic, New Zealand" },
-    { name: "Puja Chaudhary", destination: "Auckland Institute Of Studies, New Zealand" },
-    { name: "Prasuna Sapkota", destination: "Auckland Institute Of Studies, New Zealand" },
-    { name: "Kailash Bhatta", destination: "Auckland Institute Of Studies, New Zealand" }
+    { name: "Srijana Rana", destination: "Eastern Institute of Technology, New Zealand", text: "Choosing PixarEdu was the best decision for my New Zealand study plans. Exceptional support!" },
+    { name: "Shulav Dangi", destination: "Otago Polytechnic, New Zealand", text: "The process for New Zealand was straightforward with their help." },
+    { name: "Puja Chaudhary", destination: "Auckland Institute Of Studies, New Zealand", text: "Very happy with the outcome. Now studying in beautiful New Zealand." },
+    { name: "Prasuna Sapkota", destination: "Auckland Institute Of Studies, New Zealand", text: "Thank you for the guidance and for making my NZ dream a reality." },
+    { name: "Kailash Bhatta", destination: "Auckland Institute Of Studies, New Zealand", text: "Professional team that provides excellent support for New Zealand applicants." }
   ]
 };
 
@@ -700,3 +701,4 @@ export const socialPlatforms = [
   { name: 'YouTube', icon: Youtube, url: 'https://www.youtube.com/@pixareducation', colorClass: 'hover:text-red-600', dataAiHint: 'youtube logo' },
   { name: 'Instagram', icon: Instagram, url: 'https://www.instagram.com/pixar.education?igsh=MXE5ZWJhZ2tmNTMybQ==', colorClass: 'hover:text-pink-500', dataAiHint: 'instagram logo' },
 ];
+
