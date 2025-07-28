@@ -10,7 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
-import { chat, ChatInput } from '@/ai/flows/chatbot-flow';
+import { chat } from '@/ai/flows/chatbot-flow';
+import type { ChatInput } from '@/ai/schemas/chatbot-schemas';
 import { nanoid } from 'nanoid';
 import { GeneralContactForm, PrepClassBookingForm } from './ChatForms';
 

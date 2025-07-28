@@ -6,29 +6,10 @@
  * and general knowledge, acting as a friendly educational consultant.
  *
  * - chat - A function that handles the conversational logic.
- * - ChatInput - The input type for the chat function.
- * - ChatOutput - The return type for the chat function.
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
-
-// Input schema for the chat function
-export const ChatInputSchema = z.object({
-  context: z.string().describe('The relevant context from the website pages the user might be looking at.'),
-  history: z.array(z.object({
-    role: z.enum(['user', 'model']),
-    content: z.string(),
-  })).describe('The history of the conversation so far.'),
-  query: z.string().describe('The user\'s latest query or question.'),
-});
-export type ChatInput = z.infer<typeof ChatInputSchema>;
-
-// Output schema for the chat function
-const ChatOutputSchema = z.object({
-  response: z.string().describe('The AI\'s response to the user query.'),
-});
-export type ChatOutput = z.infer<typeof ChatOutputSchema>;
+import { ChatInputSchema, ChatOutputSchema, type ChatInput, type ChatOutput } from '@/ai/schemas/chatbot-schemas';
 
 // Define the main function that will be called by the chatbot component
 export async function chat(input: ChatInput): Promise<ChatOutput> {
@@ -76,7 +57,7 @@ const chatFlow = ai.defineFlow(
   async (input) => {
     const { output } = await chatPrompt(input);
     if (!output) {
-      return { response: "I'm sorry, I couldn't generate a response at the moment. Please try again." };
+      return { response: "I'm sorry, I'm having trouble generating a response at the moment. Please try again." };
     }
     return output;
   }
