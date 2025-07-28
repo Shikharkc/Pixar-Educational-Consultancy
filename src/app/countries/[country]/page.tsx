@@ -27,7 +27,7 @@ interface CountryPageProps {
 
 export default function CountryPage({ params }: { params: { country: string } }) {
 
-  const [headerRef, isHeaderVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.05, initialVisible: true });
+  const [headerRef, isHeaderVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.05 });
   const [whySectionRef, isWhySectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
   const [universitiesSectionRef, isUniversitiesSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
   const [ctaSectionRef, isCtaSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true, threshold: 0.1 });
