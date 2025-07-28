@@ -505,7 +505,7 @@ export default function HomePage() {
             )}
           >
             <Button size="lg" asChild className="w-full sm:w-auto bg-background text-primary hover:bg-background/90 shadow-lg">
-              <Link href="/services">Explore Services <ArrowRight className="ml-2 h-5 w-5" /></Link>
+              <a href="#pathway-search-section">Plan Your Pathway <ArrowRight className="ml-2 h-5 w-5" /></a>
             </Button>
             <Button size="lg" variant="outline" asChild className="w-full sm:w-auto border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 shadow-lg bg-accent text-accent-foreground hover:bg-accent/90">
               <Link href="/ai-assistants">Use our Smart Tools <Wand2 className="ml-2 h-5 w-5" /></Link>
