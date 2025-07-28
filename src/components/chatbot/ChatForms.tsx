@@ -123,26 +123,26 @@ export function GeneralContactForm({ onSuccess }: { onSuccess: () => void }) {
   return (
     <div className="w-full p-4 border rounded-lg bg-background shadow-md">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
           <FormField control={form.control} name="name" render={({ field }) => (
-            <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="Your Name" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem><FormLabel className="text-xs">Full Name</FormLabel><FormControl><Input className="h-8" placeholder="Your Name" {...field} /></FormControl><FormMessage /></FormItem>
           )}/>
           <FormField control={form.control} name="email" render={({ field }) => (
-            <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem><FormLabel className="text-xs">Email</FormLabel><FormControl><Input className="h-8" placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
           )}/>
           <FormField control={form.control} name="phoneNumber" render={({ field }) => (
-            <FormItem><FormLabel>Phone</FormLabel><FormControl><Input placeholder="+977..." {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem><FormLabel className="text-xs">Phone</FormLabel><FormControl><Input className="h-8" placeholder="+977..." {...field} /></FormControl><FormMessage /></FormItem>
           )}/>
           <FormField control={form.control} name="lastCompletedEducation" render={({ field }) => (
-            <FormItem><FormLabel>Last Education</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger></FormControl><SelectContent>{allEducationLevels.map(l => <SelectItem key={l.value} value={l.value}>{l.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+            <FormItem><FormLabel className="text-xs">Last Education</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-8"><SelectValue placeholder="Select level" /></SelectTrigger></FormControl><SelectContent>{allEducationLevels.map(l => <SelectItem key={l.value} value={l.value}>{l.name}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
           )}/>
            <FormField control={form.control} name="preferredStudyDestination" render={({ field }) => (
-            <FormItem><FormLabel>Destination</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger></FormControl><SelectContent>{studyDestinationOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+            <FormItem><FormLabel className="text-xs">Destination</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-8"><SelectValue placeholder="Select country" /></SelectTrigger></FormControl><SelectContent>{studyDestinationOptions.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
           )}/>
           <FormField control={form.control} name="additionalNotes" render={({ field }) => (
-            <FormItem><FormLabel>Your Question</FormLabel><FormControl><Textarea placeholder="Ask your question here..." rows={3} {...field} /></FormControl><FormMessage /></FormItem>
+            <FormItem><FormLabel className="text-xs">Your Question</FormLabel><FormControl><Textarea className="text-sm" placeholder="Ask your question here..." rows={2} {...field} /></FormControl><FormMessage /></FormItem>
           )}/>
-          <Button type="submit" disabled={isSubmitting} className="w-full">
+          <Button type="submit" disabled={isSubmitting} className="w-full h-9">
             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
             Send Inquiry
           </Button>
@@ -174,23 +174,23 @@ export function PrepClassBookingForm({ onSuccess }: { onSuccess: () => void }) {
     return (
         <div className="w-full p-4 border rounded-lg bg-background shadow-md">
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3">
                     <FormField control={form.control} name="name" render={({ field }) => (
-                        <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="Your Name" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="text-xs">Full Name</FormLabel><FormControl><Input className="h-8" placeholder="Your Name" {...field} /></FormControl><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="email" render={({ field }) => (
-                        <FormItem><FormLabel>Email</FormLabel><FormControl><Input placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="text-xs">Email</FormLabel><FormControl><Input className="h-8" placeholder="your.email@example.com" {...field} /></FormControl><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="phoneNumber" render={({ field }) => (
-                        <FormItem><FormLabel>Phone</FormLabel><FormControl><Input placeholder="+977..." {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="text-xs">Phone</FormLabel><FormControl><Input className="h-8" placeholder="+977..." {...field} /></FormControl><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="preferredTest" render={({ field }) => (
-                        <FormItem><FormLabel>Preferred Test</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select a test" /></SelectTrigger></FormControl><SelectContent>{testPreparationOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="text-xs">Preferred Test</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger className="h-8"><SelectValue placeholder="Select a test" /></SelectTrigger></FormControl><SelectContent>{testPreparationOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
                     <FormField control={form.control} name="preferredStartDate" render={({ field }) => (
-                        <FormItem className="flex flex-col"><FormLabel>Start Date (Optional)</FormLabel>
+                        <FormItem className="flex flex-col"><FormLabel className="text-xs">Start Date (Optional)</FormLabel>
                             <Popover><PopoverTrigger asChild><FormControl>
-                                <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
+                                <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal h-8", !field.value && "text-muted-foreground")}>
                                     {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                                 </Button>
@@ -199,7 +199,7 @@ export function PrepClassBookingForm({ onSuccess }: { onSuccess: () => void }) {
                             </Popover><FormMessage />
                         </FormItem>
                     )}/>
-                    <Button type="submit" disabled={isSubmitting} className="w-full">
+                    <Button type="submit" disabled={isSubmitting} className="w-full h-9">
                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <NotebookPen className="mr-2 h-4 w-4" />}
                         Request Booking
                     </Button>

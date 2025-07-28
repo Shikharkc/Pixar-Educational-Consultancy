@@ -77,7 +77,7 @@ export default function Chatbot() {
       
       const validHistory = messages.filter(
         (m): m is { id: string; role: 'user' | 'model'; content: string } =>
-          m.role === 'user' || m.role === 'model'
+          (m.role === 'user' || m.role === 'model') && m.type === 'text'
       );
 
       const aiInput: ChatInput = {
@@ -148,10 +148,10 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 50, scale: 0.9 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="fixed bottom-24 right-5 z-50 w-[calc(100vw-40px)] max-w-sm"
+            className="fixed bottom-24 right-5 z-50 w-[calc(100vw-40px)] sm:w-[380px] h-[70vh] max-h-[600px] min-h-[400px]"
           >
-            <Card className="h-[600px] flex flex-col shadow-2xl">
-              <CardHeader className="flex flex-row items-center justify-between border-b">
+            <Card className="h-full flex flex-col shadow-2xl">
+              <CardHeader className="flex flex-row items-center justify-between border-b p-4">
                 <div>
                   <CardTitle className="font-headline text-primary flex items-center"><Sparkles className="mr-2 h-6 w-6" />AI Assistant</CardTitle>
                   <CardDescription>Your guide to studying abroad.</CardDescription>
@@ -160,31 +160,39 @@ export default function Chatbot() {
                   <X className="h-5 w-5" />
                 </Button>
               </CardHeader>
-              <CardContent className="flex-grow p-0">
-                <ScrollArea className="h-[420px] p-4" ref={scrollAreaRef}>
+              <CardContent className="flex-grow p-0 overflow-hidden">
+                <ScrollArea className="h-full p-4" ref={scrollAreaRef}>
                   <div className="space-y-4">
                     {messages.map(m => (
-                      <div key={m.id} className={cn("flex items-start gap-3", m.role === 'user' ? 'justify-end' : 'justify-start')}>
-                        {m.role !== 'user' && m.role !== 'system' && (
-                          <Avatar className="h-8 w-8">
+                      <div key={m.id} className={cn("flex items-start gap-3 w-full", m.role === 'user' ? 'justify-end' : 'justify-start')}>
+                        {m.role === 'model' && (
+                          <Avatar className="h-8 w-8 flex-shrink-0">
                             <AvatarImage src="/logo.png" alt="AI Avatar" />
                             <AvatarFallback>AI</AvatarFallback>
                           </Avatar>
                         )}
+                        
                         {m.type === 'form' && m.formType === 'general' ? (
-                            <GeneralContactForm onSuccess={() => onFormSuccess('general')} />
+                            <div className="w-full">
+                                <p className="text-sm text-center text-muted-foreground mb-2">{m.content}</p>
+                                <GeneralContactForm onSuccess={() => onFormSuccess('general')} />
+                            </div>
                         ) : m.type === 'form' && m.formType === 'prep-class' ? (
-                            <PrepClassBookingForm onSuccess={() => onFormSuccess('prep-class')} />
+                             <div className="w-full">
+                                <p className="text-sm text-center text-muted-foreground mb-2">{m.content}</p>
+                                <PrepClassBookingForm onSuccess={() => onFormSuccess('prep-class')} />
+                            </div>
                         ) : (
-                          <div className={cn("max-w-[80%] rounded-xl px-4 py-2 text-sm", 
-                            m.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground',
-                            m.role === 'system' && 'bg-accent/20 text-accent-foreground border border-accent/30 text-center w-full max-w-full'
+                          <div className={cn("max-w-[85%] rounded-xl px-4 py-2 text-sm", 
+                            m.role === 'user' ? 'bg-primary text-primary-foreground ml-auto' : 'bg-muted text-muted-foreground',
+                            m.role === 'system' && 'bg-secondary/80 text-secondary-foreground text-center w-full max-w-full'
                           )}>
                             <p className="whitespace-pre-wrap">{m.content}</p>
                           </div>
                         )}
+                         
                          {m.role === 'user' && (
-                            <Avatar className="h-8 w-8">
+                            <Avatar className="h-8 w-8 flex-shrink-0">
                                 <AvatarFallback><User/></AvatarFallback>
                             </Avatar>
                         )}
