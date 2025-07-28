@@ -419,8 +419,8 @@ export default function HomePage() {
         ref={heroSectionRef}
         className={cn(
           "relative py-20 md:py-32 rounded-lg shadow-xl overflow-hidden",
-          isHeroSectionVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10",
-          "transition-all duration-700 ease-out bg-card" 
+          isHeroSectionVisible ? "opacity-100" : "opacity-0",
+          "transition-opacity duration-1000 ease-out bg-card" 
         )}
       >
         <Image
