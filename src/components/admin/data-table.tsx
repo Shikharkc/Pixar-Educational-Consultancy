@@ -8,8 +8,6 @@ import {
   query,
   orderBy,
   Timestamp,
-  deleteDoc,
-  doc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Student, counselorNames } from '@/lib/data';
@@ -21,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
@@ -31,22 +29,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { ArrowUpDown, ListFilter, Trash2, FilePenLine, Eye } from 'lucide-react';
+
+import { ArrowUpDown, ListFilter } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { Separator } from '../ui/separator';
-import { format } from 'date-fns';
 
 type SortConfig = {
   key: keyof Student;
@@ -62,7 +48,6 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
-  const [visaStatusFilter, setVisaStatusFilter] = useState<string>('all');
   const [assignedToFilter, setAssignedToFilter] = useState<string>('all');
   const [sortConfig, setSortConfig] = useState<SortConfig | null>({ key: 'timestamp', direction: 'descending' });
   
@@ -116,14 +101,11 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
       const matchesText =
         name.toLowerCase().includes(filter.toLowerCase()) ||
         email.toLowerCase().includes(filter.toLowerCase());
-      
-      const matchesVisaStatus =
-        visaStatusFilter === 'all' || student.visaStatus === visaStatusFilter;
 
       const matchesAssignedTo =
         assignedToFilter === 'all' || student.assignedTo === assignedToFilter;
 
-      return matchesText && matchesVisaStatus && matchesAssignedTo;
+      return matchesText && matchesAssignedTo;
     });
 
     // Sorting logic
@@ -162,7 +144,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
     }
 
     return sortableStudents;
-  }, [students, filter, visaStatusFilter, assignedToFilter, sortConfig]);
+  }, [students, filter, assignedToFilter, sortConfig]);
 
   const getVisaStatusBadgeVariant = (status: Student['visaStatus']) => {
     switch (status) {
@@ -191,14 +173,6 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-             <DropdownMenuLabel>Visa Status</DropdownMenuLabel>
-             <DropdownMenuSeparator />
-             <DropdownMenuCheckboxItem checked={visaStatusFilter === 'all'} onCheckedChange={() => setVisaStatusFilter('all')}>All</DropdownMenuCheckboxItem>
-             <DropdownMenuCheckboxItem checked={visaStatusFilter === 'Not Applied'} onCheckedChange={() => setVisaStatusFilter('Not Applied')}>Not Applied</DropdownMenuCheckboxItem>
-             <DropdownMenuCheckboxItem checked={visaStatusFilter === 'Pending'} onCheckedChange={() => setVisaStatusFilter('Pending')}>Pending</DropdownMenuCheckboxItem>
-             <DropdownMenuCheckboxItem checked={visaStatusFilter === 'Approved'} onCheckedChange={() => setVisaStatusFilter('Approved')}>Approved</DropdownMenuCheckboxItem>
-             <DropdownMenuCheckboxItem checked={visaStatusFilter === 'Rejected'} onCheckedChange={() => setVisaStatusFilter('Rejected')}>Rejected</DropdownMenuCheckboxItem>
-             <DropdownMenuSeparator />
              <DropdownMenuLabel>Assigned To</DropdownMenuLabel>
              <DropdownMenuSeparator />
              <DropdownMenuCheckboxItem checked={assignedToFilter === 'all'} onCheckedChange={() => setAssignedToFilter('all')}>All</DropdownMenuCheckboxItem>
