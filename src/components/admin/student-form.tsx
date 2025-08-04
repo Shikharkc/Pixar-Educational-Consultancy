@@ -1,5 +1,6 @@
 'use client';
 
+import * as React from "react";
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -215,7 +216,7 @@ export function StudentForm({ isOpen, onOpenChange, student }: StudentFormProps)
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="Unpaid">Unpaid</SelectItem>
