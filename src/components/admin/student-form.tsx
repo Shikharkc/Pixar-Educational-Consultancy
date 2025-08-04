@@ -216,7 +216,7 @@ export function StudentForm({ isOpen, onOpenChange, student }: StudentFormProps)
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select status" />
-                          </Trigger>
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="Unpaid">Unpaid</SelectItem>

@@ -22,6 +22,9 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator'; // Added Separator
+import { db } from '@/lib/firebase'; // Import Firestore instance
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore'; // Import Firestore functions
+
 
 // Schema for General Contact Form
 const generalContactFormSchema = z.object({
@@ -35,42 +38,21 @@ const generalContactFormSchema = z.object({
 });
 type GeneralContactFormValues = z.infer<typeof generalContactFormSchema>;
 
-// Constants for GENERAL CONTACT FORM submission
-const GENERAL_CONTACT_GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScmMqPLB4NX_BZSSS4C3_2_9wNga-GBmbznGc9nNCs231IeaA/formResponse';
-const GENERAL_CONTACT_NAME_ENTRY_ID = 'entry.381136677';
-const GENERAL_CONTACT_EMAIL_ENTRY_ID = 'entry.897898403';
-const GENERAL_CONTACT_PHONE_NUMBER_ENTRY_ID = 'entry.1344864969';
-const GENERAL_CONTACT_EDUCATION_ENTRY_ID = 'entry.2085503739';
-const GENERAL_CONTACT_ENGLISH_TEST_ENTRY_ID = 'entry.1325410288';
-const GENERAL_CONTACT_DESTINATION_ENTRY_ID = 'entry.22741016';
-const GENERAL_CONTACT_ADDITIONAL_NOTES_ENTRY_ID = 'entry.1419649728';
 
-
-async function submitToGeneralContactGoogleSheet(data: GeneralContactFormValues): Promise<{ success: boolean; message: string }> {
-  if (GENERAL_CONTACT_GOOGLE_FORM_ACTION_URL.startsWith('REPLACE_WITH_')) {
-    console.error("General Contact Google Form URL is not configured.");
-    return { success: false, message: "General inquiry service is temporarily unavailable. Please contact us directly." };
-  }
-
-  const formData = new FormData();
-  formData.append(GENERAL_CONTACT_NAME_ENTRY_ID, data.name);
-  formData.append(GENERAL_CONTACT_EMAIL_ENTRY_ID, data.email);
-  formData.append(GENERAL_CONTACT_PHONE_NUMBER_ENTRY_ID, data.phoneNumber);
-  formData.append(GENERAL_CONTACT_EDUCATION_ENTRY_ID, data.lastCompletedEducation);
-  formData.append(GENERAL_CONTACT_ENGLISH_TEST_ENTRY_ID, data.englishProficiencyTest);
-  formData.append(GENERAL_CONTACT_DESTINATION_ENTRY_ID, data.preferredStudyDestination);
-  if (data.additionalNotes && GENERAL_CONTACT_ADDITIONAL_NOTES_ENTRY_ID !== 'REPLACE_WITH_YOUR_ADDITIONAL_NOTES_FIELD_ENTRY_ID_FOR_GENERAL') {
-    formData.append(GENERAL_CONTACT_ADDITIONAL_NOTES_ENTRY_ID, data.additionalNotes);
-  }
-
+// NEW: Function to submit general contact form to Firestore
+async function submitToGeneralContactFirestore(data: GeneralContactFormValues): Promise<{ success: boolean; message: string }> {
   try {
-    await fetch(GENERAL_CONTACT_GOOGLE_FORM_ACTION_URL, { method: 'POST', body: formData, mode: 'no-cors' });
+    await addDoc(collection(db, 'generalInquiries'), {
+      ...data,
+      timestamp: serverTimestamp(),
+    });
     return { success: true, message: "Your message has been sent successfully! We'll get back to you soon." };
   } catch (error) {
-    console.error('Error submitting to General Contact Google Sheet:', error);
-    return { success: false, message: 'An error occurred while sending your message. Please check your internet connection and try again.' };
+    console.error('Error writing to Firestore:', error);
+    return { success: false, message: 'An error occurred while sending your message. Please try again or contact us directly.' };
   }
 }
+
 
 // Schema for Preparation Class Booking Form
 const preparationClassFormSchema = z.object({
@@ -83,7 +65,7 @@ const preparationClassFormSchema = z.object({
 });
 type PreparationClassFormValues = z.infer<typeof preparationClassFormSchema>;
 
-// Constants for PREPARATION CLASS BOOKING FORM submission
+// Constants for PREPARATION CLASS BOOKING FORM submission (to Google Sheet)
 const PREP_CLASS_GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScOw8ztRBTL_iN0yRmszjlIUBPPDebd8fKIl4RcUZThZs9CSA/formResponse';
 const PREP_CLASS_NAME_ENTRY_ID = 'entry.44402001';
 const PREP_CLASS_EMAIL_ENTRY_ID = 'entry.1939269637';
@@ -186,7 +168,7 @@ export default function ContactPage() {
   async function onGeneralContactSubmit(values: GeneralContactFormValues) {
     setIsGeneralSubmitting(true);
     try {
-      const result = await submitToGeneralContactGoogleSheet(values);
+      const result = await submitToGeneralContactFirestore(values); // Updated function call
       toast({ title: result.success ? "Message Sent!" : "Submission Error", description: result.message, variant: result.success ? "default" : "destructive" });
       if (result.success) generalContactForm.reset();
     } catch (error) {
@@ -410,4 +392,5 @@ export default function ContactPage() {
     </div>
   );
 }
+
     
