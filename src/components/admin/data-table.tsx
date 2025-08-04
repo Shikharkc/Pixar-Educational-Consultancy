@@ -8,9 +8,11 @@ import {
   query,
   orderBy,
   Timestamp,
+  deleteDoc,
+  doc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Student } from '@/lib/data';
+import { Student, counselorNames } from '@/lib/data';
 import {
   Table,
   TableBody,
@@ -19,7 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
@@ -29,8 +31,22 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
-import { ArrowUpDown, ListFilter } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { ArrowUpDown, ListFilter, Trash2, FilePenLine, Eye } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import { Separator } from '../ui/separator';
+import { format } from 'date-fns';
 
 type SortConfig = {
   key: keyof Student;
@@ -47,7 +63,21 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [visaStatusFilter, setVisaStatusFilter] = useState<string>('all');
+  const [assignedToFilter, setAssignedToFilter] = useState<string>('all');
   const [sortConfig, setSortConfig] = useState<SortConfig | null>({ key: 'timestamp', direction: 'descending' });
+  
+  useEffect(() => {
+    // Load filter from localStorage on component mount
+    const savedFilter = localStorage.getItem('assignedToFilter');
+    if (savedFilter) {
+      setAssignedToFilter(savedFilter);
+    }
+  }, []);
+
+  useEffect(() => {
+    // Save filter to localStorage whenever it changes
+    localStorage.setItem('assignedToFilter', assignedToFilter);
+  }, [assignedToFilter]);
 
   useEffect(() => {
     const q = query(collection(db, 'students'), orderBy('timestamp', 'desc'));
@@ -86,9 +116,14 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
       const matchesText =
         name.toLowerCase().includes(filter.toLowerCase()) ||
         email.toLowerCase().includes(filter.toLowerCase());
+      
       const matchesVisaStatus =
         visaStatusFilter === 'all' || student.visaStatus === visaStatusFilter;
-      return matchesText && matchesVisaStatus;
+
+      const matchesAssignedTo =
+        assignedToFilter === 'all' || student.assignedTo === assignedToFilter;
+
+      return matchesText && matchesVisaStatus && matchesAssignedTo;
     });
 
     // Sorting logic
@@ -127,7 +162,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
     }
 
     return sortableStudents;
-  }, [students, filter, visaStatusFilter, sortConfig]);
+  }, [students, filter, visaStatusFilter, assignedToFilter, sortConfig]);
 
   const getVisaStatusBadgeVariant = (status: Student['visaStatus']) => {
     switch (status) {
@@ -163,60 +198,69 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
              <DropdownMenuCheckboxItem checked={visaStatusFilter === 'Pending'} onCheckedChange={() => setVisaStatusFilter('Pending')}>Pending</DropdownMenuCheckboxItem>
              <DropdownMenuCheckboxItem checked={visaStatusFilter === 'Approved'} onCheckedChange={() => setVisaStatusFilter('Approved')}>Approved</DropdownMenuCheckboxItem>
              <DropdownMenuCheckboxItem checked={visaStatusFilter === 'Rejected'} onCheckedChange={() => setVisaStatusFilter('Rejected')}>Rejected</DropdownMenuCheckboxItem>
+             <DropdownMenuSeparator />
+             <DropdownMenuLabel>Assigned To</DropdownMenuLabel>
+             <DropdownMenuSeparator />
+             <DropdownMenuCheckboxItem checked={assignedToFilter === 'all'} onCheckedChange={() => setAssignedToFilter('all')}>All</DropdownMenuCheckboxItem>
+             {counselorNames.map(counselor => (
+                <DropdownMenuCheckboxItem key={counselor} checked={assignedToFilter === counselor} onCheckedChange={() => setAssignedToFilter(counselor)}>{counselor}</DropdownMenuCheckboxItem>
+             ))}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
       <div className="rounded-md border bg-card">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead onClick={() => handleSort('fullName')} className="cursor-pointer">
-                Student <ArrowUpDown className="ml-2 h-4 w-4 inline-block" />
-              </TableHead>
-              <TableHead onClick={() => handleSort('assignedTo')} className="cursor-pointer">
-                Assigned To <ArrowUpDown className="ml-2 h-4 w-4 inline-block" />
-              </TableHead>
-              <TableHead onClick={() => handleSort('visaStatus')} className="cursor-pointer">
-                Visa Status <ArrowUpDown className="ml-2 h-4 w-4 inline-block" />
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
+        <div className="max-h-[calc(100vh-220px)] overflow-auto">
+          <Table>
+            <TableHeader className="sticky top-0 bg-card z-10">
               <TableRow>
-                <TableCell colSpan={3} className="h-24 text-center">
-                  Loading data...
-                </TableCell>
+                <TableHead onClick={() => handleSort('fullName')} className="cursor-pointer">
+                  Student <ArrowUpDown className="ml-2 h-4 w-4 inline-block" />
+                </TableHead>
+                <TableHead onClick={() => handleSort('assignedTo')} className="cursor-pointer">
+                  Assigned To <ArrowUpDown className="ml-2 h-4 w-4 inline-block" />
+                </TableHead>
+                <TableHead onClick={() => handleSort('visaStatus')} className="cursor-pointer">
+                  Visa Status <ArrowUpDown className="ml-2 h-4 w-4 inline-block" />
+                </TableHead>
               </TableRow>
-            ) : filteredAndSortedStudents.length > 0 ? (
-              filteredAndSortedStudents.map((student) => (
-                <TableRow 
-                  key={student.id} 
-                  onClick={() => onRowSelect(student)}
-                  className="cursor-pointer"
-                  data-state={selectedStudentId === student.id ? 'selected' : 'unselected'}
-                >
-                  <TableCell className="font-medium">
-                    <div>{student.fullName}</div>
-                    <div className="text-xs text-muted-foreground">{student.email}</div>
-                  </TableCell>
-                  <TableCell>{student.assignedTo}</TableCell>
-                  <TableCell>
-                    <Badge variant={getVisaStatusBadgeVariant(student.visaStatus)}>
-                      {student.visaStatus}
-                    </Badge>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="h-24 text-center">
+                    Loading data...
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={3} className="h-24 text-center">
-                  No results found.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ) : filteredAndSortedStudents.length > 0 ? (
+                filteredAndSortedStudents.map((student) => (
+                  <TableRow 
+                    key={student.id} 
+                    onClick={() => onRowSelect(student)}
+                    className="cursor-pointer"
+                    data-state={selectedStudentId === student.id ? 'selected' : 'unselected'}
+                  >
+                    <TableCell className="font-medium">
+                      <div>{student.fullName}</div>
+                      <div className="text-xs text-muted-foreground">{student.email}</div>
+                    </TableCell>
+                    <TableCell>{student.assignedTo}</TableCell>
+                    <TableCell>
+                      <Badge variant={getVisaStatusBadgeVariant(student.visaStatus)}>
+                        {student.visaStatus}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={3} className="h-24 text-center">
+                    No results found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );
