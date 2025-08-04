@@ -60,7 +60,14 @@ export interface Student {
   collegeUniversityName?: string;
 }
 
-export const counselorNames = ['Unassigned', 'Pradeep Sir', 'Mujal Sir', 'Sabina Mam', 'Pawan Sir', 'Shyam Sir', 'Mamta Miss'];
+export const counselorNames = [
+  'Unassigned', 
+  'Pradeep Sir', 
+  'Mujal Sir', 
+  'Sabina Mam', 
+  'Pawan Sir', 
+  'Shyam Sir', 
+  'Mamta Miss'];
 
 export interface Testimonial {
   id: string;

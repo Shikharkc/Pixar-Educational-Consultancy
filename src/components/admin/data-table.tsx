@@ -49,8 +49,6 @@ import {
   FileDown,
   Trash2,
   FilePenLine,
-  Eye,
-  EyeOff,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
@@ -68,7 +66,6 @@ export function DataTable() {
   const [filter, setFilter] = useState('');
   const [visaStatusFilter, setVisaStatusFilter] = useState<string>('all');
   const [sortConfig, setSortConfig] = useState<SortConfig | null>({ key: 'timestamp', direction: 'descending' });
-  const [showAllColumns, setShowAllColumns] = useState(false);
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -255,10 +252,6 @@ export function DataTable() {
              </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button variant="outline" onClick={() => setShowAllColumns(!showAllColumns)}>
-            {showAllColumns ? <EyeOff className="mr-2 h-4 w-4" /> : <Eye className="mr-2 h-4 w-4" />}
-            {showAllColumns ? 'Compact View' : 'Full View'}
-        </Button>
          <Button variant="outline">
             <FileDown className="mr-2 h-4 w-4" />
             Export
@@ -274,35 +267,22 @@ export function DataTable() {
             <TableRow>
               <TableHead onClick={() => handleSort('fullName')}>
                 <Button variant="ghost" className="pl-0">
-                    Full Name
+                    Student
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
-              {showAllColumns && (
-                <TableHead onClick={() => handleSort('email')}>
-                   <Button variant="ghost" className="pl-0">
-                      Email
-                      <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-              )}
-               {showAllColumns && <TableHead>Mobile</TableHead>}
               <TableHead onClick={() => handleSort('assignedTo')}>
                  <Button variant="ghost" className="pl-0">
                     Assigned To
                     <ArrowUpDown className="ml-2 h-4 w-4" />
                 </Button>
               </TableHead>
-               {showAllColumns && (
-                <>
-                  <TableHead onClick={() => handleSort('visaStatus')}>
-                    <Button variant="ghost" className="pl-0">Visa Status<ArrowUpDown className="ml-2 h-4 w-4" /></Button>
-                  </TableHead>
-                  <TableHead onClick={() => handleSort('serviceFeeStatus')}>
-                    <Button variant="ghost" className="pl-0">Fee Status<ArrowUpDown className="ml-2 h-4 w-4" /></Button>
-                  </TableHead>
-                </>
-              )}
+              <TableHead onClick={() => handleSort('visaStatus')}>
+                <Button variant="ghost" className="pl-0">Visa Status<ArrowUpDown className="ml-2 h-4 w-4" /></Button>
+              </TableHead>
+              <TableHead onClick={() => handleSort('serviceFeeStatus')}>
+                <Button variant="ghost" className="pl-0">Fee Status<ArrowUpDown className="ml-2 h-4 w-4" /></Button>
+              </TableHead>
               <TableHead onClick={() => handleSort('timestamp')}>
                  <Button variant="ghost" className="pl-0">
                     Date Added
@@ -315,31 +295,28 @@ export function DataTable() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={showAllColumns ? 8 : 5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   Loading data...
                 </TableCell>
               </TableRow>
             ) : filteredAndSortedStudents.length > 0 ? (
               filteredAndSortedStudents.map((student) => (
                 <TableRow key={student.id}>
-                  <TableCell className="font-medium">{student.fullName}</TableCell>
-                   {showAllColumns && <TableCell>{student.email}</TableCell>}
-                   {showAllColumns && <TableCell>{student.mobileNumber}</TableCell>}
+                  <TableCell className="font-medium">
+                    <div>{student.fullName}</div>
+                    <div className="text-xs text-muted-foreground">{student.email}</div>
+                  </TableCell>
                   <TableCell>{student.assignedTo}</TableCell>
-                   {showAllColumns && (
-                    <>
-                      <TableCell>
-                        <Badge variant={getVisaStatusBadgeVariant(student.visaStatus)}>
-                          {student.visaStatus}
-                        </Badge>
-                      </TableCell>
-                       <TableCell>
-                         <Badge variant={student.serviceFeeStatus === 'Paid' ? 'default' : student.serviceFeeStatus === 'Partial' ? 'secondary' : 'outline'}>
-                            {student.serviceFeeStatus}
-                         </Badge>
-                       </TableCell>
-                    </>
-                  )}
+                  <TableCell>
+                    <Badge variant={getVisaStatusBadgeVariant(student.visaStatus)}>
+                      {student.visaStatus}
+                    </Badge>
+                  </TableCell>
+                   <TableCell>
+                     <Badge variant={student.serviceFeeStatus === 'Paid' ? 'default' : student.serviceFeeStatus === 'Partial' ? 'secondary' : 'outline'}>
+                        {student.serviceFeeStatus}
+                     </Badge>
+                   </TableCell>
                   <TableCell>
                     {student.timestamp ? format(student.timestamp.toDate(), 'PPP') : 'N/A'}
                   </TableCell>
@@ -359,7 +336,7 @@ export function DataTable() {
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={showAllColumns ? 8 : 5} className="h-24 text-center">
+                <TableCell colSpan={6} className="h-24 text-center">
                   No results found.
                 </TableCell>
               </TableRow>

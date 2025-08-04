@@ -46,6 +46,14 @@ export interface Testimonial {
   avatarUrl?: string;
   dataAiHint?: string;
 }
+export const counselorNames = [
+  'Unassigned', 
+  'Pradeep Sir', 
+  'Mujal Sir', 
+  'Sabina Mam', 
+  'Pawan Sir', 
+  'Shyam Sir', 
+  'Mamta Miss'];
 
 export const testimonials: Testimonial[] = [
   {
