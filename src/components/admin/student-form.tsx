@@ -60,12 +60,12 @@ interface StudentFormProps {
   onFormSubmitSuccess: () => void;
 }
 
-const DetailItem = ({ icon: Icon, label, value }: { icon: React.ElementType, label: string, value: React.ReactNode }) => (
+const DetailItem = ({ icon: Icon, label, value, valueClassName }: { icon: React.ElementType, label: string, value: React.ReactNode, valueClassName?: string }) => (
   <div className="flex items-start space-x-3">
     <Icon className="h-5 w-5 text-muted-foreground mt-1 flex-shrink-0" />
     <div className="flex-grow">
       <p className="text-sm font-medium text-muted-foreground">{label}</p>
-      <p className="text-md text-foreground">{value || 'N/A'}</p>
+      <div className={cn("text-md text-foreground", valueClassName)}>{value || 'N/A'}</div>
     </div>
   </div>
 );
@@ -162,16 +162,16 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
 
   if (isEditing) {
      return (
-        <Card>
+        <Card className="h-full">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
               <CardHeader>
                 <CardTitle>{isNewStudent ? 'Add New Student' : `Edit: ${student.fullName}`}</CardTitle>
                 <CardDescription>
                   {isNewStudent ? 'Fill in the details for a new student record.' : 'Update the details for this student.'}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4 max-h-[65vh] overflow-y-auto pr-4">
+              <CardContent className="space-y-4 flex-grow overflow-y-auto pr-4">
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                      <FormField control={form.control} name="fullName" render={({ field }) => ( <FormItem> <FormLabel>Full Name</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
                      <FormField control={form.control} name="email" render={({ field }) => ( <FormItem> <FormLabel>Email</FormLabel> <FormControl><Input type="email" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
@@ -197,7 +197,7 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                  <FormField control={form.control} name="assignedTo" render={({ field }) => ( <FormItem><FormLabel>Assigned To</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select counselor" /></SelectTrigger></FormControl><SelectContent>{counselorNames.map(name => (<SelectItem key={name} value={name}>{name}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
                  <FormField control={form.control} name="additionalNotes" render={({ field }) => ( <FormItem><FormLabel>Additional Notes</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem> )}/>
               </CardContent>
-              <CardFooter className="flex justify-between">
+              <CardFooter className="flex justify-between mt-auto">
                 <Button type="button" variant="outline" onClick={() => isNewStudent ? onFormClose() : setIsEditing(false)} disabled={isLoading}>Cancel</Button>
                 <Button type="submit" disabled={isLoading}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -211,7 +211,7 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
   }
 
   return (
-    <Card>
+    <Card className="h-full flex flex-col">
         <CardHeader>
             <div className="flex justify-between items-center">
                 <div>
@@ -225,7 +225,7 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                 </div>
             </div>
         </CardHeader>
-        <CardContent className="space-y-6 max-h-[65vh] overflow-y-auto pr-4">
+        <CardContent className="space-y-6 flex-grow overflow-y-auto pr-4">
              {/* Personal Details */}
              <div className="space-y-4">
                 <h3 className="font-semibold text-lg text-primary">Personal & Contact Information</h3>
@@ -245,7 +245,7 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                     <DetailItem icon={Languages} label="English Proficiency Test" value={student?.englishProficiencyTest} />
                     <DetailItem icon={Target} label="Preferred Study Destination" value={student?.preferredStudyDestination} />
                  </div>
-                 <DetailItem icon={StickyNote} label="Additional Notes" value={student?.additionalNotes ? <p className="whitespace-pre-wrap">{student.additionalNotes}</p> : 'N/A'} />
+                 <DetailItem icon={StickyNote} label="Additional Notes" value={student?.additionalNotes} valueClassName="whitespace-pre-wrap" />
               </div>
                <Separator />
               {/* Internal Records */}
