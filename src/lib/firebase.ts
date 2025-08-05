@@ -15,10 +15,10 @@ const firebaseConfig = {
   measurementId: "G-8W0E04NQFZ"
 };
 
-// Initialize Firebase
+// Initialize Firebase App (Singleton Pattern)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 // Connect to the specific 'pixareducation' database
-const db = getFirestore(app, 'pixareducation');
+const db = getFirestore(app);
 
 export { app, auth, db };
