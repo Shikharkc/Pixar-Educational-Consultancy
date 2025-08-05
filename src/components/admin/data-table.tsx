@@ -23,13 +23,15 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuCheckboxItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
 
-import { ListFilter } from 'lucide-react';
+import { ListFilter, SlidersHorizontal } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
 
 interface DataTableProps {
   onRowSelect: (student: Student) => void;
@@ -41,6 +43,8 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('');
   const [assignedToFilter, setAssignedToFilter] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<string>('latest');
+  const [feeStatusFilter, setFeeStatusFilter] = useState<string>('all');
   
   useEffect(() => {
     const savedFilter = localStorage.getItem('assignedToFilter');
@@ -65,21 +69,18 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
           timestamp: data.timestamp as Timestamp,
         } as Student);
       });
-      // Explicitly sort here to ensure order is always correct after any update
-      const sortedStudents = studentsData.sort((a, b) => {
-        const timestampA = a.timestamp?.toDate()?.getTime() || 0;
-        const timestampB = b.timestamp?.toDate()?.getTime() || 0;
-        return timestampB - timestampA;
-      });
-      setStudents(sortedStudents);
+      setStudents(studentsData);
       setLoading(false);
+    }, (error) => {
+        console.error("Error fetching students: ", error);
+        setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
   
   const filteredStudents = useMemo(() => {
-    return students.filter((student) => {
+    let processedStudents = students.filter((student) => {
       const name = student.fullName || '';
       const email = student.email || '';
       const matchesText =
@@ -88,10 +89,26 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
 
       const matchesAssignedTo =
         assignedToFilter === 'all' || student.assignedTo === assignedToFilter;
+        
+      const matchesFeeStatus = 
+        feeStatusFilter === 'all' || student.serviceFeeStatus === feeStatusFilter;
 
-      return matchesText && matchesAssignedTo;
+      return matchesText && matchesAssignedTo && matchesFeeStatus;
     });
-  }, [students, filter, assignedToFilter]);
+
+    processedStudents.sort((a, b) => {
+        if (sortBy === 'alphabetical') {
+            return (a.fullName || '').localeCompare(b.fullName || '');
+        }
+        // Default to 'latest'
+        const timestampA = a.timestamp?.toDate()?.getTime() || 0;
+        const timestampB = b.timestamp?.toDate()?.getTime() || 0;
+        return timestampB - timestampA;
+    });
+
+
+    return processedStudents;
+  }, [students, filter, assignedToFilter, feeStatusFilter, sortBy]);
 
   const getVisaStatusBadgeVariant = (status: Student['visaStatus']) => {
     switch (status) {
@@ -105,31 +122,61 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
 
   return (
     <div className="space-y-4">
-      <div className="px-4 pt-2 flex items-center gap-4">
+      <div className="px-4 pt-2 flex flex-col gap-3">
         <Input
-          placeholder="Filter by name or email..."
+          placeholder="Search by name or email..."
           value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          className="h-9 flex-grow"
+          className="h-9 w-full"
         />
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <ListFilter className="mr-2 h-4 w-4" />
-              Filter
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-             <DropdownMenuLabel>Assigned To</DropdownMenuLabel>
-             <DropdownMenuSeparator />
-             <DropdownMenuCheckboxItem checked={assignedToFilter === 'all'} onCheckedChange={() => setAssignedToFilter('all')}>All</DropdownMenuCheckboxItem>
-             {counselorNames.map(counselor => (
-                <DropdownMenuCheckboxItem key={counselor} checked={assignedToFilter === counselor} onCheckedChange={() => setAssignedToFilter(counselor)}>{counselor}</DropdownMenuCheckboxItem>
-             ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex items-center gap-2">
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="flex-1">
+                <ListFilter className="mr-2 h-4 w-4" />
+                Assigned: {assignedToFilter}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+                <DropdownMenuLabel>Filter by Counselor</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={assignedToFilter} onValueChange={setAssignedToFilter}>
+                    <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
+                    {counselorNames.map(counselor => (
+                        <DropdownMenuRadioItem key={counselor} value={counselor}>{counselor}</DropdownMenuRadioItem>
+                    ))}
+                </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                 <Button variant="outline" size="sm" className="flex-1">
+                    <SlidersHorizontal className="mr-2 h-4 w-4" />
+                    More Filters
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Sort By</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={sortBy} onValueChange={setSortBy}>
+                    <DropdownMenuRadioItem value="latest">Latest First</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="alphabetical">Alphabetical (A-Z)</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+
+                <DropdownMenuLabel className="pt-2">Service Fee Status</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={feeStatusFilter} onValueChange={setFeeStatusFilter}>
+                    <DropdownMenuRadioItem value="all">All</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Paid">Paid</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Unpaid">Unpaid</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="Partial">Partial</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+            </DropdownMenu>
+        </div>
       </div>
-      <div className="max-h-[calc(100vh-220px)] overflow-auto">
+      <div className="max-h-[calc(100vh-250px)] overflow-auto">
         <Table>
           <TableBody>
             {loading ? (
