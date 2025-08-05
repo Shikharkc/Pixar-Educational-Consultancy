@@ -69,6 +69,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
           timestamp: data.timestamp as Timestamp,
         } as Student);
       });
+       // Snapshot listener already provides sorted data, so we can just set it.
       setStudents(studentsData);
       setLoading(false);
     }, (error) => {
@@ -96,26 +97,22 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
       return matchesText && matchesAssignedTo && matchesFeeStatus;
     });
 
-    processedStudents.sort((a, b) => {
-        if (sortBy === 'alphabetical') {
-            return (a.fullName || '').localeCompare(b.fullName || '');
-        }
-        // Default to 'latest'
-        const timestampA = a.timestamp?.toDate()?.getTime() || 0;
-        const timestampB = b.timestamp?.toDate()?.getTime() || 0;
-        return timestampB - timestampA;
-    });
+    // We only need to apply the alphabetical sort, as the default from Firestore is already 'latest'.
+    if (sortBy === 'alphabetical') {
+      processedStudents.sort((a, b) => {
+        return (a.fullName || '').localeCompare(b.fullName || '');
+      });
+    }
 
 
     return processedStudents;
   }, [students, filter, assignedToFilter, feeStatusFilter, sortBy]);
 
-  const getVisaStatusBadgeVariant = (status: Student['visaStatus']) => {
+  const getFeeStatusBadgeVariant = (status: Student['serviceFeeStatus']) => {
     switch (status) {
-      case 'Approved': return 'default';
-      case 'Pending': return 'secondary';
-      case 'Rejected': return 'destructive';
-      case 'Not Applied': return 'outline';
+      case 'Paid': return 'default';
+      case 'Partial': return 'secondary';
+      case 'Unpaid': return 'destructive';
       default: return 'outline';
     }
   };
@@ -201,8 +198,8 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
                     <div className="text-xs text-muted-foreground truncate">{student.email}</div>
                     <div className="mt-1 flex items-center justify-between text-xs">
                        <span className="text-muted-foreground">{student.assignedTo || 'Unassigned'}</span>
-                       <Badge variant={getVisaStatusBadgeVariant(student.visaStatus)} className="py-0.5 px-1.5 text-xs">
-                          {student.visaStatus}
+                       <Badge variant={getFeeStatusBadgeVariant(student.serviceFeeStatus)} className="py-0.5 px-1.5 text-xs">
+                          {student.serviceFeeStatus}
                        </Badge>
                     </div>
                   </TableCell>
