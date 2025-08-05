@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { DataTable } from '@/components/admin/data-table';
 import { StudentForm } from '@/components/admin/student-form';
 import type { Student } from '@/lib/data';
@@ -18,6 +18,31 @@ export default function StudentManagementPage() {
   const handleDeselect = () => {
     setSelectedStudent(null);
   }
+
+  // Effect to handle the custom event for adding a new student
+  useEffect(() => {
+    const handleOpenNewStudentForm = () => {
+      // Create a dummy new student object to put the form in "create" mode
+      const newStudent: Student = {
+        id: '', // No ID for a new student
+        timestamp: null as any, // Timestamp will be set on save
+        fullName: '',
+        email: '',
+        mobileNumber: '',
+        visaStatus: 'Not Applied',
+        serviceFeeStatus: 'Unpaid',
+        assignedTo: 'Unassigned',
+      };
+      setSelectedStudent(newStudent);
+    };
+
+    window.addEventListener('openNewStudentForm', handleOpenNewStudentForm);
+
+    return () => {
+      window.removeEventListener('openNewStudentForm', handleOpenNewStudentForm);
+    };
+  }, []);
+
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
