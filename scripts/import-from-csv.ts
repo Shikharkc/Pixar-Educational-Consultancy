@@ -119,13 +119,13 @@ async function importStudents() {
             preferredStudyDestination: record['Preferred Study Destination'] || record['preferredStudyDestination'] || '',
             additionalNotes: record['Additional Notes / Specific Questions'] || record['additionalNotes'] || '',
             timestamp: timestamp,
-            // Set default values for fields not in the form
-            visaStatus: 'Not Applied',
-            serviceFeeStatus: 'Unpaid',
-            assignedTo: 'Unassigned',
-            emergencyContact: '',
-            collegeUniversityName: '',
-            serviceFeePaidDate: null,
+            // Set default values for fields not in the form, but allow CSV to override if present
+            visaStatus: record['Visa Status'] || record['visaStatus'] || 'Not Applied',
+            serviceFeeStatus: record['Service Fee Status'] || record['serviceFeeStatus'] || 'Unpaid',
+            assignedTo: record['Assigned To'] || record['assignedTo'] || 'Unassigned',
+            emergencyContact: record['Emergency Contact'] || record['emergencyContact'] || '',
+            collegeUniversityName: record['College/University Name'] || record['collegeUniversityName'] || '',
+            serviceFeePaidDate: null, // These date fields are not expected from the initial form CSV
             visaStatusUpdateDate: null,
           };
           
