@@ -23,7 +23,7 @@ export default function AdminHeader({ onAddNew }: AdminHeaderProps) {
     try {
       await signOut(auth);
       toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
-      router.push('/admin/login');
+      router.push('/');
     } catch (error) {
       console.error('Logout error:', error);
       toast({ title: 'Logout Failed', description: 'An error occurred during logout.', variant: 'destructive' });

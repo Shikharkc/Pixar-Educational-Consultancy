@@ -7,12 +7,14 @@ import { z } from 'zod';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ArrowLeft } from 'lucide-react';
+import { Separator } from '../ui/separator';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
@@ -94,6 +96,14 @@ export function LoginForm() {
           </form>
         </Form>
       </CardContent>
+      <Separator className="my-4" />
+      <CardFooter>
+        <Button variant="link" asChild className="text-muted-foreground w-full">
+           <Link href="/">
+              <ArrowLeft className="mr-2 h-4 w-4"/> Back to Homepage
+           </Link>
+        </Button>
+      </CardFooter>
     </Card>
   );
 }
