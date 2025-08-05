@@ -7,7 +7,6 @@ import {
   query,
   orderBy,
   onSnapshot,
-  Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Student, counselorNames } from '@/lib/data';
@@ -25,6 +24,8 @@ interface DataTableProps {
   onRowSelect: (student: Student) => void;
   selectedStudentId?: string | null;
 }
+
+const INITIAL_DISPLAY_LIMIT = 15;
 
 export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
   const [students, setStudents] = useState<Student[]>([]);
@@ -53,8 +54,8 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
     return () => unsubscribe();
   }, []);
 
-  const filteredStudents = useMemo(() => {
-    let sorted = [...students].sort((a, b) => {
+  const sortedStudents = useMemo(() => {
+    return [...students].sort((a, b) => {
       // Prioritize "Unassigned"
       if (a.assignedTo === 'Unassigned' && b.assignedTo !== 'Unassigned') return -1;
       if (a.assignedTo !== 'Unassigned' && b.assignedTo === 'Unassigned') return 1;
@@ -63,14 +64,27 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
       const dateB = b.timestamp?.toDate() ?? new Date(0);
       return dateB.getTime() - dateA.getTime();
     });
+  }, [students]);
 
-    return sorted.filter(student => {
-      const matchesSearch = student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  const displayedStudents = useMemo(() => {
+    const filtered = sortedStudents.filter(student => {
+      const matchesSearch = searchTerm === '' ||
+                            student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                             student.email.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesFilter = assignedToFilter === 'all' || student.assignedTo === assignedToFilter;
       return matchesSearch && matchesFilter;
     });
-  }, [students, searchTerm, assignedToFilter]);
+
+    // If searching or filtering, show all results. Otherwise, show the initial limited list.
+    if (searchTerm || assignedToFilter !== 'all') {
+      return filtered;
+    }
+    
+    // Default view: Prioritize unassigned and limit to 15
+    const unassigned = sortedStudents.filter(s => s.assignedTo === 'Unassigned');
+    return unassigned.slice(0, INITIAL_DISPLAY_LIMIT);
+
+  }, [sortedStudents, searchTerm, assignedToFilter]);
   
   const getFeeStatusBadgeVariant = (status: Student['serviceFeeStatus']) => {
     switch (status) {
@@ -114,8 +128,8 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
                   Loading data...
                 </TableCell>
               </TableRow>
-            ) : filteredStudents.length > 0 ? (
-              filteredStudents.map((student) => (
+            ) : displayedStudents.length > 0 ? (
+              displayedStudents.map((student) => (
                 <TableRow 
                   key={student.id} 
                   onClick={() => onRowSelect(student)}

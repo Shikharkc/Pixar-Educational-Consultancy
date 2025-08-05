@@ -51,7 +51,9 @@ export default function StudentManagementPage() {
             <Card className="h-full">
               <CardHeader className="p-4">
                 <CardTitle>Student List</CardTitle>
-                <CardDescription>Select a student to view or edit their details.</CardDescription>
+                <CardDescription>
+                  Showing new, unassigned students first. Use search to find any student.
+                </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 <DataTable onRowSelect={handleRowSelect} selectedStudentId={selectedStudent?.id} />
