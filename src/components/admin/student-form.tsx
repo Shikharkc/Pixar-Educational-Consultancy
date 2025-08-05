@@ -154,13 +154,24 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
   
   const getVisaStatusBadgeVariant = (status?: Student['visaStatus']) => {
     switch (status) {
-      case 'Approved': return 'default'; case 'Pending': return 'secondary';
-      case 'Rejected': return 'destructive'; default: return 'outline';
+      case 'Approved': return 'default';
+      case 'Pending': return 'secondary';
+      case 'Rejected': return 'destructive';
+      default: return 'outline';
+    }
+  };
+
+  const getFeeStatusBadgeVariant = (status?: Student['serviceFeeStatus']) => {
+    switch (status) {
+        case 'Paid': return 'default';
+        case 'Partial': return 'secondary';
+        case 'Unpaid': return 'outline';
+        default: return 'outline';
     }
   };
 
   const formContent = (
-    <CardContent className="space-y-4 flex-grow overflow-y-auto p-4 sm:p-6 pr-2 sm:pr-4">
+    <CardContent className="space-y-6 flex-grow overflow-y-auto p-4 sm:p-6 pr-2 sm:pr-4">
        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
            <FormField control={form.control} name="fullName" render={({ field }) => ( <FormItem> <FormLabel>Full Name</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
            <FormField control={form.control} name="email" render={({ field }) => ( <FormItem> <FormLabel>Email</FormLabel> <FormControl><Input type="email" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
@@ -175,7 +186,11 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
           <FormField control={form.control} name="englishProficiencyTest" render={({ field }) => ( <FormItem><FormLabel>English Test</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{englishTestOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem> )}/>
        </div>
        <FormField control={form.control} name="preferredStudyDestination" render={({ field }) => ( <FormItem><FormLabel>Destination</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger></FormControl><SelectContent>{studyDestinationOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem> )}/>
-       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t pt-4">
+       
+       <Separator />
+       <h4 className="font-medium">Internal Records</h4>
+
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <FormField control={form.control} name="visaStatus" render={({ field }) => ( <FormItem><FormLabel>Visa Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{['Not Applied', 'Pending', 'Approved', 'Rejected'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )}/>
           {visaStatus && visaStatus !== 'Not Applied' && <FormField control={form.control} name="visaStatusUpdateDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Visa Status Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick date</span>}<CalendarIcon className="ml-auto h-4 w-4" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)}/>}
        </div>
@@ -253,7 +268,7 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                     <DetailItem icon={Languages} label="English Proficiency Test" value={student?.englishProficiencyTest} />
                     <DetailItem icon={Target} label="Preferred Study Destination" value={student?.preferredStudyDestination} />
                  </div>
-                 <DetailItem icon={StickyNote} label="Additional Notes" value={student?.additionalNotes} valueClassName="whitespace-pre-wrap text-sm" />
+                 <DetailItem icon={StickyNote} label="Additional Notes" value={<p className="whitespace-pre-wrap">{student?.additionalNotes}</p>} />
               </div>
                <Separator />
                <div className="space-y-4">
@@ -262,7 +277,7 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                     <DetailItem icon={Users} label="Assigned To" value={student?.assignedTo} />
                     <DetailItem icon={ShieldQuestion} label="Visa Status" value={<Badge variant={getVisaStatusBadgeVariant(student?.visaStatus)}>{student?.visaStatus}</Badge>} />
                     {student?.visaStatusUpdateDate && <DetailItem icon={CalendarDays} label="Visa Status Date" value={format(student.visaStatusUpdateDate.toDate(), 'PPP')} />}
-                    <DetailItem icon={CircleDollarSign} label="Service Fee Status" value={<Badge variant={student?.serviceFeeStatus === 'Paid' ? 'default' : student?.serviceFeeStatus === 'Partial' ? 'secondary' : 'outline'}>{student?.serviceFeeStatus}</Badge>} />
+                    <DetailItem icon={CircleDollarSign} label="Service Fee Status" value={<Badge variant={getFeeStatusBadgeVariant(student?.serviceFeeStatus)}>{student?.serviceFeeStatus}</Badge>} />
                     {student?.serviceFeePaidDate && <DetailItem icon={CalendarDays} label="Fee Paid Date" value={format(student.serviceFeePaidDate.toDate(), 'PPP')} />}
                     <DetailItem icon={CalendarDays} label="Date Added" value={student?.timestamp ? format(student.timestamp.toDate(), 'PPP, p') : 'N/A'} />
                  </div>

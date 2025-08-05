@@ -30,11 +30,6 @@ import {
 import { ListFilter } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
-type SortConfig = {
-  key: keyof Student;
-  direction: 'ascending' | 'descending';
-};
-
 interface DataTableProps {
   onRowSelect: (student: Student) => void;
   selectedStudentId?: string | null;
@@ -150,7 +145,10 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
                   data-state={selectedStudentId === student.id ? 'selected' : 'unselected'}
                 >
                   <TableCell className="font-medium p-3">
-                    <div className="font-semibold">{student.fullName}</div>
+                    <div className="flex items-center justify-between">
+                        <span className="font-semibold">{student.fullName}</span>
+                        {student.assignedTo === 'Unassigned' && <Badge className="py-0.5 px-1.5 text-xs bg-accent text-accent-foreground">New</Badge>}
+                    </div>
                     <div className="text-xs text-muted-foreground truncate">{student.email}</div>
                     <div className="mt-1 flex items-center justify-between text-xs">
                        <span className="text-muted-foreground">{student.assignedTo || 'Unassigned'}</span>
