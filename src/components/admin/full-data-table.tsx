@@ -2,16 +2,18 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { collection, onSnapshot, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, limit, getDocs, startAfter, endBefore, limitToLast } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Student } from '@/lib/data';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ArrowUpDown } from 'lucide-react';
+import { ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { Badge } from '../ui/badge';
 
 type SortKey = keyof Student | 'timestamp';
+
+const PAGE_SIZE = 20;
 
 export function FullDataTable() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -20,57 +22,79 @@ export function FullDataTable() {
     key: 'timestamp',
     direction: 'descending',
   });
+  const [lastVisible, setLastVisible] = useState<any>(null);
+  const [firstVisible, setFirstVisible] = useState<any>(null);
+  const [isNextPageAvailable, setIsNextPageAvailable] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    const q = query(collection(db, 'students'), orderBy('timestamp', 'desc'));
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        const studentsData: Student[] = [];
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          studentsData.push({
-            id: doc.id,
-            ...data,
-            timestamp: data.timestamp as Timestamp,
-          } as Student);
-        });
-        setStudents(studentsData);
-        setLoading(false);
-      },
-      (error) => {
-        console.error("Error fetching students: ", error);
-        setLoading(false);
+
+  const fetchStudents = async (direction: 'next' | 'prev' | 'initial' = 'initial') => {
+    setLoading(true);
+    try {
+      let q;
+      const studentsCollection = collection(db, 'students');
+      
+      const orderDirection = sortConfig.direction === 'ascending' ? 'asc' : 'desc';
+
+      if (direction === 'initial') {
+        q = query(studentsCollection, orderBy(sortConfig.key, orderDirection), limit(PAGE_SIZE));
+      } else if (direction === 'next' && lastVisible) {
+        q = query(studentsCollection, orderBy(sortConfig.key, orderDirection), startAfter(lastVisible), limit(PAGE_SIZE));
+      } else if (direction === 'prev' && firstVisible) {
+        q = query(studentsCollection, orderBy(sortConfig.key, orderDirection), endBefore(firstVisible), limitToLast(PAGE_SIZE));
+      } else {
+         setLoading(false);
+         return;
       }
-    );
 
-    return () => unsubscribe();
-  }, []);
+      const documentSnapshots = await getDocs(q);
+      
+      if (!documentSnapshots.empty) {
+        const studentsData: Student[] = documentSnapshots.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+        } as Student));
 
-  const sortedStudents = useMemo(() => {
-    let sortableStudents = [...students];
-    if (sortConfig.key) {
-      sortableStudents.sort((a, b) => {
-        const aValue = a[sortConfig.key];
-        const bValue = b[sortConfig.key];
-
-        if (aValue === null || aValue === undefined) return 1;
-        if (bValue === null || bValue === undefined) return -1;
+        setStudents(studentsData);
+        setFirstVisible(documentSnapshots.docs[0]);
+        setLastVisible(documentSnapshots.docs[documentSnapshots.docs.length - 1]);
         
-        let comparison = 0;
-        if (aValue instanceof Timestamp && bValue instanceof Timestamp) {
-            comparison = aValue.toMillis() - bValue.toMillis();
-        } else if (typeof aValue === 'string' && typeof bValue === 'string') {
-            comparison = aValue.localeCompare(bValue);
-        } else if (typeof aValue === 'number' && typeof bValue === 'number') {
-            comparison = aValue - bValue;
-        }
+        // Check if there is a next page
+        const nextQuery = query(studentsCollection, orderBy(sortConfig.key, orderDirection), startAfter(documentSnapshots.docs[documentSnapshots.docs.length - 1]), limit(1));
+        const nextDocs = await getDocs(nextQuery);
+        setIsNextPageAvailable(!nextDocs.empty);
 
-        return sortConfig.direction === 'ascending' ? comparison : -comparison;
-      });
+      } else {
+        // This handles clicking 'next' on the last page.
+        if(direction === 'next') setIsNextPageAvailable(false);
+        // If it was an initial load or going back to an empty state, clear students.
+        if (direction !== 'next') setStudents([]);
+      }
+    } catch (error) {
+      console.error("Error fetching students: ", error);
+    } finally {
+      setLoading(false);
     }
-    return sortableStudents;
-  }, [students, sortConfig]);
+  };
+  
+  useEffect(() => {
+    fetchStudents('initial');
+  }, [sortConfig]);
+
+  const handleNext = () => {
+    if (isNextPageAvailable) {
+        setCurrentPage(prev => prev + 1);
+        fetchStudents('next');
+    }
+  };
+
+  const handlePrevious = () => {
+    if (currentPage > 1) {
+        setCurrentPage(prev => prev - 1);
+        fetchStudents('prev');
+    }
+  };
+
 
   const requestSort = (key: SortKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -78,6 +102,11 @@ export function FullDataTable() {
       direction = 'descending';
     }
     setSortConfig({ key, direction });
+    // Reset pagination when sort order changes
+    setLastVisible(null);
+    setFirstVisible(null);
+    setCurrentPage(1);
+    setIsNextPageAvailable(true);
   };
   
   const getSortIndicator = (key: SortKey) => {
@@ -149,8 +178,8 @@ export function FullDataTable() {
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">Loading data...</TableCell>
               </TableRow>
-            ) : sortedStudents.length > 0 ? (
-              sortedStudents.map((student) => (
+            ) : students.length > 0 ? (
+              students.map((student) => (
                 <TableRow key={student.id}>
                   {columns.map((col) => (
                     <TableCell key={col.key} className="text-xs">
@@ -166,6 +195,27 @@ export function FullDataTable() {
             )}
           </TableBody>
         </Table>
+      </div>
+       <div className="flex items-center justify-end space-x-2 py-4 px-4">
+        <span className="text-sm text-muted-foreground">Page {currentPage}</span>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handlePrevious}
+          disabled={currentPage === 1 || loading}
+        >
+          <ChevronLeft className="h-4 w-4 mr-1" />
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleNext}
+          disabled={!isNextPageAvailable || loading}
+        >
+          Next
+          <ChevronRight className="h-4 w-4 ml-1" />
+        </Button>
       </div>
     </div>
   );
