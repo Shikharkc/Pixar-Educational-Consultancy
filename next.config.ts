@@ -1,10 +1,10 @@
+
 import type {NextConfig} from 'next';
 
 const nextConfig: NextConfig = {
   /* config options here */
   typescript: {
-    ignoreBuildErrors: true, // Set to true to use ignorePatterns
-    ignorePatterns: ['./src/app/countries/[country]/page.tsx'],
+    ignoreBuildErrors: true, 
   },
   eslint: {
     ignoreDuringBuilds: false,

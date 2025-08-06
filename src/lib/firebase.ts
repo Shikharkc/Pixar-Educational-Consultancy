@@ -1,26 +1,28 @@
 
-// This file is being created to centralize Firebase initialization and exports.
+
+// THIS FILE IS NO LONGER USED FOR DATABASE WRITES FROM THE CLIENT.
+// It is kept for client-side Firebase services like Authentication.
+// Database writes are now handled by the secure server action in /src/app/actions.ts,
+// which uses the Firebase Admin SDK via /src/lib/firebase-admin.ts.
+
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
-// Your web app's Firebase configuration is already in a separate component.
-// This config is just for server-side or to be consistent.
 const firebaseConfig = {
-  apiKey: "AIzaSyB9OGa_I5vg1vsjPLQQMiUC6xU2TFmrfm0",
-  authDomain: "pixar-educational-consultancy.firebaseapp.com",
-  projectId: "pixar-educational-consultancy",
-  storageBucket: "pixar-educational-consultancy.firebasestorage.app",
-  messagingSenderId: "286970299360",
-  appId: "1:286970299360:web:3d0f098ee47b6dd282a185",
-  measurementId: "G-8W0E04NQFZ",
-  databaseId: "pixareducation", // Explicitly specify the database ID
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  databaseId: "pixareducation",
 };
 
 // Initialize Firebase App (Singleton Pattern)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
-// Connect to the specific firestore database by passing the config
-const db = getFirestore(app, firebaseConfig.databaseId);
+const db = getFirestore(app);
 
 export { app, auth, db };

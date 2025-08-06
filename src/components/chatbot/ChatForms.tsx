@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,9 +17,9 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { allEducationLevels, englishTestOptions, studyDestinationOptions, testPreparationOptions } from '@/lib/data';
+import { addStudent } from '@/app/actions'; // Import the server action
 
-// Schemas, Constants, and Submission functions are copied from the contact page
-// but will be used internally by the chatbot form components.
+// Schemas, Constants, and Submission functions are adapted for chatbot components.
 
 // --- GENERAL CONTACT FORM LOGIC ---
 const generalContactFormSchema = z.object({
@@ -30,36 +31,7 @@ const generalContactFormSchema = z.object({
   additionalNotes: z.string().max(500, "Notes are too long.").optional(),
 });
 type GeneralContactFormValues = z.infer<typeof generalContactFormSchema>;
-const GENERAL_CONTACT_GOOGLE_FORM_ACTION_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScmMqPLB4NX_BZSSS4C3_2_9wNga-GBmbznGc9nNCs231IeaA/formResponse';
-const GENERAL_CONTACT_NAME_ENTRY_ID = 'entry.381136677';
-const GENERAL_CONTACT_EMAIL_ENTRY_ID = 'entry.897898403';
-const GENERAL_CONTACT_PHONE_NUMBER_ENTRY_ID = 'entry.1344864969';
-const GENERAL_CONTACT_EDUCATION_ENTRY_ID = 'entry.2085503739';
-// Assuming english test is not in this chatbot form to simplify, but mapping destination
-const GENERAL_CONTACT_DESTINATION_ENTRY_ID = 'entry.22741016';
-const GENERAL_CONTACT_ADDITIONAL_NOTES_ENTRY_ID = 'entry.1419649728';
 
-async function submitToGeneralContactGoogleSheet(data: GeneralContactFormValues) {
-  const formData = new FormData();
-  formData.append(GENERAL_CONTACT_NAME_ENTRY_ID, data.name);
-  formData.append(GENERAL_CONTACT_EMAIL_ENTRY_ID, data.email);
-  formData.append(GENERAL_CONTACT_PHONE_NUMBER_ENTRY_ID, data.phoneNumber);
-  formData.append(GENERAL_CONTACT_EDUCATION_ENTRY_ID, data.lastCompletedEducation);
-  formData.append(GENERAL_CONTACT_DESTINATION_ENTRY_ID, data.preferredStudyDestination);
-  if (data.additionalNotes) {
-    formData.append(GENERAL_CONTACT_ADDITIONAL_NOTES_ENTRY_ID, data.additionalNotes);
-  }
-  // This form also had English Proficiency, adding a default value to prevent sheet errors
-  formData.append('entry.1325410288', 'Not specified in chat');
-
-  try {
-    await fetch(GENERAL_CONTACT_GOOGLE_FORM_ACTION_URL, { method: 'POST', body: formData, mode: 'no-cors' });
-    return { success: true };
-  } catch (error) {
-    console.error('Error submitting to General Contact Google Sheet:', error);
-    return { success: false };
-  }
-}
 
 // --- PREP CLASS BOOKING FORM LOGIC ---
 const preparationClassFormSchema = z.object({
@@ -111,12 +83,14 @@ export function GeneralContactForm({ onSuccess }: { onSuccess: () => void }) {
 
   async function onSubmit(values: GeneralContactFormValues) {
     setIsSubmitting(true);
-    const result = await submitToGeneralContactGoogleSheet(values);
+    // Add a default for englishProficiencyTest for the server action
+    const dataToSend = { ...values, englishProficiencyTest: 'Not specified in chat' };
+    const result = await addStudent(dataToSend);
     setIsSubmitting(false);
     if (result.success) {
       onSuccess();
     } else {
-      toast({ title: "Submission Error", description: "Could not send your inquiry. Please try again.", variant: "destructive" });
+      toast({ title: "Submission Error", description: result.message || "Could not send your inquiry. Please try again.", variant: "destructive" });
     }
   }
 

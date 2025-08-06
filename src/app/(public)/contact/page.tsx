@@ -22,9 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
-import { db } from '@/lib/firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-
+import { addStudent } from '@/app/actions'; // Import the server action
 
 // Schema for General Contact Form
 const generalContactFormSchema = z.object({
@@ -37,40 +35,6 @@ const generalContactFormSchema = z.object({
   additionalNotes: z.string().max(500, "Additional notes are too long.").optional(),
 });
 type GeneralContactFormValues = z.infer<typeof generalContactFormSchema>;
-
-
-// Function to submit general contact form to the 'students' collection in Firestore
-async function submitToStudentsCollection(data: GeneralContactFormValues): Promise<{ success: boolean; message: string }> {
-  try {
-    // Map form data to the Student data structure
-    const studentData = {
-      fullName: data.name,
-      email: data.email,
-      mobileNumber: data.phoneNumber,
-      lastCompletedEducation: data.lastCompletedEducation,
-      englishProficiencyTest: data.englishProficiencyTest,
-      preferredStudyDestination: data.preferredStudyDestination,
-      additionalNotes: data.additionalNotes || '',
-      // Set default values for fields not in the contact form
-      visaStatus: 'Not Applied' as const,
-      serviceFeeStatus: 'Unpaid' as const,
-      assignedTo: 'Unassigned',
-      timestamp: serverTimestamp(),
-      // Explicitly null for date fields not in this form
-      serviceFeePaidDate: null,
-      visaStatusUpdateDate: null,
-      emergencyContact: '',
-      collegeUniversityName: '',
-    };
-
-    await addDoc(collection(db, 'students'), studentData);
-    
-    return { success: true, message: "Your message has been sent successfully! We'll get back to you soon." };
-  } catch (error) {
-    console.error('Error writing to Firestore students collection:', error);
-    return { success: false, message: 'An error occurred while sending your message. Please try again or contact us directly.' };
-  }
-}
 
 
 // Schema for Preparation Class Booking Form
@@ -192,11 +156,12 @@ export default function ContactPage() {
   async function onGeneralContactSubmit(values: GeneralContactFormValues) {
     setIsGeneralSubmitting(true);
     try {
-      const result = await submitToStudentsCollection(values); // Updated function call
+      const result = await addStudent(values); // Using the server action
       toast({ title: result.success ? "Message Sent!" : "Submission Error", description: result.message, variant: result.success ? "default" : "destructive" });
       if (result.success) generalContactForm.reset();
     } catch (error) {
-      toast({ title: "Error", description: "An unexpected error occurred.", variant: "destructive" });
+      console.error("Client-side error calling server action:", error);
+      toast({ title: "Error", description: "An unexpected client-side error occurred.", variant: "destructive" });
     } finally {
       setIsGeneralSubmitting(false);
     }
