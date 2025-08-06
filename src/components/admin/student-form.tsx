@@ -110,6 +110,7 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
     try {
       const submissionData = {
         ...data,
+        searchableName: data.fullName.toLowerCase(),
         lastCompletedEducation: data.lastCompletedEducation || '',
         englishProficiencyTest: data.englishProficiencyTest || '',
         preferredStudyDestination: data.preferredStudyDestination || '',
@@ -200,7 +201,6 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
            <FormField control={form.control} name="serviceFeeStatus" render={({ field }) => ( <FormItem><FormLabel>Service Fee</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{['Unpaid', 'Partial', 'Paid'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )}/>
            {serviceFeeStatus === 'Paid' && <FormField control={form.control} name="serviceFeePaidDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel>Fee Paid Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick date</span>}<CalendarIcon className="ml-auto h-4 w-4" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)}/>}
        </div>
-       <FormField control={form.control} name="assignedTo" render={({ field }) => ( <FormItem><FormLabel>Assigned To</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select counselor" /></SelectTrigger></FormControl><SelectContent>{counselorNames.map(name => (<SelectItem key={name} value={name}>{name}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)}/>
        <FormField control={form.control} name="additionalNotes" render={({ field }) => ( <FormItem><FormLabel>Additional Notes</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem> )}/>
     </CardContent>
   );
@@ -212,15 +212,39 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle>{isNewStudent ? 'Add New Student' : `Edit: ${student.fullName}`}</CardTitle>
-                    <CardDescription>
-                      {isNewStudent ? 'Fill in the details for a new student record.' : 'Update the details for this student.'}
-                    </CardDescription>
-                  </div>
-                   <Button type="button" variant="ghost" size="icon" onClick={() => isNewStudent ? onFormClose() : setIsEditing(false)} disabled={isLoading}>
-                      <X className="h-4 w-4" />
-                   </Button>
+                    <div>
+                        <CardTitle>{isNewStudent ? 'Add New Student' : `Edit: ${student.fullName}`}</CardTitle>
+                        <CardDescription>
+                            {isNewStudent ? 'Fill in the details for a new student record.' : 'Update the details for this student.'}
+                        </CardDescription>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        {/* Moved AssignedTo form field here */}
+                        <FormField
+                            control={form.control}
+                            name="assignedTo"
+                            render={({ field }) => (
+                                <FormItem className="w-48">
+                                    <Select onValueChange={field.onChange} value={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Assign to..." />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            {counselorNames.map(name => (
+                                                <SelectItem key={name} value={name}>{name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <Button type="button" variant="ghost" size="icon" onClick={() => isNewStudent ? onFormClose() : setIsEditing(false)} disabled={isLoading}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                   </div>
                 </div>
               </CardHeader>
               {formContent}
@@ -240,12 +264,18 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
   return (
     <Card className="h-full flex flex-col">
         <CardHeader>
-            <div className="flex justify-between items-start">
-                <div>
-                    <CardTitle className="flex items-center"><BookUser className="mr-2 h-6 w-6 text-primary"/>{student?.fullName}</CardTitle>
+            <div className="flex justify-between items-center">
+                <div className="flex-grow">
+                    <div className="flex items-center gap-4">
+                        <CardTitle className="flex items-center"><BookUser className="mr-2 h-6 w-6 text-primary"/>{student?.fullName}</CardTitle>
+                        <Badge variant="secondary" className="flex items-center gap-2">
+                            <Users className="h-4 w-4" />
+                            {student?.assignedTo || 'Unassigned'}
+                        </Badge>
+                    </div>
                     <CardDescription>Student Details Overview</CardDescription>
                 </div>
-                 <div className="flex items-center gap-2">
+                 <div className="flex items-center gap-2 flex-shrink-0 ml-4">
                     <Button variant="outline" size="icon" onClick={() => setIsEditing(true)}><FilePenLine className="h-4 w-4" /><span className="sr-only">Edit</span></Button>
                     <Button variant="destructive" size="icon" onClick={() => setIsAlertOpen(true)}><Trash2 className="h-4 w-4" /><span className="sr-only">Delete</span></Button>
                     <Button variant="ghost" size="icon" onClick={onFormClose}><X className="h-4 w-4" /></Button>
@@ -276,7 +306,7 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                <div className="space-y-4">
                  <h3 className="font-semibold text-lg text-primary">Internal Records</h3>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <DetailItem icon={Users} label="Assigned To" value={student?.assignedTo} />
+                    {/* Assigned To is now in the header */}
                     <DetailItem icon={ShieldQuestion} label="Visa Status" value={<Badge variant={getVisaStatusBadgeVariant(student?.visaStatus)}>{student?.visaStatus}</Badge>} />
                     {student?.visaStatusUpdateDate && <DetailItem icon={CalendarDays} label="Visa Status Date" value={format(student.visaStatusUpdateDate.toDate(), 'PPP')} />}
                     <DetailItem icon={CircleDollarSign} label="Service Fee Status" value={<Badge variant={getFeeStatusBadgeVariant(student?.serviceFeeStatus)}>{student?.serviceFeeStatus}</Badge>} />
