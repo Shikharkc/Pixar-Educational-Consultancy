@@ -643,11 +643,11 @@ export const testPreparationOptions = [
 ];
 
 export const studyDestinationOptions = [
-  { value: "USA", label: "🇺🇸 USA" },
-  { value: "New Zealand", label: "🇳🇿 New Zealand" },
-  { value: "Australia", label: "🇦🇺 Australia" },
-  { value: "Canada", label: "🇨🇦 Canada" },
-  { value: "UK", label: "🇬🇧 UK" },
+  { value: "USA", label: "USA" },
+  { value: "New Zealand", label: "New Zealand" },
+  { value: "Australia", label: "Australia" },
+  { value: "Canada", label: "Canada" },
+  { value: "UK", label: "UK" },
 ];
 
 export const gpaScaleOptions = [

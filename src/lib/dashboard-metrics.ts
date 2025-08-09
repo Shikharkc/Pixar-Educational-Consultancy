@@ -25,10 +25,13 @@ const db = getFirestore('pixareducation');
 
 // Function to safely handle increments on nested map fields
 function updateNestedField(batch: FirebaseFirestore.WriteBatch, ref: FirebaseFirestore.DocumentReference, fieldName: string, key: string | undefined | null, value: number) {
+  // Only proceed if the key is a non-empty string
   if (key && typeof key === 'string' && key.trim() !== '') {
     // Sanitize key to be Firestore field path compliant
     const sanitizedKey = key.replace(/[.`[\]*]/g, '_');
-    batch.set(ref, { [fieldName]: { [sanitizedKey]: FieldValue.increment(value) } }, { merge: true });
+    if (sanitizedKey) {
+      batch.set(ref, { [fieldName]: { [sanitizedKey]: FieldValue.increment(value) } }, { merge: true });
+    }
   }
 }
 
@@ -86,13 +89,13 @@ export const aggregateStudentMetrics = onDocumentWritten('students/{studentId}',
   else if (event.data?.before.exists && event.data?.after.exists) {
     // Visa Status Change
     if (dataBefore?.visaStatus !== dataAfter?.visaStatus) {
-      // Decrement old status count
+      // Decrement old status count if it was a recognized status
       if (dataBefore?.visaStatus === 'Approved') {
         batch.set(metricsRef, { visaGranted: FieldValue.increment(-1) }, { merge: true });
       } else if (pendingStatuses.includes(dataBefore?.visaStatus)) {
         batch.set(metricsRef, { pendingVisa: FieldValue.increment(-1) }, { merge: true });
       }
-      // Increment new status count
+      // Increment new status count if it's a recognized status
       if (dataAfter?.visaStatus === 'Approved') {
         batch.set(metricsRef, { visaGranted: FieldValue.increment(1) }, { merge: true });
       } else if (pendingStatuses.includes(dataAfter?.visaStatus)) {
