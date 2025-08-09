@@ -1,3 +1,4 @@
+
 /**
  * @fileOverview Firebase Cloud Function to aggregate student data for a real-time analytics dashboard.
  *
@@ -24,7 +25,7 @@ const db = getFirestore();
 
 // Function to safely handle increments on nested map fields
 function updateNestedField(batch: FirebaseFirestore.WriteBatch, ref: FirebaseFirestore.DocumentReference, fieldName: string, key: string | undefined | null, value: number) {
-  if (key) {
+  if (key && typeof key === 'string' && key.trim() !== '') {
     batch.set(ref, { [fieldName]: { [key]: FieldValue.increment(value) } }, { merge: true });
   }
 }
