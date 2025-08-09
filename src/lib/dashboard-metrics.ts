@@ -21,7 +21,7 @@ if (!getApps().length) {
   initializeApp();
 }
 
-const db = getFirestore();
+const db = getFirestore('pixareducation');
 
 // Function to safely handle increments on nested map fields
 function updateNestedField(batch: FirebaseFirestore.WriteBatch, ref: FirebaseFirestore.DocumentReference, fieldName: string, key: string | undefined | null, value: number) {
@@ -39,13 +39,16 @@ export const aggregateStudentMetrics = onDocumentWritten('students/{studentId}',
   const dataAfter = event.data?.after.data();
   const dataBefore = event.data?.before.data();
 
+  // Define statuses that count towards 'pending'
+  const pendingStatuses = ['Pending', 'Rejected', 'Not Applied'];
+
   // Handle document creation
   if (!event.data?.before.exists && event.data?.after.exists) {
     batch.set(metricsRef, { totalStudents: FieldValue.increment(1) }, { merge: true });
     
     if (dataAfter?.visaStatus === 'Approved') {
       batch.set(metricsRef, { visaGranted: FieldValue.increment(1) }, { merge: true });
-    } else if (['Pending', 'Rejected', 'Not Applied'].includes(dataAfter?.visaStatus)) {
+    } else if (pendingStatuses.includes(dataAfter?.visaStatus)) {
       batch.set(metricsRef, { pendingVisa: FieldValue.increment(1) }, { merge: true });
     }
     
@@ -65,7 +68,7 @@ export const aggregateStudentMetrics = onDocumentWritten('students/{studentId}',
 
     if (dataBefore?.visaStatus === 'Approved') {
       batch.set(metricsRef, { visaGranted: FieldValue.increment(-1) }, { merge: true });
-    } else if (['Pending', 'Rejected', 'Not Applied'].includes(dataBefore?.visaStatus)) {
+    } else if (pendingStatuses.includes(dataBefore?.visaStatus)) {
       batch.set(metricsRef, { pendingVisa: FieldValue.increment(-1) }, { merge: true });
     }
 
@@ -83,16 +86,16 @@ export const aggregateStudentMetrics = onDocumentWritten('students/{studentId}',
   else if (event.data?.before.exists && event.data?.after.exists) {
     // Visa Status Change
     if (dataBefore?.visaStatus !== dataAfter?.visaStatus) {
-      // Decrement old status
+      // Decrement old status count
       if (dataBefore?.visaStatus === 'Approved') {
         batch.set(metricsRef, { visaGranted: FieldValue.increment(-1) }, { merge: true });
-      } else if (['Pending', 'Rejected', 'Not Applied'].includes(dataBefore?.visaStatus)) {
+      } else if (pendingStatuses.includes(dataBefore?.visaStatus)) {
         batch.set(metricsRef, { pendingVisa: FieldValue.increment(-1) }, { merge: true });
       }
-      // Increment new status
+      // Increment new status count
       if (dataAfter?.visaStatus === 'Approved') {
         batch.set(metricsRef, { visaGranted: FieldValue.increment(1) }, { merge: true });
-      } else if (['Pending', 'Rejected', 'Not Applied'].includes(dataAfter?.visaStatus)) {
+      } else if (pendingStatuses.includes(dataAfter?.visaStatus)) {
         batch.set(metricsRef, { pendingVisa: FieldValue.increment(1) }, { merge: true });
       }
     }
@@ -118,13 +121,20 @@ export const aggregateStudentMetrics = onDocumentWritten('students/{studentId}',
 
     for(const field of fieldsToCompare) {
         if(dataBefore?.[field] !== dataAfter?.[field]) {
-            updateNestedField(batch, metricsRef, fieldMap[field], dataBefore?.[field], -1);
-            updateNestedField(batch, metricsRef, fieldMap[field], dataAfter?.[field], 1);
+            // Decrement the count for the old value, only if it existed
+            if (dataBefore?.[field]) {
+              updateNestedField(batch, metricsRef, fieldMap[field], dataBefore[field], -1);
+            }
+            // Increment the count for the new value, only if it exists
+            if (dataAfter?.[field]) {
+              updateNestedField(batch, metricsRef, fieldMap[field], dataAfter[field], 1);
+            }
         }
     }
   }
 
+  // Commit all the batched writes to Firestore
   return batch.commit().catch(err => {
-    console.error('Error updating metrics:', err);
+    console.error('Error committing metrics batch:', err);
   });
 });
