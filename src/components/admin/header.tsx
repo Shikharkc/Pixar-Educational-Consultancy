@@ -47,7 +47,7 @@ export default function AdminHeader({ onAddNew }: AdminHeaderProps) {
       
       <nav className="flex-grow flex items-center justify-center gap-2">
          {navItems.map(item => (
-            <Button key={item.href} asChild variant={pathname === item.href ? "secondary" : "ghost"} size="sm">
+            <Button key={item.href} asChild variant={pathname.startsWith(item.href) ? "secondary" : "ghost"} size="sm">
                 <Link href={item.href}>
                     <item.icon className="mr-2 h-4 w-4" />
                     {item.label}

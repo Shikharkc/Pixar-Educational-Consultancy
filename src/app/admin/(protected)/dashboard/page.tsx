@@ -5,15 +5,16 @@ import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import SectionTitle from '@/components/ui/section-title';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Users, CheckCircle, Clock, Globe, UserCheck, BookOpen, Languages } from 'lucide-react';
+import { Users, CheckCircle, Clock, Globe, UserCheck, BookOpen, Languages, CircleDollarSign } from 'lucide-react';
 
 interface DashboardMetrics {
   totalStudents?: number;
   visaGranted?: number;
   pendingVisa?: number;
+  serviceFeePaid?: number;
   byDestination?: { [key: string]: number };
   byCounselor?: { [key: string]: number };
   byEducation?: { [key: string]: number };
@@ -45,7 +46,8 @@ export default function DashboardPage() {
         if (docSnap.exists()) {
           setMetrics(docSnap.data() as DashboardMetrics);
         } else {
-          setError("Dashboard data not found. Please ensure the aggregation function is working.");
+          // Set metrics to an empty object to prevent errors, and show a message in the UI
+          setMetrics({}); 
         }
         setLoading(false);
       }, 
@@ -64,12 +66,20 @@ export default function DashboardPage() {
   const educationData = sortData(metrics?.byEducation);
   const englishTestData = sortData(metrics?.byEnglishTest);
 
+  const visaStatusData = [
+    { name: 'Granted', value: metrics?.visaGranted || 0 },
+    { name: 'Pending/Other', value: metrics?.pendingVisa || 0 },
+  ];
+
+  const COLORS = ['hsl(var(--primary))', 'hsl(var(--muted))'];
+
   if (loading) {
     return (
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <Skeleton className="h-8 w-1/3" />
         <Skeleton className="h-6 w-1/2" />
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-6">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mt-6">
+            <Skeleton className="h-28 w-full" />
             <Skeleton className="h-28 w-full" />
             <Skeleton className="h-28 w-full" />
             <Skeleton className="h-28 w-full" />
@@ -92,6 +102,19 @@ export default function DashboardPage() {
       </div>
     );
   }
+  
+  if (Object.keys(metrics || {}).length === 0 && !loading) {
+      return (
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+         <Alert>
+            <AlertTitle>No Data Found</AlertTitle>
+            <AlertDescription>
+                The dashboard metrics document hasn't been created yet. Please add, update, or delete a student record to trigger the aggregation function and populate the dashboard.
+            </AlertDescription>
+        </Alert>
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
@@ -101,7 +124,7 @@ export default function DashboardPage() {
       />
       
       {/* Key Metric Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Students</CardTitle>
@@ -124,12 +147,22 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Visas Pending</CardTitle>
+            <CardTitle className="text-sm font-medium">Visas Pending & Others</CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics?.pendingVisa || 0}</div>
-            <p className="text-xs text-muted-foreground">Students with 'Pending' visa status.</p>
+            <p className="text-xs text-muted-foreground">Pending, Rejected & Not Applied.</p>
+          </CardContent>
+        </Card>
+         <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Service Fees Paid</CardTitle>
+            <CircleDollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{metrics?.serviceFeePaid || 0}</div>
+            <p className="text-xs text-muted-foreground">Students with 'Paid' service fee status.</p>
           </CardContent>
         </Card>
       </div>
@@ -162,7 +195,7 @@ export default function DashboardPage() {
               <BarChart data={counselorData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                <YAxis />
+                <YAxis allowDecimals={false} />
                 <Tooltip />
                 <Legend />
                 <Bar dataKey="count" name="Students" fill="hsl(var(--accent))" />
@@ -182,7 +215,7 @@ export default function DashboardPage() {
               <ul className="space-y-2 text-sm">
                 {educationData.length > 0 ? educationData.map(item => (
                   <li key={item.name} className="flex justify-between">
-                    <span className="text-muted-foreground">{item.name}</span>
+                    <span className="text-muted-foreground">{item.name || 'N/A'}</span>
                     <span className="font-semibold">{item.count}</span>
                   </li>
                 )) : <p className="text-muted-foreground text-center">No data available.</p>}
@@ -197,7 +230,7 @@ export default function DashboardPage() {
                 <ul className="space-y-2 text-sm">
                     {englishTestData.length > 0 ? englishTestData.map(item => (
                     <li key={item.name} className="flex justify-between">
-                        <span className="text-muted-foreground">{item.name}</span>
+                        <span className="text-muted-foreground">{item.name || 'N/A'}</span>
                         <span className="font-semibold">{item.count}</span>
                     </li>
                     )) : <p className="text-muted-foreground text-center">No data available.</p>}

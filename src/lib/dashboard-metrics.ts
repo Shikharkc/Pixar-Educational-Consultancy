@@ -22,102 +22,106 @@ if (!getApps().length) {
 
 const db = getFirestore();
 
-export const aggregateStudentMetrics = onDocumentWritten(
-  'students/{studentId}',
-  async (event) => {
-    const metricsRef = db.collection('metrics').doc('dashboard');
-    const batch = db.batch();
+// Function to safely handle increments on nested map fields
+function updateNestedField(batch: FirebaseFirestore.WriteBatch, ref: FirebaseFirestore.DocumentReference, fieldName: string, key: string | undefined | null, value: number) {
+  if (key) {
+    batch.set(ref, { [fieldName]: { [key]: FieldValue.increment(value) } }, { merge: true });
+  }
+}
 
-    const data = event.data?.after.data();
-    const previousData = event.data?.before.data();
+export const aggregateStudentMetrics = onDocumentWritten('students/{studentId}', async (event) => {
+  const metricsRef = db.collection('metrics').doc('dashboard');
+  const batch = db.batch();
 
-    // Data for incrementing/decrementing nested map fields
-    const fieldsToIncrement: Record<string, string> = {
-      byDestination: data?.preferredStudyDestination,
-      byEducation: data?.lastCompletedEducation,
-      byCounselor: data?.assignedTo,
-      byEnglishTest: data?.englishProficiencyTest,
-    };
+  const dataAfter = event.data?.after.data();
+  const dataBefore = event.data?.before.data();
 
-    const fieldsToDecrement: Record<string, string> = {
-      byDestination: previousData?.preferredStudyDestination,
-      byEducation: previousData?.lastCompletedEducation,
-      byCounselor: previousData?.assignedTo,
-      byEnglishTest: previousData?.englishProficiencyTest,
-    };
+  // Handle document creation
+  if (!event.data?.before.exists && event.data?.after.exists) {
+    batch.set(metricsRef, { totalStudents: FieldValue.increment(1) }, { merge: true });
 
-    if (!event.data?.before.exists && event.data?.after.exists) {
-      // --- Document was CREATED ---
-      batch.set(metricsRef, { totalStudents: FieldValue.increment(1) }, { merge: true });
+    if (dataAfter?.visaStatus === 'Approved') {
+      batch.set(metricsRef, { visaGranted: FieldValue.increment(1) }, { merge: true });
+    } else if (['Pending', 'Rejected', 'Not Applied'].includes(dataAfter?.visaStatus)) {
+      batch.set(metricsRef, { pendingVisa: FieldValue.increment(1) }, { merge: true });
+    }
+    
+    if (dataAfter?.serviceFeeStatus === 'Paid') {
+        batch.set(metricsRef, { serviceFeePaid: FieldValue.increment(1) }, { merge: true });
+    }
 
-      if (data?.visaStatus === 'Approved') {
-        batch.set(metricsRef, { visaGranted: FieldValue.increment(1) }, { merge: true });
-      } else if (data?.visaStatus === 'Pending') {
-        batch.set(metricsRef, { pendingVisa: FieldValue.increment(1) }, { merge: true });
-      }
+    updateNestedField(batch, metricsRef, 'byDestination', dataAfter?.preferredStudyDestination, 1);
+    updateNestedField(batch, metricsRef, 'byEducation', dataAfter?.lastCompletedEducation, 1);
+    updateNestedField(batch, metricsRef, 'byCounselor', dataAfter?.assignedTo, 1);
+    updateNestedField(batch, metricsRef, 'byEnglishTest', dataAfter?.englishProficiencyTest, 1);
+  }
 
-      for (const [field, value] of Object.entries(fieldsToIncrement)) {
-        if (value) {
-          batch.set(metricsRef, { [field]: { [value]: FieldValue.increment(1) } }, { merge: true });
-        }
-      }
+  // Handle document deletion
+  else if (event.data?.before.exists && !event.data?.after.exists) {
+    batch.set(metricsRef, { totalStudents: FieldValue.increment(-1) }, { merge: true });
 
-    } else if (event.data?.before.exists && !event.data?.after.exists) {
-      // --- Document was DELETED ---
-      batch.set(metricsRef, { totalStudents: FieldValue.increment(-1) }, { merge: true });
+    if (dataBefore?.visaStatus === 'Approved') {
+      batch.set(metricsRef, { visaGranted: FieldValue.increment(-1) }, { merge: true });
+    } else if (['Pending', 'Rejected', 'Not Applied'].includes(dataBefore?.visaStatus)) {
+      batch.set(metricsRef, { pendingVisa: FieldValue.increment(-1) }, { merge: true });
+    }
 
-      if (previousData?.visaStatus === 'Approved') {
+    if (dataBefore?.serviceFeeStatus === 'Paid') {
+        batch.set(metricsRef, { serviceFeePaid: FieldValue.increment(-1) }, { merge: true });
+    }
+
+    updateNestedField(batch, metricsRef, 'byDestination', dataBefore?.preferredStudyDestination, -1);
+    updateNestedField(batch, metricsRef, 'byEducation', dataBefore?.lastCompletedEducation, -1);
+    updateNestedField(batch, metricsRef, 'byCounselor', dataBefore?.assignedTo, -1);
+    updateNestedField(batch, metricsRef, 'byEnglishTest', dataBefore?.englishProficiencyTest, -1);
+  }
+
+  // Handle document updates
+  else if (event.data?.before.exists && event.data?.after.exists) {
+    // Visa Status Change
+    if (dataBefore?.visaStatus !== dataAfter?.visaStatus) {
+      // Decrement old status
+      if (dataBefore?.visaStatus === 'Approved') {
         batch.set(metricsRef, { visaGranted: FieldValue.increment(-1) }, { merge: true });
-      } else if (previousData?.visaStatus === 'Pending') {
+      } else if (['Pending', 'Rejected', 'Not Applied'].includes(dataBefore?.visaStatus)) {
         batch.set(metricsRef, { pendingVisa: FieldValue.increment(-1) }, { merge: true });
       }
-
-      for (const [field, value] of Object.entries(fieldsToDecrement)) {
-        if (value) {
-          batch.set(metricsRef, { [field]: { [value]: FieldValue.increment(-1) } }, { merge: true });
-        }
-      }
-
-    } else if (event.data?.before.exists && event.data?.after.exists) {
-      // --- Document was UPDATED ---
-      // Check for changes in visa status
-      const visaStatusBefore = previousData?.visaStatus;
-      const visaStatusAfter = data?.visaStatus;
-
-      if (visaStatusBefore !== visaStatusAfter) {
-        if (visaStatusBefore === 'Approved') {
-          batch.set(metricsRef, { visaGranted: FieldValue.increment(-1) }, { merge: true });
-        } else if (visaStatusBefore === 'Pending') {
-          batch.set(metricsRef, { pendingVisa: FieldValue.increment(-1) }, { merge: true });
-        }
-
-        if (visaStatusAfter === 'Approved') {
-          batch.set(metricsRef, { visaGranted: FieldValue.increment(1) }, { merge: true });
-        } else if (visaStatusAfter === 'Pending') {
-          batch.set(metricsRef, { pendingVisa: FieldValue.increment(1) }, { merge: true });
-        }
-      }
-
-      // Check for changes in categorical fields
-      for (const field in fieldsToIncrement) {
-        const valueBefore = fieldsToDecrement[field];
-        const valueAfter = fieldsToIncrement[field];
-        if (valueBefore !== valueAfter) {
-          if (valueBefore) {
-            batch.set(metricsRef, { [field]: { [valueBefore]: FieldValue.increment(-1) } }, { merge: true });
-          }
-          if (valueAfter) {
-            batch.set(metricsRef, { [field]: { [valueAfter]: FieldValue.increment(1) } }, { merge: true });
-          }
-        }
+      // Increment new status
+      if (dataAfter?.visaStatus === 'Approved') {
+        batch.set(metricsRef, { visaGranted: FieldValue.increment(1) }, { merge: true });
+      } else if (['Pending', 'Rejected', 'Not Applied'].includes(dataAfter?.visaStatus)) {
+        batch.set(metricsRef, { pendingVisa: FieldValue.increment(1) }, { merge: true });
       }
     }
 
-    try {
-      await batch.commit();
-      console.log('Metrics successfully updated.');
-    } catch (error) {
-      console.error('Error committing batch for metrics update:', error);
+    // Service Fee Status Change
+    if (dataBefore?.serviceFeeStatus !== dataAfter?.serviceFeeStatus) {
+        if(dataBefore?.serviceFeeStatus === 'Paid') {
+            batch.set(metricsRef, { serviceFeePaid: FieldValue.increment(-1) }, { merge: true });
+        }
+        if(dataAfter?.serviceFeeStatus === 'Paid') {
+            batch.set(metricsRef, { serviceFeePaid: FieldValue.increment(1) }, { merge: true });
+        }
+    }
+    
+    // Categorical Field Changes
+    const fields = ['preferredStudyDestination', 'lastCompletedEducation', 'assignedTo', 'englishProficiencyTest'];
+    const fieldMap: Record<string, string> = {
+        preferredStudyDestination: 'byDestination',
+        lastCompletedEducation: 'byEducation',
+        assignedTo: 'byCounselor',
+        englishProficiencyTest: 'byEnglishTest'
+    };
+
+    for(const field of fields) {
+        if(dataBefore?.[field] !== dataAfter?.[field]) {
+            updateNestedField(batch, metricsRef, fieldMap[field], dataBefore?.[field], -1);
+            updateNestedField(batch, metricsRef, fieldMap[field], dataAfter?.[field], 1);
+        }
     }
   }
-);
+
+  return batch.commit().catch(err => {
+    console.error('Error updating metrics:', err);
+  });
+});
