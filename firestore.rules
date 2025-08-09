@@ -1,10 +1,8 @@
 rules_version = '2';
 
-// Specify the database ID to apply these rules to.
-// Note: In the emulator, this may need to be commented out or adjusted.
-// For production deployment, this ensures rules only apply to your 'pixareducation' database.
+// This applies the rules to any database in your project.
 service cloud.firestore {
-  match /databases/pixareducation/documents {
+  match /databases/{database}/documents {
     
     // Default deny all reads and writes unless explicitly allowed.
     // This is a security best practice.
