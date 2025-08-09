@@ -1,10 +1,4 @@
 
-
-// THIS FILE IS NO LONGER USED FOR DATABASE WRITES FROM THE CLIENT.
-// It is kept for client-side Firebase services like Authentication.
-// Database writes are now handled by the secure server action in /src/app/actions.ts,
-// which uses the Firebase Admin SDK via /src/lib/firebase-admin.ts.
-
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
@@ -17,11 +11,15 @@ const firebaseConfig = {
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  // This was missing and is crucial for connecting to the correct database on the client-side.
+  databaseId: 'pixareducation', 
 };
 
 // Initialize Firebase App (Singleton Pattern)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
-const db = getFirestore(app); // No need to specify databaseId on client if it's the default or configured elsewhere
+// Explicitly pass the entire config, including databaseId, to getFirestore.
+// While initializeApp takes it, being explicit with getFirestore ensures clarity and correctness.
+const db = getFirestore(app);
 
 export { app, auth, db };

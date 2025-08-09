@@ -10,7 +10,7 @@ export default function FullDataPage() {
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <SectionTitle 
         title="Full Student Data"
-        subtitle="View all records and columns from the student database. This table is read-only."
+        subtitle="View, sort, and paginate through all records from the student database."
       />
       <Card>
         <CardContent className="p-0">

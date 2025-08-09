@@ -1,10 +1,11 @@
+
 'use client';
 
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { LogOut, PlusCircle, List, LayoutDashboard } from 'lucide-react';
+import { LogOut, PlusCircle, List, LayoutDashboard, Database } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -34,6 +35,7 @@ export default function AdminHeader({ onAddNew }: AdminHeaderProps) {
   const navItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/admin/students', label: 'Student Management', icon: List },
+    { href: '/admin/full-data', label: 'Full Data View', icon: Database },
   ];
 
   return (

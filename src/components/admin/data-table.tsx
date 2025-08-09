@@ -33,8 +33,9 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
   const [assignedToFilter, setAssignedToFilter] = useState('all');
 
   useEffect(() => {
-    // This real-time listener is restored to ensure the student list is always up-to-date.
-    // It's a trade-off for functionality until a more advanced pagination/caching system is built.
+    // This real-time listener loads all students for client-side filtering.
+    // This is suitable for a manageable number of students but could be optimized
+    // with server-side filtering (e.g., using Algolia or Firestore queries) for very large datasets.
     const q = query(collection(db, 'students'), orderBy('timestamp', 'desc'));
     const unsubscribe = onSnapshot(
       q,
