@@ -6,53 +6,13 @@ import { DataTable } from '@/components/admin/data-table';
 import { StudentForm } from '@/components/admin/student-form';
 import type { Student } from '@/lib/data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Users, AlertTriangle } from 'lucide-react';
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { Users, AlertTriangle, Info } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 
 export default function StudentManagementPage() {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
-  const [adminName, setAdminName] = useState('');
-  const [isNamePromptOpen, setIsNamePromptOpen] = useState(false);
-  const [nameInput, setNameInput] = useState('');
-  const [showData, setShowData] = useState(false);
-  const { toast } = useToast();
 
-  useEffect(() => {
-    // Check if the admin name has been set in the current session
-    const sessionAdminName = sessionStorage.getItem('adminName');
-    if (sessionAdminName) {
-      setAdminName(sessionAdminName);
-      setShowData(true);
-    } else {
-      // If no name, open the prompt
-      setIsNamePromptOpen(true);
-    }
-  }, []);
-
-  const handleNameSubmit = () => {
-    if (nameInput.trim()) {
-      const formattedName = nameInput.trim();
-      setAdminName(formattedName);
-      sessionStorage.setItem('adminName', formattedName); // Store in session storage
-      setIsNamePromptOpen(false);
-      setShowData(true);
-      toast({
-        title: `Welcome, ${formattedName}!`,
-        description: "Please remember the usage guidelines for this page.",
-      });
-    }
-  };
-  
   const handleRowSelect = (student: Student) => {
     setSelectedStudent(student);
   };
@@ -85,57 +45,18 @@ export default function StudentManagementPage() {
     };
   }, []);
 
-  // Show a loading/prompt state until the admin name is set
-  if (!showData) {
-    return (
-       <AlertDialog open={isNamePromptOpen} onOpenChange={setIsNamePromptOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Welcome to Student Management</AlertDialogTitle>
-            <AlertDialogDescription>
-              To begin your session, please enter your name.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-           <Input 
-              placeholder="Your Name"
-              value={nameInput}
-              onChange={(e) => setNameInput(e.target.value)}
-              onKeyDown={(e) => {
-                  if (e.key === 'Enter') handleNameSubmit();
-              }}
-           />
-          <AlertDialogFooter>
-            <Button onClick={handleNameSubmit} disabled={!nameInput.trim()}>
-              Start Session
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
-  }
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       {/* Welcome and Warning Section */}
-      <Card className="bg-destructive/10 border-destructive/50">
-        <CardHeader>
-           <CardTitle className="text-destructive flex items-center">
-                <AlertTriangle className="h-6 w-6 mr-2"/>
-                Important Usage Warning
-            </CardTitle>
-          <CardDescription className="text-destructive/90">
-             Welcome, <span className="font-bold">{adminName}</span>. This page loads the 20 most recent students by default to save costs.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-            <p className="text-lg font-bold text-destructive">
-               USE THE SEARCH BAR FOR OLDER RECORDS.
-            </p>
-            <p className="text-sm text-destructive/80">
-              To avoid unnecessary database reads, only the newest students are shown initially. Use the search to find any specific student in the entire database. Please avoid reloading the page frequently.
-            </p>
-        </CardContent>
-      </Card>
+       <Alert className="bg-primary/10 border-primary/20 text-primary-foreground">
+        <Info className="h-5 w-5 text-primary" />
+        <AlertTitle className="font-semibold text-primary">Welcome to the Student Management Dashboard!</AlertTitle>
+        <AlertDescription className="text-foreground/80">
+          To ensure fast load times and keep database costs low, this page displays the 20 newest student records by default.
+          <span className="font-semibold block mt-1">To find any specific student, please use the search bar below.</span>
+        </AlertDescription>
+      </Alert>
 
 
       {/* Student Management Table and Form */}
