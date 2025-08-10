@@ -37,7 +37,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  // Listener for the initial 20 newest students
+  // Listener for the initial 20 newest students, correctly sorted
   useEffect(() => {
     setLoading(true);
     const q = query(collection(db, 'students'), orderBy('timestamp', 'desc'), limit(20));
@@ -75,6 +75,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
 
     try {
       // Query by lowercase searchableName for case-insensitive search
+      // The 'searchableName' field should be created/updated in the StudentForm component
       const q = query(
         collection(db, 'students'), 
         where('searchableName', '>=', searchTerm.toLowerCase()),
@@ -86,6 +87,14 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
       querySnapshot.forEach((doc) => {
         studentsData.push({ id: doc.id, ...doc.data() } as Student);
       });
+      // Sort search results by timestamp as well for consistency
+      studentsData.sort((a, b) => {
+        if (a.timestamp && b.timestamp) {
+            return b.timestamp.toMillis() - a.timestamp.toMillis();
+        }
+        return 0;
+      });
+
       setStudents(studentsData);
     } catch (error) {
       console.error("Error searching students: ", error);
