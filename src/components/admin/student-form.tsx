@@ -70,6 +70,15 @@ const DetailItem = ({ icon: Icon, label, value, valueClassName }: { icon: React.
   </div>
 );
 
+// Helper function to safely convert a date value to a Date object
+// It handles Firestore Timestamps, JS Date objects, and null/undefined values.
+const safeToDate = (dateValue: any): Date | null => {
+  if (!dateValue) return null;
+  if (dateValue.toDate) return dateValue.toDate(); // It's a Firestore Timestamp
+  if (dateValue instanceof Date) return dateValue; // It's already a JS Date
+  return null;
+};
+
 export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: StudentFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -98,8 +107,8 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
       form.reset({
         ...defaultValues,
         ...student,
-        serviceFeePaidDate: student.serviceFeePaidDate ? student.serviceFeePaidDate.toDate() : null,
-        visaStatusUpdateDate: student.visaStatusUpdateDate ? student.visaStatusUpdateDate.toDate() : null,
+        serviceFeePaidDate: safeToDate(student.serviceFeePaidDate),
+        visaStatusUpdateDate: safeToDate(student.visaStatusUpdateDate),
       });
       setIsEditing(isNewStudent); // Automatically enter edit mode for new students
     }
@@ -261,6 +270,11 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
       );
   }
 
+  // Use the safeToDate helper for display purposes as well
+  const displayTimestamp = safeToDate(student?.timestamp);
+  const displayServiceFeeDate = safeToDate(student?.serviceFeePaidDate);
+  const displayVisaStatusDate = safeToDate(student?.visaStatusUpdateDate);
+
   return (
     <Card className="h-full flex flex-col">
         <CardHeader>
@@ -308,10 +322,10 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {/* Assigned To is now in the header */}
                     <DetailItem icon={ShieldQuestion} label="Visa Status" value={<Badge variant={getVisaStatusBadgeVariant(student?.visaStatus)}>{student?.visaStatus}</Badge>} />
-                    {student?.visaStatusUpdateDate && <DetailItem icon={CalendarDays} label="Visa Status Date" value={format(student.visaStatusUpdateDate.toDate(), 'PPP')} />}
+                    {displayVisaStatusDate && <DetailItem icon={CalendarDays} label="Visa Status Date" value={format(displayVisaStatusDate, 'PPP')} />}
                     <DetailItem icon={CircleDollarSign} label="Service Fee Status" value={<Badge variant={getFeeStatusBadgeVariant(student?.serviceFeeStatus)}>{student?.serviceFeeStatus}</Badge>} />
-                    {student?.serviceFeePaidDate && <DetailItem icon={CalendarDays} label="Fee Paid Date" value={format(student.serviceFeePaidDate.toDate(), 'PPP')} />}
-                    <DetailItem icon={CalendarDays} label="Date Added" value={student?.timestamp ? format(student.timestamp.toDate(), 'PPP, p') : 'N/A'} />
+                    {displayServiceFeeDate && <DetailItem icon={CalendarDays} label="Fee Paid Date" value={format(displayServiceFeeDate, 'PPP')} />}
+                    <DetailItem icon={CalendarDays} label="Date Added" value={displayTimestamp ? format(displayTimestamp, 'PPP, p') : 'N/A'} />
                  </div>
               </div>
         </CardContent>
