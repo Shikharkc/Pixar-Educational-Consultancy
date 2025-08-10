@@ -1,12 +1,15 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   collection,
   query,
   orderBy,
   onSnapshot,
+  limit,
+  where,
+  getDocs
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Student, counselorNames } from '@/lib/data';
@@ -18,8 +21,9 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Loader2 } from 'lucide-react';
 
 interface DataTableProps {
   onRowSelect: (student: Student) => void;
@@ -30,62 +34,67 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [assignedToFilter, setAssignedToFilter] = useState('all');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
 
+  // Listener for the initial 20 newest students
   useEffect(() => {
-    // This real-time listener loads all students for client-side filtering.
-    // This is suitable for a manageable number of students but could be optimized
-    // with server-side filtering (e.g., using Algolia or Firestore queries) for very large datasets.
-    const q = query(collection(db, 'students'), orderBy('timestamp', 'desc'));
+    const q = query(collection(db, 'students'), orderBy('timestamp', 'desc'), limit(20));
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
-        const studentsData: Student[] = [];
-        querySnapshot.forEach((doc) => {
-          studentsData.push({ id: doc.id, ...doc.data() } as Student);
-        });
-        setStudents(studentsData);
-        setLoading(false);
+        if (!searchTerm) { // Only update if not currently searching
+          const studentsData: Student[] = [];
+          querySnapshot.forEach((doc) => {
+            studentsData.push({ id: doc.id, ...doc.data() } as Student);
+          });
+          setStudents(studentsData);
+          setLoading(false);
+        }
       },
       (error) => {
-        console.error("Error fetching students: ", error);
+        console.error("Error fetching initial students: ", error);
         setLoading(false);
       }
     );
 
     return () => unsubscribe();
-  }, []);
+  }, [searchTerm]);
 
-  const filteredAndSortedStudents = useMemo(() => {
-    // Start with a copy of the students array
-    let filteredStudents = [...students];
-
-    // Apply search filter
-    if (searchTerm) {
-      filteredStudents = filteredStudents.filter(student =>
-        student.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Apply counselor filter
-    if (assignedToFilter !== 'all') {
-      filteredStudents = filteredStudents.filter(student => student.assignedTo === assignedToFilter);
+  // Function to handle full database search
+  const handleSearch = useCallback(async () => {
+    if (!searchTerm.trim()) {
+      // If search term is cleared, the useEffect will handle reverting to the initial list
+      return;
     }
     
-    // Sort the final list
-    return filteredStudents.sort((a, b) => {
-      // Prioritize "Unassigned" students first
-      if (a.assignedTo === 'Unassigned' && b.assignedTo !== 'Unassigned') return -1;
-      if (a.assignedTo !== 'Unassigned' && b.assignedTo === 'Unassigned') return 1;
-      // Then sort by timestamp descending (newest first)
-      const dateA = a.timestamp?.toDate() ?? new Date(0);
-      const dateB = b.timestamp?.toDate() ?? new Date(0);
-      return dateB.getTime() - dateA.getTime();
-    });
+    setIsSearching(true);
+    setSearchError(null);
+    setLoading(true);
 
-  }, [students, searchTerm, assignedToFilter]);
-  
+    try {
+      // Query by lowercase searchableName for case-insensitive search
+      const q = query(
+        collection(db, 'students'), 
+        where('searchableName', '>=', searchTerm.toLowerCase()),
+        where('searchableName', '<=', searchTerm.toLowerCase() + '\uf8ff')
+      );
+      
+      const querySnapshot = await getDocs(q);
+      const studentsData: Student[] = [];
+      querySnapshot.forEach((doc) => {
+        studentsData.push({ id: doc.id, ...doc.data() } as Student);
+      });
+      setStudents(studentsData);
+    } catch (error) {
+      console.error("Error searching students: ", error);
+      setSearchError("Failed to perform search. Please try again.");
+    } finally {
+      setIsSearching(false);
+      setLoading(false);
+    }
+  }, [searchTerm]);
+
   const getFeeStatusBadgeVariant = (status: Student['serviceFeeStatus']) => {
     switch (status) {
       case 'Paid': return 'default';
@@ -98,28 +107,24 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
   return (
     <div className="space-y-4">
        <div className="px-4 pt-2 space-y-2">
-            <Input
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
-            />
             <div className="flex items-center space-x-2">
-                <label className="text-sm font-medium shrink-0">Assigned To:</label>
-                <Select value={assignedToFilter} onValueChange={setAssignedToFilter}>
-                    <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Filter by counselor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="all">All Counselors</SelectItem>
-                        {counselorNames.map(name => (
-                            <SelectItem key={name} value={name}>{name}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
+              <Input
+                  placeholder="Search full database by name..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+                  className="w-full"
+              />
+              <Button onClick={handleSearch} disabled={isSearching || !searchTerm}>
+                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Search'}
+              </Button>
             </div>
+            <p className="text-xs text-muted-foreground px-1">
+              {searchTerm ? `Showing results for "${searchTerm}".` : 'Showing 20 newest students. Use search to find anyone.'}
+            </p>
        </div>
        <div className="max-h-[calc(100vh-350px)] overflow-auto">
+        {searchError && <p className="text-destructive text-center p-4">{searchError}</p>}
         <Table>
           <TableBody>
             {loading ? (
@@ -131,8 +136,8 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
                   </TableCell>
                 </TableRow>
               ))
-            ) : filteredAndSortedStudents.length > 0 ? (
-              filteredAndSortedStudents.map((student) => (
+            ) : students.length > 0 ? (
+              students.map((student) => (
                 <TableRow 
                   key={student.id} 
                   onClick={() => onRowSelect(student)}
@@ -157,7 +162,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
             ) : (
               <TableRow>
                 <TableCell className="h-24 text-center">
-                  No results found.
+                  No students found.
                 </TableCell>
               </TableRow>
             )}
