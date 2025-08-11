@@ -12,6 +12,8 @@
  *    - Count of new students per month over the last 12 months.
  *    - Count of students assigned to each counselor.
  *    - Count of students by service fee status.
+ *    - Count of students by last completed education level.
+ *    - Count of students by English proficiency test status.
  * 4. Write this aggregated data to a single document: 'metrics/dashboard'.
  *
  * This allows the admin dashboard to load instantly by reading only one document,
@@ -74,11 +76,13 @@ async function aggregateStudentStats() {
     // Initialize stats object
     const stats = {
       totalStudents: 0,
-      studentsByCountry: {} as { [country: string]: number },
+      studentsByDestination: {} as { [country: string]: number },
       visaStatusCounts: {} as { [status: string]: number },
       monthlyAdmissions: {} as { [month: string]: number },
       studentsByCounselor: {} as { [counselor: string]: number },
       serviceFeeStatusCounts: {} as { [status: string]: number },
+      studentsByEducation: {} as { [education: string]: number },
+      studentsByEnglishTest: {} as { [test: string]: number },
     };
 
     const twelveMonthsAgo = new Date();
@@ -92,7 +96,7 @@ async function aggregateStudentStats() {
 
       // Count by country
       const country = student.preferredStudyDestination || 'N/A';
-      stats.studentsByCountry[country] = (stats.studentsByCountry[country] || 0) + 1;
+      stats.studentsByDestination[country] = (stats.studentsByDestination[country] || 0) + 1;
       
       // Count by visa status
       const visaStatus = student.visaStatus || 'Not Applied';
@@ -112,6 +116,14 @@ async function aggregateStudentStats() {
       // Count by service fee status
       const feeStatus = student.serviceFeeStatus || 'Unpaid';
       stats.serviceFeeStatusCounts[feeStatus] = (stats.serviceFeeStatusCounts[feeStatus] || 0) + 1;
+
+      // Count by education level
+      const education = student.lastCompletedEducation || 'N/A';
+      stats.studentsByEducation[education] = (stats.studentsByEducation[education] || 0) + 1;
+      
+      // Count by English test status
+      const test = student.englishProficiencyTest || 'N/A';
+      stats.studentsByEnglishTest[test] = (stats.studentsByEnglishTest[test] || 0) + 1;
     });
 
     // Write the aggregated stats to the summary document
