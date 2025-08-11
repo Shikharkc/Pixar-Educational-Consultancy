@@ -27,7 +27,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { counselorNames } from '@/lib/data.tsx';
+import { counselorNames, studyDestinationOptions } from '@/lib/data.tsx';
 
 const PAGE_SIZE = 50;
 
@@ -44,6 +44,7 @@ export default function StudentsAllPage() {
   const [visaStatusFilter, setVisaStatusFilter] = useState('all');
   const [feeStatusFilter, setFeeStatusFilter] = useState('all');
   const [counselorFilter, setCounselorFilter] = useState('all');
+  const [destinationFilter, setDestinationFilter] = useState('all');
 
   const { toast } = useToast();
   
@@ -51,7 +52,8 @@ export default function StudentsAllPage() {
     visaStatus: visaStatusFilter,
     serviceFeeStatus: feeStatusFilter,
     assignedTo: counselorFilter,
-  }), [visaStatusFilter, feeStatusFilter, counselorFilter]);
+    preferredStudyDestination: destinationFilter,
+  }), [visaStatusFilter, feeStatusFilter, counselorFilter, destinationFilter]);
 
   const fetchStudents = useCallback(async (pageDirection: 'next' | 'prev' | 'first' = 'first', newFilters = filters) => {
     setIsLoading(true);
@@ -68,6 +70,9 @@ export default function StudentsAllPage() {
       }
       if (newFilters.assignedTo !== 'all') {
         constraints.push(where('assignedTo', '==', newFilters.assignedTo));
+      }
+      if (newFilters.preferredStudyDestination !== 'all') {
+        constraints.push(where('preferredStudyDestination', '==', newFilters.preferredStudyDestination));
       }
 
       let q: Query<DocumentData>;
@@ -121,6 +126,7 @@ export default function StudentsAllPage() {
         visaStatus: visaStatusFilter,
         serviceFeeStatus: feeStatusFilter,
         assignedTo: counselorFilter,
+        preferredStudyDestination: destinationFilter,
     });
   };
 
@@ -134,8 +140,8 @@ export default function StudentsAllPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 mb-6 p-4 border rounded-lg bg-muted/50">
-            <div className="flex-1 space-y-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6 p-4 border rounded-lg bg-muted/50">
+            <div className="space-y-1">
                 <Label htmlFor="visaStatus">Visa Status</Label>
                 <Select value={visaStatusFilter} onValueChange={setVisaStatusFilter}>
                     <SelectTrigger id="visaStatus"><SelectValue /></SelectTrigger>
@@ -148,7 +154,7 @@ export default function StudentsAllPage() {
                     </SelectContent>
                 </Select>
             </div>
-            <div className="flex-1 space-y-1">
+            <div className="space-y-1">
                 <Label htmlFor="feeStatus">Fee Status</Label>
                 <Select value={feeStatusFilter} onValueChange={setFeeStatusFilter}>
                     <SelectTrigger id="feeStatus"><SelectValue /></SelectTrigger>
@@ -160,7 +166,7 @@ export default function StudentsAllPage() {
                     </SelectContent>
                 </Select>
             </div>
-            <div className="flex-1 space-y-1">
+            <div className="space-y-1">
                 <Label htmlFor="counselor">Assigned To</Label>
                 <Select value={counselorFilter} onValueChange={setCounselorFilter}>
                     <SelectTrigger id="counselor"><SelectValue /></SelectTrigger>
@@ -170,8 +176,18 @@ export default function StudentsAllPage() {
                     </SelectContent>
                 </Select>
             </div>
+            <div className="space-y-1">
+                <Label htmlFor="destination">Destination</Label>
+                <Select value={destinationFilter} onValueChange={setDestinationFilter}>
+                    <SelectTrigger id="destination"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                         <SelectItem value="all">All</SelectItem>
+                        {studyDestinationOptions.map(option => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}
+                    </SelectContent>
+                </Select>
+            </div>
              <div className="flex items-end">
-                <Button onClick={handleFilterChange} disabled={isLoading || !isDataLoaded}>
+                <Button onClick={handleFilterChange} disabled={isLoading || !isDataLoaded} className="w-full">
                     <Search className="mr-2 h-4 w-4" /> Apply Filters
                 </Button>
             </div>
@@ -228,5 +244,3 @@ export default function StudentsAllPage() {
     </main>
   );
 }
-
-    

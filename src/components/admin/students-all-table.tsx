@@ -45,13 +45,13 @@ const formatDate = (date: Date | undefined | null) => {
 export const columns: ColumnDef<Student>[] = [
   {
     accessorKey: "fullName",
-    header: "Name",
-    cell: ({ row }) => <div className="font-medium">{row.getValue("fullName")}</div>,
-  },
-  {
-    accessorKey: "email",
-    header: "Email",
-    cell: ({ row }) => <div className="lowercase text-xs">{row.getValue("email")}</div>,
+    header: "Student",
+    cell: ({ row }) => (
+      <div>
+        <div className="font-medium">{row.getValue("fullName")}</div>
+        <div className="text-muted-foreground text-xs">{row.original.email}</div>
+      </div>
+    ),
   },
   {
     accessorKey: "mobileNumber",
@@ -161,5 +161,3 @@ export function StudentsAllTable({ data }: DataTableProps) {
     </div>
   )
 }
-
-    
