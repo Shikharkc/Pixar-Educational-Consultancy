@@ -10,6 +10,8 @@
  *    - Count of students by preferred study destination.
  *    - Count of students by visa status.
  *    - Count of new students per month over the last 12 months.
+ *    - Count of students assigned to each counselor.
+ *    - Count of students by service fee status.
  * 4. Write this aggregated data to a single document: 'metrics/dashboard'.
  *
  * This allows the admin dashboard to load instantly by reading only one document,
@@ -75,6 +77,8 @@ async function aggregateStudentStats() {
       studentsByCountry: {} as { [country: string]: number },
       visaStatusCounts: {} as { [status: string]: number },
       monthlyAdmissions: {} as { [month: string]: number },
+      studentsByCounselor: {} as { [counselor: string]: number },
+      serviceFeeStatusCounts: {} as { [status: string]: number },
     };
 
     const twelveMonthsAgo = new Date();
@@ -100,6 +104,14 @@ async function aggregateStudentStats() {
         const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         stats.monthlyAdmissions[monthYear] = (stats.monthlyAdmissions[monthYear] || 0) + 1;
       }
+
+      // Count by assigned counselor
+      const counselor = student.assignedTo || 'Unassigned';
+      stats.studentsByCounselor[counselor] = (stats.studentsByCounselor[counselor] || 0) + 1;
+
+      // Count by service fee status
+      const feeStatus = student.serviceFeeStatus || 'Unpaid';
+      stats.serviceFeeStatusCounts[feeStatus] = (stats.serviceFeeStatusCounts[feeStatus] || 0) + 1;
     });
 
     // Write the aggregated stats to the summary document
@@ -118,4 +130,3 @@ async function aggregateStudentStats() {
 aggregateStudentStats().catch(error => {
   console.error("❌ An unexpected error occurred during the script execution:", error);
 });
-

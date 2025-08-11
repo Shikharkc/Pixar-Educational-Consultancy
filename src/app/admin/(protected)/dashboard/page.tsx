@@ -6,7 +6,7 @@ import { doc, onSnapshot, FirestoreError } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert, LineChart } from 'lucide-react';
+import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert, LineChart, PieChart as PieChartIcon, DollarSign } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Define the structure for the summary stats document
@@ -15,11 +15,15 @@ interface DashboardStats {
   studentsByCountry: { [country: string]: number };
   visaStatusCounts: { [status: string]: number };
   monthlyAdmissions: { [month: string]: number };
+  studentsByCounselor: { [counselor: string]: number };
+  serviceFeeStatusCounts: { [status: string]: number };
 }
 
 // Define colors for the charts
 const PIE_CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
-const BAR_CHART_COLOR = 'hsl(var(--chart-1))';
+const BAR_CHART_COLOR_PRIMARY = 'hsl(var(--chart-1))';
+const BAR_CHART_COLOR_SECONDARY = 'hsl(var(--chart-2))';
+
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -71,6 +75,17 @@ export default function DashboardPage() {
     return sortedData;
   }, [stats]);
 
+  const studentsByCounselorData = useMemo(() => {
+    if (!stats?.studentsByCounselor) return [];
+    return Object.entries(stats.studentsByCounselor).map(([name, value]) => ({ name, students: value })).sort((a, b) => b.students - a.students);
+  }, [stats]);
+
+  const serviceFeeStatusData = useMemo(() => {
+    if (!stats?.serviceFeeStatusCounts) return [];
+    return Object.entries(stats.serviceFeeStatusCounts).map(([name, value]) => ({ name, value }));
+  }, [stats]);
+
+
   if (loading) {
     return (
       <div className="flex h-[calc(100vh-100px)] w-full items-center justify-center">
@@ -88,7 +103,7 @@ export default function DashboardPage() {
                     <ShieldAlert className="h-4 w-4" />
                     <AlertTitle>Action Required: Firestore Permissions</AlertTitle>
                     <AlertDescription>
-                        The dashboard failed to load due to missing Firestore security rules. Please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and ensure your rules allow authenticated users to read documents.
+                        The dashboard failed to load due to missing Firestore security rules. Please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and ensure your rules allow authenticated users to read documents from the `metrics` collection.
                     </AlertDescription>
                 </Alert>
              ) : error === 'no-data' ? (
@@ -152,12 +167,12 @@ export default function DashboardPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Visa Pending</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Fees Paid</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats?.visaStatusCounts?.Pending || 0}</div>
-            <p className="text-xs text-muted-foreground">Applications currently pending</p>
+            <div className="text-2xl font-bold">{stats?.serviceFeeStatusCounts?.Paid || 0}</div>
+            <p className="text-xs text-muted-foreground">Students with fully paid fees</p>
           </CardContent>
         </Card>
       </div>
@@ -176,21 +191,21 @@ export default function DashboardPage() {
                         <YAxis fontSize={12} tickLine={false} axisLine={false} />
                         <Tooltip />
                         <Legend />
-                        <Bar dataKey="students" fill={BAR_CHART_COLOR} radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="students" fill={BAR_CHART_COLOR_PRIMARY} radius={[4, 4, 0, 0]} />
                     </BarChart>
                  </ResponsiveContainer>
             </CardContent>
         </Card>
         <Card className="col-span-1 lg:col-span-3">
              <CardHeader>
-                <CardTitle className="flex items-center"><BarChart3 className="mr-2 h-5 w-5" />Students by Destination</CardTitle>
-                <CardDescription>Distribution of students across preferred study destinations.</CardDescription>
+                <CardTitle className="flex items-center"><PieChartIcon className="mr-2 h-5 w-5" />Visa Status Distribution</CardTitle>
+                <CardDescription>Breakdown of current student visa statuses.</CardDescription>
             </CardHeader>
             <CardContent>
                 <ResponsiveContainer width="100%" height={350}>
                     <PieChart>
                         <Pie
-                            data={countryChartData}
+                            data={visaStatusChartData}
                             cx="50%"
                             cy="50%"
                             labelLine={false}
@@ -200,13 +215,63 @@ export default function DashboardPage() {
                             nameKey="name"
                             label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                         >
-                        {countryChartData.map((entry, index) => (
+                        {visaStatusChartData.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} />
                         ))}
                         </Pie>
                          <Tooltip />
+                         <Legend />
                     </PieChart>
                 </ResponsiveContainer>
+            </CardContent>
+        </Card>
+      </div>
+       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="col-span-1 lg:col-span-3">
+             <CardHeader>
+                <CardTitle className="flex items-center"><PieChartIcon className="mr-2 h-5 w-5" />Service Fee Status</CardTitle>
+                <CardDescription>Breakdown of student service fee payments.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ResponsiveContainer width="100%" height={350}>
+                    <PieChart>
+                        <Pie
+                            data={serviceFeeStatusData}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            outerRadius={120}
+                            fill="#8884d8"
+                            dataKey="value"
+                            nameKey="name"
+                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                        >
+                        {serviceFeeStatusData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} />
+                        ))}
+                        </Pie>
+                         <Tooltip />
+                         <Legend />
+                    </PieChart>
+                </ResponsiveContainer>
+            </CardContent>
+        </Card>
+        <Card className="col-span-1 lg:col-span-4">
+            <CardHeader>
+                <CardTitle className="flex items-center"><BarChart3 className="mr-2 h-5 w-5" />Student Distribution by Counselor</CardTitle>
+                <CardDescription>Number of students assigned to each counselor.</CardDescription>
+            </CardHeader>
+            <CardContent className="pl-2">
+                 <ResponsiveContainer width="100%" height={350}>
+                    <BarChart data={studentsByCounselorData} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" fontSize={12} />
+                        <YAxis type="category" dataKey="name" fontSize={12} width={80} />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="students" fill={BAR_CHART_COLOR_SECONDARY} radius={[0, 4, 4, 0]} />
+                    </BarChart>
+                 </ResponsiveContainer>
             </CardContent>
         </Card>
       </div>
