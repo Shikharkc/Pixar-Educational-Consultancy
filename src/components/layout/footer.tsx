@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { GraduationCap, Mail, Phone, MapPin, ShieldCheck, FileText, Users, Info, Briefcase as BriefcaseIcon, Newspaper, MessageCircleQuestion } from 'lucide-react'; // Added Newspaper, MessageCircleQuestion
+import { GraduationCap, Mail, Phone, MapPin, ShieldCheck, FileText, Users, Info, Briefcase as BriefcaseIcon, Newspaper, MessageCircleQuestion, UserCog } from 'lucide-react'; // Added UserCog
 
 export default function Footer() {
   const importantLinks = [
@@ -45,7 +45,7 @@ export default function Footer() {
 
           {/* Legal Section */}
           <div>
-            <h3 className="text-lg font-semibold mb-4 font-headline">Legal</h3>
+            <h3 className="text-lg font-semibold mb-4 font-headline">Legal & Admin</h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/privacy-policy" className="flex items-center space-x-2 hover:text-accent transition-colors">
@@ -57,6 +57,12 @@ export default function Footer() {
                 <Link href="/terms-conditions" className="flex items-center space-x-2 hover:text-accent transition-colors">
                   <FileText className="h-4 w-4 flex-shrink-0" />
                   <span>Terms &amp; Conditions</span>
+                </Link>
+              </li>
+              <li>
+                <Link href="/admin/login" className="flex items-center space-x-2 hover:text-accent transition-colors">
+                  <UserCog className="h-4 w-4 flex-shrink-0" />
+                  <span>Admin Login</span>
                 </Link>
               </li>
             </ul>
