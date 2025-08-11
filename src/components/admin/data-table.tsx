@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   collection,
   query,
@@ -24,8 +24,9 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Search, AlertTriangle } from 'lucide-react';
+import { Loader2, Search, AlertTriangle, UserPlus } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
 
 // A simple debounce hook to prevent firing search queries on every keystroke
 const useDebouncedValue = (value: string, delay: number) => {
@@ -53,6 +54,13 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
+  const { toast } = useToast();
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  // Ref to track if it's the initial data load
+  const isInitialLoad = useRef(true);
+  // Ref to store previous student IDs to detect new students
+  const previousStudentIds = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     setLoading(true);
@@ -81,22 +89,48 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
-        const studentsData: Student[] = [];
+        const currentStudents: Student[] = [];
+        const currentStudentIds = new Set<string>();
+
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          studentsData.push({ 
+          currentStudents.push({ 
             id: doc.id,
             ...data,
-            // Convert Firestore Timestamp to JS Date object immediately
             timestamp: data.timestamp?.toDate() 
           } as Student);
+          currentStudentIds.add(doc.id);
         });
+
+        // Check for new students only after the initial load
+        if (!isInitialLoad.current) {
+          const newStudents = currentStudents.filter(s => !previousStudentIds.current.has(s.id));
+          if (newStudents.length > 0 && !debouncedSearchTerm) {
+            newStudents.forEach(newStudent => {
+              toast({
+                title: (
+                  <div className="flex items-center">
+                    <UserPlus className="mr-2 h-5 w-5 text-primary" />
+                    New Student Registered
+                  </div>
+                ),
+                description: `${newStudent.fullName} has been added.`,
+              });
+              audioRef.current?.play().catch(e => console.log("Audio play failed:", e));
+            });
+          }
+        } else {
+          // It's the first load, so don't trigger notifications
+          isInitialLoad.current = false;
+        }
+
+        setStudents(currentStudents);
+        previousStudentIds.current = currentStudentIds; // Update the set of known IDs
         
-        setStudents(studentsData);
-        if (studentsData.length === 0 && debouncedSearchTerm.trim()) {
+        if (currentStudents.length === 0 && debouncedSearchTerm.trim()) {
             setError("No students found matching your search.");
         } else {
-            setError(null); // Clear previous errors if results are found
+            setError(null);
         }
         setLoading(false);
       },
@@ -111,10 +145,9 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
       }
     );
 
-    // Cleanup subscription on component unmount or when search term changes
     return () => unsubscribe();
     
-  }, [debouncedSearchTerm]);
+  }, [debouncedSearchTerm, toast]);
 
 
   const getFeeStatusBadgeVariant = (status: Student['serviceFeeStatus']) => {
@@ -128,6 +161,9 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
 
   return (
     <div className="space-y-4">
+      {/* Hidden audio element for notification sound */}
+      <audio ref={audioRef} src="/sounds/notification.mp3" preload="auto"></audio>
+
       <div className="px-4 pt-2 space-y-2">
         <div className="flex items-center space-x-2">
           <div className="relative w-full">
