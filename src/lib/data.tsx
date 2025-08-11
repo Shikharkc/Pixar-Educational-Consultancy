@@ -1,4 +1,5 @@
 
+
 import React, { Fragment, type ReactNode, type ElementType, type SVGProps } from 'react';
 import { 
   Award as AwardIconLucide,
@@ -37,6 +38,37 @@ import {
   Instagram,
   Youtube,
 } from 'lucide-react';
+import { Timestamp } from 'firebase/firestore';
+
+export interface Student {
+  id: string;
+  timestamp: Timestamp;
+  fullName: string;
+  email: string;
+  mobileNumber: string;
+  visaStatus: 'Pending' | 'Approved' | 'Rejected' | 'Not Applied';
+  serviceFeeStatus: 'Paid' | 'Unpaid' | 'Partial';
+  assignedTo: string;
+  // Optional fields from contact form and admin panel
+  lastCompletedEducation?: string;
+  englishProficiencyTest?: string;
+  preferredStudyDestination?: string;
+  additionalNotes?: string;
+  // New fields from admin panel
+  serviceFeePaidDate?: Timestamp | null;
+  visaStatusUpdateDate?: Timestamp | null;
+  emergencyContact?: string;
+  collegeUniversityName?: string;
+}
+
+export const counselorNames = [
+  'Unassigned', 
+  'Pradeep Sir', 
+  'Mujal Sir', 
+  'Sabina Mam', 
+  'Pawan Sir', 
+  'Shyam Sir', 
+  'Mamta Miss'];
 
 export interface Testimonial {
   id: string;
@@ -46,14 +78,6 @@ export interface Testimonial {
   avatarUrl?: string;
   dataAiHint?: string;
 }
-export const counselorNames = [
-  'Unassigned', 
-  'Pradeep Sir', 
-  'Mujal Sir', 
-  'Sabina Mam', 
-  'Pawan Sir', 
-  'Shyam Sir', 
-  'Mamta Miss'];
 
 export const testimonials: Testimonial[] = [
   {
@@ -155,10 +179,10 @@ export const visaSuccesses: VisaSuccessesByCountry = {
     { name: "Asif Mohammad", destination: "Midwestern State University, USA", text: "From start to finish, the support was amazing. Highly recommend." },
     { name: "Suvanga Rawal", destination: "University Of Central Arkansas, USA", text: "Thank you for the excellent guidance and for helping me get my US visa." },
     { name: "Aayushma Thapa", destination: "Wright State University, USA", text: "The counselors are knowledgeable and genuinely helpful. Great experience." },
-    { name: "Saroj Oli", destination: "University Of Central Arkansas, USA", text: "A smooth journey to the USA, all thanks to the dedicated team at PixarEdu." },
+    { name: "Saroj Oli", destination: "University Of Central Arkansas , USA", text: "A smooth journey to the USA, all thanks to the dedicated team at PixarEdu." },
     { name: "Jhakku Prasad Chalaune", destination: "University of Central Arkansas, USA", text: "Their visa interview preparation is the best. It made all the difference." },
-    { name: "Nabin Rana", destination: "Arkansas State University, USA", text: "Achieved my goal of studying in the US with PixarEdu's fantastic support." },
-    { name: "Aruna Thapa", destination: "Westcliff University, USA", text: "I am grateful for their professional services which led to my visa approval." },
+    { name: "Nabin Rana", destination: "Arkansas State University , USA", text: "Achieved my goal of studying in the US with PixarEdu's fantastic support." },
+    { name: "Aruna Thapa", destination: "Westcliff University , USA", text: "I am grateful for their professional services which led to my visa approval." },
     { name: "Janam Paijo Gurung", destination: "Southeast Missouri, USA", text: "A reliable consultancy that I would recommend to anyone planning for US studies." },
     { name: "Purnima Dulal", destination: "Southeast Missouri, USA", text: "So happy to have received my visa for the USA. Thank you PixarEdu team!" }
   ],
@@ -709,4 +733,3 @@ export const socialPlatforms = [
   { name: 'YouTube', icon: Youtube, url: 'https://www.youtube.com/@pixareducation', colorClass: 'hover:text-red-600', dataAiHint: 'youtube logo' },
   { name: 'Instagram', icon: Instagram, url: 'https://www.instagram.com/pixar.education?igsh=MXE5ZWJhZ2tmNTMybQ==', colorClass: 'hover:text-pink-500', dataAiHint: 'instagram logo' },
 ];
-

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Share2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { socialPlatforms } from '@/lib/data';
+import { socialPlatforms } from '@/lib/data.tsx';
 
 export default function SocialSidebar() {
   const [isOpen, setIsOpen] = useState(false);

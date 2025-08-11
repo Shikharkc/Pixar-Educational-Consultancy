@@ -14,7 +14,7 @@ import {
   DocumentData,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Student } from '@/lib/data';
+import { Student } from '@/lib/data.tsx';
 import {
   Table,
   TableBody,

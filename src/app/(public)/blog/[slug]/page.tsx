@@ -1,4 +1,3 @@
-
 import { getAllPostIds, getPostData, type PostData, getAllPosts } from '@/lib/posts';
 import { notFound } from 'next/navigation';
 import SectionTitle from '@/components/ui/section-title';

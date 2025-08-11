@@ -1,4 +1,3 @@
-
 import { getAllPosts, type PostData } from '@/lib/posts';
 import SectionTitle from '@/components/ui/section-title';
 import BlogListWithFilter from '@/components/blog/BlogListWithFilter'; // New client component

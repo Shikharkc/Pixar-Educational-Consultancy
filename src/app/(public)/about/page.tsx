@@ -1,5 +1,3 @@
-
-
 'use client';
 import Image from 'next/image';
 import Link from 'next/link'; 
@@ -37,7 +35,6 @@ export default function AboutPage() {
     const bioLineClampClass = isPradeep ? "line-clamp-3" : "line-clamp-2"; 
 
     const animatedBorderContainerBaseClasses = "relative mx-auto shadow-sm transition-all duration-300 ease-out group-hover:shadow-lg group-hover:scale-105";
-    const imageDisplayClasses = "";
 
 
     return (
@@ -52,9 +49,9 @@ export default function AboutPage() {
               <Image
                 src={member.imageUrl}
                 alt={member.name}
-                layout="fill"
-                objectFit="cover"
-                className={imageDisplayClasses}
+                width={128}
+                height={128}
+                className="w-full h-full object-cover"
                 data-ai-hint={member.dataAiHint || 'professional portrait'}
               />
             </div>
@@ -86,6 +83,7 @@ export default function AboutPage() {
               alt="Pixar Educational Consultancy Office or Team"
               layout="fill"
               objectFit="cover"
+              priority
               className="rounded-lg"
               data-ai-hint="modern office students"
             />
@@ -203,7 +201,7 @@ export default function AboutPage() {
                           src={accred.logoUrl} 
                           alt={accred.name}
                           layout="fill"
-                          objectFit="contain" 
+                          objectFit="contain"
                           data-ai-hint={accred.dataAiHint || 'accreditation logo'}
                           className="transition-transform duration-300 ease-out group-hover:scale-105"
                         />

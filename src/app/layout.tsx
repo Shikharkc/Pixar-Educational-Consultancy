@@ -1,7 +1,23 @@
 import type { Metadata } from 'next';
+import { Inter, Source_Code_Pro } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import FirebaseInitializer from '@/components/firebase/initializer';
+
+// Font setup using next/font
+const inter = Inter({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+  weight: ['400', '500', '600', '700'],
+});
+
+const sourceCodePro = Source_Code_Pro({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-source-code-pro',
+  weight: ['400', '500'],
+});
 
 export const metadata: Metadata = {
   title: 'Pixar Educational Consultancy',
@@ -14,12 +30,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={`${inter.variable} ${sourceCodePro.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet" />
         <link rel="alternate" type="application/rss+xml" title="RSS Feed for Pixar Educational Consultancy Blog" href="/feed.xml" />
       </head>
       <body className="font-body antialiased">

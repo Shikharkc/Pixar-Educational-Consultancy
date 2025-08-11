@@ -6,8 +6,8 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription }
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
-import { services } from '@/lib/data';
-import type { Service } from '@/lib/data';
+import { services } from '@/lib/data.tsx';
+import type { Service } from '@/lib/data.tsx';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
 import { CheckCircle } from 'lucide-react';
