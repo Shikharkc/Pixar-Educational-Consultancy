@@ -1,0 +1,121 @@
+
+/**
+ * One-time script to aggregate student data into a summary document for the dashboard.
+ *
+ * This script will:
+ * 1. Connect to your Firestore database.
+ * 2. Fetch ALL student documents from the 'students' collection.
+ * 3. Calculate key metrics:
+ *    - Total number of students.
+ *    - Count of students by preferred study destination.
+ *    - Count of students by visa status.
+ *    - Count of new students per month over the last 12 months.
+ * 4. Write this aggregated data to a single document: 'metrics/dashboard'.
+ *
+ * This allows the admin dashboard to load instantly by reading only one document,
+ * instead of querying the entire student collection, which is much more efficient and scalable.
+ *
+ * How to run:
+ * 1. Ensure your Firebase project credentials are set up correctly in
+ *    'firebase-service-account.json' in the root of your project.
+ * 2. Run the script from your project's root directory using the command:
+ *    `npx tsx scripts/aggregate-stats.ts`
+ */
+
+import { initializeApp, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import fs from 'fs';
+import path from 'path';
+
+// --- Configuration ---
+const SERVICE_ACCOUNT_PATH = path.join(process.cwd(), 'firebase-service-account.json');
+const DATABASE_ID = 'pixareducation';
+const SUMMARY_DOC_PATH = 'metrics/dashboard';
+// --- End Configuration ---
+
+// Initialize Firebase Admin SDK
+try {
+  if (!fs.existsSync(SERVICE_ACCOUNT_PATH)) {
+    throw new Error(`Service account key not found at: ${SERVICE_ACCOUNT_PATH}\nPlease follow the setup instructions in the script file.`);
+  }
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const serviceAccount = require(SERVICE_ACCOUNT_PATH);
+  
+  initializeApp({
+    credential: cert(serviceAccount),
+    databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`,
+  });
+
+  console.log('✅ Firebase Admin SDK initialized successfully.');
+
+} catch (error) {
+  console.error("❌ Error initializing Firebase Admin SDK:", error);
+  process.exit(1);
+}
+
+const db = getFirestore(DATABASE_ID);
+console.log(`✅ Connected to Firestore database: ${DATABASE_ID}`);
+
+async function aggregateStudentStats() {
+  console.log('🔵 Starting dashboard data aggregation...');
+
+  try {
+    const studentsSnapshot = await db.collection('students').get();
+    
+    if (studentsSnapshot.empty) {
+      console.log('⚠️ No student records found. Cannot generate dashboard stats.');
+      return;
+    }
+    
+    console.log(`🔍 Processing ${studentsSnapshot.size} student records...`);
+
+    // Initialize stats object
+    const stats = {
+      totalStudents: 0,
+      studentsByCountry: {} as { [country: string]: number },
+      visaStatusCounts: {} as { [status: string]: number },
+      monthlyAdmissions: {} as { [month: string]: number },
+    };
+
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+    studentsSnapshot.forEach(doc => {
+      const student = doc.data();
+      
+      // Increment total students
+      stats.totalStudents++;
+
+      // Count by country
+      const country = student.preferredStudyDestination || 'N/A';
+      stats.studentsByCountry[country] = (stats.studentsByCountry[country] || 0) + 1;
+      
+      // Count by visa status
+      const visaStatus = student.visaStatus || 'Not Applied';
+      stats.visaStatusCounts[visaStatus] = (stats.visaStatusCounts[visaStatus] || 0) + 1;
+
+      // Count monthly admissions
+      if (student.timestamp && student.timestamp.toDate() > twelveMonthsAgo) {
+        const date = student.timestamp.toDate();
+        const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        stats.monthlyAdmissions[monthYear] = (stats.monthlyAdmissions[monthYear] || 0) + 1;
+      }
+    });
+
+    // Write the aggregated stats to the summary document
+    const summaryDocRef = db.doc(SUMMARY_DOC_PATH);
+    await summaryDocRef.set(stats, { merge: true }); // Use set with merge to create or overwrite
+
+    console.log(`✅ Successfully aggregated stats and saved to '${SUMMARY_DOC_PATH}'.`);
+    console.log('📊 Dashboard data is now up-to-date.');
+    console.log('🔵 Script finished.');
+
+  } catch (error) {
+    console.error('❌ An error occurred during aggregation:', error);
+  }
+}
+
+aggregateStudentStats().catch(error => {
+  console.error("❌ An unexpected error occurred during the script execution:", error);
+});
+

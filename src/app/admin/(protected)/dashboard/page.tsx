@@ -2,12 +2,11 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { doc, onSnapshot, collection, getDocs, FirestoreError } from 'firebase/firestore';
+import { doc, onSnapshot, FirestoreError } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert } from 'lucide-react';
-import type { Student } from '@/lib/data';
+import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert, LineChart } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 // Define the structure for the summary stats document
@@ -22,91 +21,34 @@ interface DashboardStats {
 const PIE_CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
 const BAR_CHART_COLOR = 'hsl(var(--chart-1))';
 
-// --- Data Processing Functions ---
-// These functions are used as a fallback if the /metrics/dashboard document doesn't exist.
-const processStudentDataForStats = (students: Student[]): DashboardStats => {
-  const studentsByCountry: { [country: string]: number } = {};
-  const visaStatusCounts: { [status: string]: number } = { 'Approved': 0, 'Rejected': 0, 'Pending': 0, 'Not Applied': 0 };
-  const monthlyAdmissions: { [month: string]: number } = {};
-
-  students.forEach(student => {
-    // Country count
-    const country = student.preferredStudyDestination || 'N/A';
-    studentsByCountry[country] = (studentsByCountry[country] || 0) + 1;
-
-    // Visa status count
-    const visaStatus = student.visaStatus || 'Not Applied';
-    if (visaStatusCounts.hasOwnProperty(visaStatus)) {
-        visaStatusCounts[visaStatus]++;
-    }
-
-    // Monthly admissions count (for the last 12 months)
-    if (student.timestamp) {
-      const date = student.timestamp.toDate();
-      const now = new Date();
-      if (now.getTime() - date.getTime() < 365 * 24 * 60 * 60 * 1000) {
-        const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        monthlyAdmissions[monthYear] = (monthlyAdmissions[monthYear] || 0) + 1;
-      }
-    }
-  });
-
-  return {
-    totalStudents: students.length,
-    studentsByCountry,
-    visaStatusCounts,
-    monthlyAdmissions,
-  };
-};
-
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isUsingFallback, setIsUsingFallback] = useState(false);
 
   useEffect(() => {
-    // Listen to the efficient summary document at /metrics/dashboard
+    // This component now ONLY listens to the efficient summary document.
     const statsDocRef = doc(db, 'metrics', 'dashboard');
+    
     const unsubscribe = onSnapshot(statsDocRef, (doc) => {
       if (doc.exists()) {
-        setIsUsingFallback(false);
         setError(null);
         setStats(doc.data() as DashboardStats);
-        setLoading(false);
       } else {
-        // If the summary doc doesn't exist, use the fallback method
-        setIsUsingFallback(true);
-        fetchAllStudentsAndCalculateStats();
+        // The summary document does not exist.
+        setError('no-data');
+        setStats(null); // Clear any old stats
       }
+      setLoading(false);
     }, (err: FirestoreError) => {
       if (err.code === 'permission-denied') {
-          setError('permission-denied');
+        setError('permission-denied');
       } else {
-          console.error("Error listening to stats document:", err);
-          setError("An unknown error occurred while loading dashboard data.");
+        console.error("Error listening to stats document:", err);
+        setError("An unknown error occurred while loading dashboard data.");
       }
       setLoading(false);
     });
-
-    const fetchAllStudentsAndCalculateStats = async () => {
-        try {
-            const querySnapshot = await getDocs(collection(db, 'students'));
-            const studentsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
-            const calculatedStats = processStudentDataForStats(studentsData);
-            setStats(calculatedStats);
-            setError(null);
-        } catch (err) {
-            if (err instanceof FirestoreError && err.code === 'permission-denied') {
-                setError('permission-denied');
-            } else {
-                 console.error("Error fetching all students:", err);
-                 setError("Failed to calculate stats from student data.");
-            }
-        } finally {
-            setLoading(false);
-        }
-    };
     
     return () => unsubscribe();
   }, []);
@@ -138,52 +80,45 @@ export default function DashboardPage() {
     );
   }
 
-  if (error === 'permission-denied') {
-     return (
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-            <Alert variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle>Action Required: Firestore Permissions</AlertTitle>
-                <AlertDescription>
-                    <p className="font-semibold">The dashboard failed to load due to missing Firestore security rules.</p>
-                    <p>To fix this, please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and ensure your rules allow authenticated users to read the `/metrics/dashboard` document. Your rules should include a block similar to this:</p>
-                    <pre className="mt-2 p-2 bg-black/80 text-white rounded-md text-xs overflow-x-auto">
-                        <code>
-{`    match /metrics/dashboard {
-      allow read: if request.auth != null;
-    }`}
-                        </code>
-                    </pre>
-                    <p className="mt-2">After adding or confirming this rule and publishing the changes, please refresh this page.</p>
-                </AlertDescription>
-            </Alert>
-        </main>
-     )
-  }
-
   if (error) {
      return (
         <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-            <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-            </Alert>
+             {error === 'permission-denied' ? (
+                <Alert variant="destructive">
+                    <ShieldAlert className="h-4 w-4" />
+                    <AlertTitle>Action Required: Firestore Permissions</AlertTitle>
+                    <AlertDescription>
+                        The dashboard failed to load due to missing Firestore security rules. Please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and ensure your rules allow authenticated users to read documents.
+                    </AlertDescription>
+                </Alert>
+             ) : error === 'no-data' ? (
+                <Alert>
+                    <LineChart className="h-4 w-4" />
+                    <AlertTitle>No Dashboard Data Found</AlertTitle>
+                    <AlertDescription>
+                        <p>The dashboard is ready, but the summary data hasn't been generated yet. This is expected on first run.</p>
+                        <p className="font-semibold mt-2">To populate the dashboard, please run the following command in your terminal:</p>
+                        <pre className="mt-2 p-2 bg-muted text-foreground rounded-md text-sm overflow-x-auto">
+                            <code>
+                                npx tsx scripts/aggregate-stats.ts
+                            </code>
+                        </pre>
+                        <p className="mt-2">Run this command whenever you want to see the latest statistics. After the script finishes, refresh this page.</p>
+                    </AlertDescription>
+                </Alert>
+             ) : (
+                <Alert variant="destructive">
+                    <AlertTriangle className="h-4 w-4" />
+                    <AlertTitle>Error</AlertTitle>
+                    <AlertDescription>An unknown error occurred: {error}</AlertDescription>
+                </Alert>
+             )}
         </main>
-     )
+     );
   }
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-        {isUsingFallback && (
-             <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Performance Warning: Using Fallback Data</AlertTitle>
-                <AlertDescription>
-                The dashboard is currently calculating stats by reading ALL student records because the summary document at `/metrics/dashboard` was not found. This can be slow and costly. For optimal performance, a developer should set up a Cloud Function to aggregate data into this document.
-                </AlertDescription>
-            </Alert>
-        )}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
