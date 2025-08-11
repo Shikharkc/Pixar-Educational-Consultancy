@@ -2,11 +2,11 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { doc, onSnapshot, collection, getDocs } from 'firebase/firestore';
+import { doc, onSnapshot, collection, getDocs, FirestoreError } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users } from 'lucide-react';
+import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert } from 'lucide-react';
 import type { Student } from '@/lib/data';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
@@ -71,6 +71,7 @@ export default function DashboardPage() {
     const unsubscribe = onSnapshot(statsDocRef, (doc) => {
       if (doc.exists()) {
         setIsUsingFallback(false);
+        setError(null);
         setStats(doc.data() as DashboardStats);
         setLoading(false);
       } else {
@@ -78,9 +79,13 @@ export default function DashboardPage() {
         setIsUsingFallback(true);
         fetchAllStudentsAndCalculateStats();
       }
-    }, (err) => {
-      console.error("Error listening to stats document:", err);
-      setError("Could not load dashboard data. Please check Firestore permissions.");
+    }, (err: FirestoreError) => {
+      if (err.code === 'permission-denied') {
+          setError('permission-denied');
+      } else {
+          console.error("Error listening to stats document:", err);
+          setError("An unknown error occurred while loading dashboard data.");
+      }
       setLoading(false);
     });
 
@@ -90,9 +95,14 @@ export default function DashboardPage() {
             const studentsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student));
             const calculatedStats = processStudentDataForStats(studentsData);
             setStats(calculatedStats);
+            setError(null);
         } catch (err) {
-            console.error("Error fetching all students:", err);
-            setError("Failed to calculate stats from student data.");
+            if (err instanceof FirestoreError && err.code === 'permission-denied') {
+                setError('permission-denied');
+            } else {
+                 console.error("Error fetching all students:", err);
+                 setError("Failed to calculate stats from student data.");
+            }
         } finally {
             setLoading(false);
         }
@@ -126,6 +136,40 @@ export default function DashboardPage() {
         <p className="ml-2">Loading Dashboard...</p>
       </div>
     );
+  }
+
+  if (error === 'permission-denied') {
+     return (
+        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+            <Alert variant="destructive">
+                <ShieldAlert className="h-4 w-4" />
+                <AlertTitle>Action Required: Firestore Permissions</AlertTitle>
+                <AlertDescription>
+                    <p className="font-semibold">The dashboard failed to load due to missing Firestore security rules.</p>
+                    <p>To fix this, please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and add the following rule to allow admins to read the dashboard data:</p>
+                    <pre className="mt-2 p-2 bg-black/80 text-white rounded-md text-xs overflow-x-auto">
+                        <code>
+{`rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow admin users to read/write all student data
+    match /students/{studentId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // ADD THIS RULE: Allow admins to read dashboard stats
+    match /dashboard/{statId} {
+      allow read: if request.auth != null;
+    }
+  }
+}`}
+                        </code>
+                    </pre>
+                    <p className="mt-2">After adding this rule and publishing the changes, please refresh this page.</p>
+                </AlertDescription>
+            </Alert>
+        </main>
+     )
   }
 
   if (error) {
@@ -245,3 +289,5 @@ export default function DashboardPage() {
     </main>
   );
 }
+
+    
