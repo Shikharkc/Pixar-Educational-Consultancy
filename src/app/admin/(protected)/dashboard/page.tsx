@@ -6,8 +6,10 @@ import { doc, onSnapshot, FirestoreError } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert, LineChart, PieChart as PieChartIcon, DollarSign, GraduationCap, Languages } from 'lucide-react';
+import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert, LineChart, PieChart as PieChartIcon, DollarSign, GraduationCap, Languages, FileCheck, FileX, CircleDollarSign } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
+
 
 // Define the structure for the summary stats document
 interface DashboardStats {
@@ -26,6 +28,26 @@ const PIE_CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var
 const BAR_CHART_COLOR_PRIMARY = 'hsl(var(--chart-1))';
 const BAR_CHART_COLOR_SECONDARY = 'hsl(var(--chart-2))';
 
+interface StatCardProps {
+  title: string;
+  value: string | number;
+  icon: React.ElementType;
+  className?: string;
+  description?: string;
+}
+
+const StatCard = ({ title, value, icon: Icon, className, description }: StatCardProps) => (
+  <Card className={cn("transform transition-transform duration-300 hover:scale-105 shadow-lg", className)}>
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3">
+      <CardTitle className="text-xs font-medium">{title}</CardTitle>
+      <Icon className="h-4 w-4" />
+    </CardHeader>
+    <CardContent className="p-3 pt-0">
+      <div className="text-2xl font-bold">{value}</div>
+      {description && <p className="text-xs opacity-80">{description}</p>}
+    </CardContent>
+  </Card>
+);
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -128,47 +150,56 @@ export default function DashboardPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalStudents || 0}</div>
-            <p className="text-xs text-muted-foreground">Total registered students</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Visas Approved</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.visaStatusCounts?.Approved || 0}</div>
-            <p className="text-xs text-muted-foreground">Total visas approved</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Visas Pending</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.visaStatusCounts?.Pending || 0}</div>
-            <p className="text-xs text-muted-foreground">Visas currently pending decision</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Fees Paid</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.serviceFeeStatusCounts?.Paid || 0}</div>
-            <p className="text-xs text-muted-foreground">Students with fully paid fees</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8 gap-2">
+         <StatCard 
+            title="Total Students" 
+            value={stats?.totalStudents || 0}
+            icon={Users}
+            className="bg-primary text-primary-foreground"
+          />
+          <StatCard 
+            title="Visas Approved" 
+            value={stats?.visaStatusCounts?.Approved || 0}
+            icon={FileCheck}
+            className="bg-green-600 text-white"
+          />
+          <StatCard 
+            title="Visas Rejected" 
+            value={stats?.visaStatusCounts?.Rejected || 0}
+            icon={FileX}
+            className="bg-red-600 text-white"
+          />
+          <StatCard 
+            title="Visas Pending" 
+            value={stats?.visaStatusCounts?.Pending || 0}
+            icon={Clock}
+            className="bg-amber-500 text-white"
+          />
+          <StatCard 
+            title="Fees Paid" 
+            value={stats?.serviceFeeStatusCounts?.Paid || 0}
+            icon={CircleDollarSign}
+            className="bg-chart-3 text-white"
+          />
+          <StatCard 
+            title="Fees Partial" 
+            value={stats?.serviceFeeStatusCounts?.Partial || 0}
+            icon={CircleDollarSign}
+            className="bg-chart-4 text-white"
+          />
+           <StatCard 
+            title="Fees Unpaid" 
+            value={stats?.serviceFeeStatusCounts?.Unpaid || 0}
+            icon={DollarSign}
+            className="bg-chart-5 text-white"
+          />
+          <StatCard 
+            title="Unassigned" 
+            value={stats?.studentsByCounselor?.Unassigned || 0}
+            icon={Users}
+            className="bg-accent text-accent-foreground"
+            description="New Leads"
+          />
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
@@ -310,4 +341,3 @@ export default function DashboardPage() {
       </div>
     </main>
   );
-}
