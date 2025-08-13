@@ -2,16 +2,16 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { doc, onSnapshot, FirestoreError } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, FirestoreError } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert, LineChart, PieChart as PieChartIcon, DollarSign, GraduationCap, Languages, FileCheck, FileX, CircleDollarSign } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import type { Student } from '@/lib/data';
 
-
-// Define the structure for the summary stats document
+// Define the structure for the stats object that we'll compute on the client-side
 interface DashboardStats {
   totalStudents: number;
   studentsByDestination: { [country: string]: number };
@@ -49,16 +49,12 @@ const StatCard = ({ title, value, icon: Icon, className, description }: StatCard
   </Card>
 );
 
-// Helper to aggregate data case-insensitively
-const aggregateCaseInsensitive = (data: { [key: string]: number } | undefined) => {
-    if (!data) return {};
-    const aggregated: { [key: string]: number } = {};
-    for (const key in data) {
-        // Simple title case for consistency, e.g., "usa" -> "Usa", "DUOLINGO" -> "Duolingo"
-        const normalizedKey = key.charAt(0).toUpperCase() + key.slice(1).toLowerCase();
-        aggregated[normalizedKey] = (aggregated[normalizedKey] || 0) + data[key];
-    }
-    return aggregated;
+// Helper to normalize strings to Title Case for consistency
+const toTitleCase = (str: string | undefined) => {
+    if (!str) return "N/A";
+    return str.replace(/\w\S*/g, (txt) => {
+        return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
+    });
 };
 
 export default function DashboardPage() {
@@ -67,22 +63,70 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const statsDocRef = doc(db, 'metrics', 'dashboard');
+    const studentsQuery = query(collection(db, 'students'), orderBy('timestamp', 'desc'));
     
-    const unsubscribe = onSnapshot(statsDocRef, (doc) => {
-      if (doc.exists()) {
+    const unsubscribe = onSnapshot(studentsQuery, (querySnapshot) => {
+        const studentDocs = querySnapshot.docs.map(doc => doc.data() as Student);
+
+        if (studentDocs.length === 0) {
+            setError('no-data');
+            setStats(null);
+            setLoading(false);
+            return;
+        }
+
+        const newStats: DashboardStats = {
+            totalStudents: 0,
+            studentsByDestination: {},
+            visaStatusCounts: {},
+            monthlyAdmissions: {},
+            studentsByCounselor: {},
+            serviceFeeStatusCounts: {},
+            studentsByEducation: {},
+            studentsByEnglishTest: {},
+        };
+
+        const twelveMonthsAgo = new Date();
+        twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+        studentDocs.forEach(student => {
+            newStats.totalStudents++;
+
+            const dest = toTitleCase(student.preferredStudyDestination);
+            newStats.studentsByDestination[dest] = (newStats.studentsByDestination[dest] || 0) + 1;
+
+            const visa = toTitleCase(student.visaStatus);
+            newStats.visaStatusCounts[visa] = (newStats.visaStatusCounts[visa] || 0) + 1;
+
+            const coun = toTitleCase(student.assignedTo);
+            newStats.studentsByCounselor[coun] = (newStats.studentsByCounselor[coun] || 0) + 1;
+            
+            const fee = toTitleCase(student.serviceFeeStatus);
+            newStats.serviceFeeStatusCounts[fee] = (newStats.serviceFeeStatusCounts[fee] || 0) + 1;
+
+            const edu = toTitleCase(student.lastCompletedEducation);
+            newStats.studentsByEducation[edu] = (newStats.studentsByEducation[edu] || 0) + 1;
+
+            const test = toTitleCase(student.englishProficiencyTest);
+            newStats.studentsByEnglishTest[test] = (newStats.studentsByEnglishTest[test] || 0) + 1;
+
+            if (student.timestamp && (student.timestamp as Timestamp).toDate) {
+                const date = (student.timestamp as Timestamp).toDate();
+                if (date > twelveMonthsAgo) {
+                    const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                    newStats.monthlyAdmissions[monthYear] = (newStats.monthlyAdmissions[monthYear] || 0) + 1;
+                }
+            }
+        });
+
         setError(null);
-        setStats(doc.data() as DashboardStats);
-      } else {
-        setError('no-data');
-        setStats(null);
-      }
-      setLoading(false);
+        setStats(newStats);
+        setLoading(false);
     }, (err: FirestoreError) => {
       if (err.code === 'permission-denied') {
         setError('permission-denied');
       } else {
-        console.error("Error listening to stats document:", err);
+        console.error("Error listening to students collection:", err);
         setError("An unknown error occurred while loading dashboard data.");
       }
       setLoading(false);
@@ -94,9 +138,6 @@ export default function DashboardPage() {
   const dataMappers = useMemo(() => {
     if (!stats) return {};
 
-    const aggregatedDestinations = aggregateCaseInsensitive(stats.studentsByDestination);
-    const aggregatedEnglishTests = aggregateCaseInsensitive(stats.studentsByEnglishTest);
-
     const sortAndMap = (data: { [key: string]: number } | undefined, nameKey: string, valueKey: string) => {
         if (!data) return [];
         return Object.entries(data)
@@ -105,14 +146,14 @@ export default function DashboardPage() {
     };
     
     return {
-        destinationData: sortAndMap(aggregatedDestinations, 'name', 'students'),
+        destinationData: sortAndMap(stats.studentsByDestination, 'name', 'students'),
         visaStatusData: sortAndMap(stats.visaStatusCounts, 'name', 'value'),
         monthlyAdmissionsData: stats.monthlyAdmissions ? Object.entries(stats.monthlyAdmissions)
             .map(([month, value]) => ({ name: month, students: value }))
             .sort((a, b) => a.name.localeCompare(b.name)) : [],
         counselorData: sortAndMap(stats.studentsByCounselor, 'name', 'students'),
         educationData: sortAndMap(stats.studentsByEducation, 'name', 'students'),
-        englishTestData: sortAndMap(aggregatedEnglishTests, 'name', 'value'),
+        englishTestData: sortAndMap(stats.studentsByEnglishTest, 'name', 'value'),
     };
   }, [stats]);
 
@@ -134,22 +175,15 @@ export default function DashboardPage() {
                     <ShieldAlert className="h-4 w-4" />
                     <AlertTitle>Action Required: Firestore Permissions</AlertTitle>
                     <AlertDescription>
-                        The dashboard failed to load due to missing Firestore security rules. Please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and ensure your rules allow authenticated users to read documents from the `metrics` collection.
+                        The dashboard failed to load due to missing Firestore security rules. Please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and ensure your rules allow authenticated admin users to read the `students` collection. A common rule for development is `allow read, write: if request.auth != null;`.
                     </AlertDescription>
                 </Alert>
              ) : error === 'no-data' ? (
                 <Alert>
                     <LineChart className="h-4 w-4" />
-                    <AlertTitle>No Dashboard Data Found</AlertTitle>
+                    <AlertTitle>No Student Data Found</AlertTitle>
                     <AlertDescription>
-                        <p>The dashboard is ready, but the summary data hasn't been generated yet. This is expected on first run.</p>
-                        <p className="font-semibold mt-2">To populate the dashboard for the first time, you must run a script from your local computer's terminal. Ask a developer to run the following command:</p>
-                        <pre className="mt-2 p-2 bg-muted text-foreground rounded-md text-sm overflow-x-auto">
-                            <code>
-                                npx tsx scripts/aggregate-stats.ts
-                            </code>
-                        </pre>
-                        <p className="mt-2">After this one-time run, the dashboard will update automatically in real-time.</p>
+                        The dashboard is working, but there are no student records in the database to display. Add a new student to see the dashboard populate with data.
                     </AlertDescription>
                 </Alert>
              ) : (
@@ -356,4 +390,3 @@ export default function DashboardPage() {
       </div>
     </main>
   );
-
