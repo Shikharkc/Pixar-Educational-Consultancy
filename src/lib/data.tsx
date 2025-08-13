@@ -47,7 +47,7 @@ export interface Student {
   email: string;
   mobileNumber: string;
   visaStatus: 'Pending' | 'Approved' | 'Rejected' | 'Not Applied';
-  serviceFeeStatus: 'Paid' | 'Unpaid' | 'Partial';
+  serviceFeeStatus: 'Paid' | 'Unpaid';
   assignedTo: string;
   // Optional fields from contact form and admin panel
   lastCompletedEducation?: string;

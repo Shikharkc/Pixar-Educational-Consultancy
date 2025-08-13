@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -199,7 +200,7 @@ export default function DashboardPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-8 gap-2">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
          <StatCard 
             title="Total Students" 
             value={stats?.totalStudents || 0}
@@ -229,12 +230,6 @@ export default function DashboardPage() {
             value={stats?.serviceFeeStatusCounts?.Paid || 0}
             icon={CircleDollarSign}
             className="bg-chart-3 text-white"
-          />
-          <StatCard 
-            title="Fees Partial" 
-            value={stats?.serviceFeeStatusCounts?.Partial || 0}
-            icon={CircleDollarSign}
-            className="bg-chart-4 text-white"
           />
            <StatCard 
             title="Fees Unpaid" 

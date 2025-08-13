@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useCallback, useMemo } from 'react';
@@ -161,7 +162,6 @@ export default function StudentsAllPage() {
                     <SelectContent>
                         <SelectItem value="all">All</SelectItem>
                         <SelectItem value="Unpaid">Unpaid</SelectItem>
-                        <SelectItem value="Partial">Partial</SelectItem>
                         <SelectItem value="Paid">Paid</SelectItem>
                     </SelectContent>
                 </Select>

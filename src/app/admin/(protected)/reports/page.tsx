@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useCallback } from 'react';
@@ -58,7 +59,7 @@ const ReportDetailTable = ({ title, data, dateField, dateLabel = "Date" }: { tit
               <TableRow key={student.id}>
                 <TableCell className="font-medium">{student.fullName}</TableCell>
                 <TableCell>{student.preferredStudyDestination || 'N/A'}</TableCell>
-                <TableCell>{format(student[dateField || 'timestamp']?.toDate() || new Date(), 'dd MMM, yyyy')}</TableCell>
+                <TableCell>{format((student[dateField || 'timestamp'] as Timestamp)?.toDate() || new Date(), 'dd MMM, yyyy')}</TableCell>
               </TableRow>
             ))}
           </TableBody>
