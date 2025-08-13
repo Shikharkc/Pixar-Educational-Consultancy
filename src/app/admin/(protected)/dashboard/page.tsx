@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
@@ -136,7 +135,7 @@ export default function DashboardPage() {
                     <AlertTitle>Action Required: Firestore Permissions</AlertTitle>
                     <AlertDescription>
                         The dashboard failed to load due to missing Firestore security rules. Please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and ensure your rules allow authenticated users to read documents from the `metrics` collection.
-                    </AlertDescription>
+                    </Description>
                 </Alert>
              ) : error === 'no-data' ? (
                 <Alert>
@@ -144,13 +143,13 @@ export default function DashboardPage() {
                     <AlertTitle>No Dashboard Data Found</AlertTitle>
                     <AlertDescription>
                         <p>The dashboard is ready, but the summary data hasn't been generated yet. This is expected on first run.</p>
-                        <p className="font-semibold mt-2">To populate the dashboard, please run the following command in your terminal:</p>
+                        <p className="font-semibold mt-2">To populate the dashboard for the first time, you must run a script from your local computer's terminal. Ask a developer to run the following command:</p>
                         <pre className="mt-2 p-2 bg-muted text-foreground rounded-md text-sm overflow-x-auto">
                             <code>
                                 npx tsx scripts/aggregate-stats.ts
                             </code>
                         </pre>
-                        <p className="mt-2">Run this command whenever you want to see the latest statistics. After the script finishes, this page will update automatically.</p>
+                        <p className="mt-2">After this one-time run, the dashboard will update automatically in real-time.</p>
                     </AlertDescription>
                 </Alert>
              ) : (
@@ -357,5 +356,3 @@ export default function DashboardPage() {
       </div>
     </main>
   );
-
-    

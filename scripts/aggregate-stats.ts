@@ -60,6 +60,14 @@ try {
 const db = getFirestore(DATABASE_ID);
 console.log(`✅ Connected to Firestore database: ${DATABASE_ID}`);
 
+// Helper to normalize strings to Title Case for consistency
+const toTitleCase = (str: string) => {
+  if (!str) return "N/A";
+  return str.replace(/\w\S*/g, (txt) => {
+    return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
+  });
+};
+
 async function aggregateStudentStats() {
   console.log('🔵 Starting dashboard data aggregation...');
 
@@ -95,11 +103,11 @@ async function aggregateStudentStats() {
       stats.totalStudents++;
 
       // Count by country
-      const country = student.preferredStudyDestination || 'N/A';
+      const country = toTitleCase(student.preferredStudyDestination);
       stats.studentsByDestination[country] = (stats.studentsByDestination[country] || 0) + 1;
       
       // Count by visa status
-      const visaStatus = student.visaStatus || 'Not Applied';
+      const visaStatus = toTitleCase(student.visaStatus);
       stats.visaStatusCounts[visaStatus] = (stats.visaStatusCounts[visaStatus] || 0) + 1;
 
       // Count monthly admissions
@@ -110,19 +118,19 @@ async function aggregateStudentStats() {
       }
 
       // Count by assigned counselor
-      const counselor = student.assignedTo || 'Unassigned';
+      const counselor = toTitleCase(student.assignedTo);
       stats.studentsByCounselor[counselor] = (stats.studentsByCounselor[counselor] || 0) + 1;
 
       // Count by service fee status
-      const feeStatus = student.serviceFeeStatus || 'Unpaid';
+      const feeStatus = toTitleCase(student.serviceFeeStatus);
       stats.serviceFeeStatusCounts[feeStatus] = (stats.serviceFeeStatusCounts[feeStatus] || 0) + 1;
 
       // Count by education level
-      const education = student.lastCompletedEducation || 'N/A';
+      const education = toTitleCase(student.lastCompletedEducation);
       stats.studentsByEducation[education] = (stats.studentsByEducation[education] || 0) + 1;
       
       // Count by English test status
-      const test = student.englishProficiencyTest || 'N/A';
+      const test = toTitleCase(student.englishProficiencyTest);
       stats.studentsByEnglishTest[test] = (stats.studentsByEnglishTest[test] || 0) + 1;
     });
 
