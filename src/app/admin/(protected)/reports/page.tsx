@@ -14,7 +14,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Calendar as CalendarIcon, ClipboardList, Printer, CheckCircle, FileX, CircleDollarSign, UserPlus } from 'lucide-react';
+import { Loader2, Calendar as CalendarIcon, ClipboardList, Printer, CheckCircle, FileX, CircleDollarSign, UserPlus, TrendingUp, Percent } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import SectionTitle from '@/components/ui/section-title';
@@ -24,43 +24,47 @@ interface ReportData {
   visasApproved: Student[];
   visasRejected: Student[];
   feesPaid: Student[];
-  feesPartial: Student[];
 }
 
-const ReportStatCard = ({ title, value, icon: Icon }: { title: string, value: number, icon: React.ElementType }) => (
-    <Card className="text-center">
-      <CardHeader className="p-2 pb-0">
-        <CardDescription>{title}</CardDescription>
+const ReportStatCard = ({ title, value, icon: Icon, className }: { title: string, value: number, icon: React.ElementType, className?: string }) => (
+    <Card className={cn("text-center shadow-lg", className)}>
+      <CardHeader className="p-3 pb-1">
+        <CardTitle className="text-sm font-medium flex items-center justify-center gap-2">
+            <Icon className="h-4 w-4" />
+            {title}
+        </CardTitle>
       </CardHeader>
-      <CardContent className="p-2">
-        <p className="text-2xl font-bold">{value}</p>
+      <CardContent className="p-3 pt-0">
+        <p className="text-3xl font-bold">{value}</p>
       </CardContent>
     </Card>
 );
 
-const ReportDetailTable = ({ title, data, dateField }: { title: string, data: Student[], dateField?: keyof Student }) => (
+const ReportDetailTable = ({ title, data, dateField, dateLabel = "Date" }: { title: string, data: Student[], dateField?: keyof Student, dateLabel?: string }) => (
   <div>
     <h3 className="text-lg font-semibold text-primary mb-2">{title} ({data.length})</h3>
     {data.length > 0 ? (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Student Name</TableHead>
-            <TableHead>Destination</TableHead>
-            <TableHead>Date</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {data.map(student => (
-            <TableRow key={student.id}>
-              <TableCell>{student.fullName}</TableCell>
-              <TableCell>{student.preferredStudyDestination || 'N/A'}</TableCell>
-              <TableCell>{format(student[dateField || 'timestamp']?.toDate() || new Date(), 'dd MMM, yyyy')}</TableCell>
+      <div className="overflow-hidden border rounded-lg">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Student Name</TableHead>
+              <TableHead>Destination</TableHead>
+              <TableHead>{dateLabel}</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    ) : <p className="text-muted-foreground text-sm">No records found for this period.</p>}
+          </TableHeader>
+          <TableBody>
+            {data.map(student => (
+              <TableRow key={student.id}>
+                <TableCell className="font-medium">{student.fullName}</TableCell>
+                <TableCell>{student.preferredStudyDestination || 'N/A'}</TableCell>
+                <TableCell>{format(student[dateField || 'timestamp']?.toDate() || new Date(), 'dd MMM, yyyy')}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    ) : <p className="text-muted-foreground text-sm py-4">No records found for this period.</p>}
   </div>
 );
 
@@ -86,23 +90,16 @@ export default function ReportsPage() {
 
       const studentsRef = collection(db, 'students');
 
-      // Fetch newly assigned students
       const newlyAssignedQuery = query(studentsRef, where('assignedTo', '==', counselor), where('timestamp', '>=', fromTimestamp), where('timestamp', '<=', toTimestamp), orderBy('timestamp', 'desc'));
-      
-      // Fetch visa status changes
       const visasApprovedQuery = query(studentsRef, where('assignedTo', '==', counselor), where('visaStatus', '==', 'Approved'), where('visaStatusUpdateDate', '>=', fromTimestamp), where('visaStatusUpdateDate', '<=', toTimestamp), orderBy('visaStatusUpdateDate', 'desc'));
       const visasRejectedQuery = query(studentsRef, where('assignedTo', '==', counselor), where('visaStatus', '==', 'Rejected'), where('visaStatusUpdateDate', '>=', fromTimestamp), where('visaStatusUpdateDate', '<=', toTimestamp), orderBy('visaStatusUpdateDate', 'desc'));
-      
-      // Fetch fee status changes
       const feesPaidQuery = query(studentsRef, where('assignedTo', '==', counselor), where('serviceFeeStatus', '==', 'Paid'), where('serviceFeePaidDate', '>=', fromTimestamp), where('serviceFeePaidDate', '<=', toTimestamp), orderBy('serviceFeePaidDate', 'desc'));
-      const feesPartialQuery = query(studentsRef, where('assignedTo', '==', counselor), where('serviceFeeStatus', '==', 'Partial'), where('serviceFeePaidDate', '>=', fromTimestamp), where('serviceFeePaidDate', '<=', toTimestamp), orderBy('serviceFeePaidDate', 'desc'));
 
-      const [newlyAssignedSnap, visasApprovedSnap, visasRejectedSnap, feesPaidSnap, feesPartialSnap] = await Promise.all([
+      const [newlyAssignedSnap, visasApprovedSnap, visasRejectedSnap, feesPaidSnap] = await Promise.all([
         getDocs(newlyAssignedQuery),
         getDocs(visasApprovedQuery),
         getDocs(visasRejectedQuery),
         getDocs(feesPaidQuery),
-        getDocs(feesPartialQuery),
       ]);
 
       const data: ReportData = {
@@ -110,7 +107,6 @@ export default function ReportsPage() {
         visasApproved: visasApprovedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student)),
         visasRejected: visasRejectedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student)),
         feesPaid: feesPaidSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student)),
-        feesPartial: feesPartialSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student)),
       };
 
       setReportData(data);
@@ -126,25 +122,26 @@ export default function ReportsPage() {
     }
   }, [counselor, dateRange, toast]);
 
+  const visaApprovalRate = reportData ? 
+    (reportData.visasApproved.length + reportData.visasRejected.length > 0 ? 
+      ((reportData.visasApproved.length / (reportData.visasApproved.length + reportData.visasRejected.length)) * 100).toFixed(1) : '0.0') 
+    : '0.0';
+
+  const feeConversionRate = reportData ?
+    (reportData.newlyAssigned.length > 0 ?
+      ((reportData.feesPaid.length / reportData.newlyAssigned.length) * 100).toFixed(1) : '0.0')
+    : '0.0';
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <style>{`
         @media print {
-          body * {
-            visibility: hidden;
-          }
-          #report-section, #report-section * {
-            visibility: visible;
-          }
-          #report-section {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-          }
-          .no-print {
-            display: none;
-          }
+          body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          body * { visibility: hidden; }
+          #report-section, #report-section * { visibility: visible; }
+          #report-section { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; }
+          .no-print { display: none !important; }
+          .page-break { page-break-after: always; }
         }
       `}</style>
 
@@ -192,29 +189,62 @@ export default function ReportsPage() {
       {reportData && (
         <div id="report-section">
           <Card>
-            <CardHeader className="flex flex-row justify-between items-start">
-              <div>
-                <CardTitle>Performance Report: {counselor}</CardTitle>
-                <CardDescription>
-                  For period: {dateRange?.from ? format(dateRange.from, 'PPP') : ''} - {dateRange?.to ? format(dateRange.to, 'PPP') : ''}
-                </CardDescription>
-              </div>
-              <Button variant="outline" onClick={() => window.print()} className="no-print">
-                <Printer className="mr-2 h-4 w-4" /> Print Report
-              </Button>
+            <CardHeader>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle className="text-2xl font-bold text-primary">Performance Report: {counselor}</CardTitle>
+                        <CardDescription className="text-md">
+                        For period: {dateRange?.from ? format(dateRange.from, 'PPP') : ''} - {dateRange?.to ? format(dateRange.to, 'PPP') : ''}
+                        </CardDescription>
+                    </div>
+                    <Button variant="outline" onClick={() => window.print()} className="no-print">
+                        <Printer className="mr-2 h-4 w-4" /> Print / Save as PDF
+                    </Button>
+                </div>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-8">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <ReportStatCard title="New Students" value={reportData.newlyAssigned.length} icon={UserPlus} />
-                <ReportStatCard title="Visas Approved" value={reportData.visasApproved.length} icon={CheckCircle} />
-                <ReportStatCard title="Visas Rejected" value={reportData.visasRejected.length} icon={FileX} />
-                <ReportStatCard title="Fees Fully Paid" value={reportData.feesPaid.length} icon={CircleDollarSign} />
+                <ReportStatCard title="New Students" value={reportData.newlyAssigned.length} icon={UserPlus} className="bg-blue-100 dark:bg-blue-900/50 border-blue-300" />
+                <ReportStatCard title="Visas Approved" value={reportData.visasApproved.length} icon={CheckCircle} className="bg-green-100 dark:bg-green-900/50 border-green-300" />
+                <ReportStatCard title="Visas Rejected" value={reportData.visasRejected.length} icon={FileX} className="bg-red-100 dark:bg-red-900/50 border-red-300" />
+                <ReportStatCard title="Fees Fully Paid" value={reportData.feesPaid.length} icon={CircleDollarSign} className="bg-yellow-100 dark:bg-yellow-900/50 border-yellow-300" />
               </div>
-              <div className="space-y-4">
-                 <ReportDetailTable title="Newly Assigned Students" data={reportData.newlyAssigned} dateField="timestamp" />
-                 <ReportDetailTable title="Visa Approvals" data={reportData.visasApproved} dateField="visaStatusUpdateDate" />
-                 <ReportDetailTable title="Visa Rejections" data={reportData.visasRejected} dateField="visaStatusUpdateDate" />
-                 <ReportDetailTable title="Full Service Fees Paid" data={reportData.feesPaid} dateField="serviceFeePaidDate" />
+
+              <div>
+                <h3 className="text-lg font-semibold text-primary mb-2">Performance Snapshot</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">Visa Approval Rate</CardTitle>
+                            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{visaApprovalRate}%</div>
+                            <p className="text-xs text-muted-foreground">
+                                Based on {reportData.visasApproved.length + reportData.visasRejected.length} total visa decisions in this period.
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                            <CardTitle className="text-sm font-medium">New Student to Paid Conversion</CardTitle>
+                            <Percent className="h-4 w-4 text-muted-foreground" />
+                        </CardHeader>
+                        <CardContent>
+                            <div className="text-2xl font-bold">{feeConversionRate}%</div>
+                            <p className="text-xs text-muted-foreground">
+                                Based on {reportData.newlyAssigned.length} new students and {reportData.feesPaid.length} paid fees in this period.
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                 <ReportDetailTable title="Newly Assigned Students" data={reportData.newlyAssigned} dateField="timestamp" dateLabel="Date Assigned" />
+                 <ReportDetailTable title="Visa Approvals" data={reportData.visasApproved} dateField="visaStatusUpdateDate" dateLabel="Approval Date" />
+                 <ReportDetailTable title="Visa Rejections" data={reportData.visasRejected} dateField="visaStatusUpdateDate" dateLabel="Rejection Date" />
+                 <ReportDetailTable title="Full Service Fees Paid" data={reportData.feesPaid} dateField="serviceFeePaidDate" dateLabel="Date Paid" />
               </div>
             </CardContent>
           </Card>
@@ -222,7 +252,7 @@ export default function ReportsPage() {
       )}
 
        {!isLoading && !reportData && (
-         <Alert className="text-center">
+         <Alert className="text-center no-print">
             <ClipboardList className="h-4 w-4" />
             <AlertTitle>Ready to Generate Reports</AlertTitle>
             <AlertDescription>
@@ -233,3 +263,5 @@ export default function ReportsPage() {
     </main>
   );
 }
+
+    
