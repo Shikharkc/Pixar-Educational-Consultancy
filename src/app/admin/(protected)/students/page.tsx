@@ -45,25 +45,13 @@ export default function StudentManagementPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-       <Alert className="bg-primary/10 border-primary/20 text-primary-foreground">
-        <Info className="h-5 w-5 text-primary" />
-        <AlertTitle className="font-semibold text-primary">Welcome to the Student Management Dashboard!</AlertTitle>
-        <AlertDescription className="text-foreground/80 space-y-1">
-          <p>This page displays the 20 newest student records by default. To find any specific student, please use the search bar below.</p>
-          <p className="flex items-center text-xs pt-1">
-            <ShieldCheck className="h-4 w-4 mr-2 text-accent" />
-            For your security, you will be automatically logged out after 30 minutes of inactivity.
-          </p>
-        </AlertDescription>
-      </Alert>
-
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7 xl:grid-cols-3">
           <div className="lg:col-span-3 xl:col-span-1">
             <Card className="h-full">
               <CardHeader className="p-4">
                 <CardTitle>Student List</CardTitle>
                 <CardDescription>
-                  Showing 20 newest students. Use search to find any student.
+                  Showing 20 newest students by default. Use the search bar to find any student. For security, you will be logged out after 30 minutes of inactivity.
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
