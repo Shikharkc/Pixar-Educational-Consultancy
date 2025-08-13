@@ -205,6 +205,5 @@ export const onStudentChange = onDocumentWritten(
       }
       return data;
     });
-  });
-
-    
+  }
+);
