@@ -37,17 +37,26 @@ const updateMetrics = (
   });
 };
 
+/**
+ * @param {number | undefined} currentValue The current value to increment.
+ * @return {admin.firestore.FieldValue} The FieldValue increment operation.
+ */
 const increment = (currentValue: number | undefined) => {
   return admin.firestore.FieldValue.increment(currentValue === undefined ? 1: 1);
 };
 
+/**
+ * @param {number | undefined} currentValue The current value to decrement.
+ * @return {admin.firestore.FieldValue} The FieldValue decrement operation.
+ */
 const decrement = (currentValue: number | undefined) => {
   const value = currentValue === undefined || currentValue <= 0 ? 0 : -1;
   return admin.firestore.FieldValue.increment(value);
 };
 
 
-export const onStudentChange = onDocumentWritten("students/{studentId}",
+export const onStudentChange = onDocumentWritten(
+  "students/{studentId}",
   (event) => {
     return updateMetrics((data) => {
       const before = event.data?.before.data();
