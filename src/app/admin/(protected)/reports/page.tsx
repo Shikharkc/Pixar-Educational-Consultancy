@@ -38,7 +38,7 @@ const ReportStatCard = ({ title, value, icon: Icon }: { title: string, value: nu
     </Card>
 );
 
-const ReportDetailTable = ({ title, data }: { title: string, data: Student[], dateField?: keyof Student }) => (
+const ReportDetailTable = ({ title, data, dateField }: { title: string, data: Student[], dateField?: keyof Student }) => (
   <div>
     <h3 className="text-lg font-semibold text-primary mb-2">{title} ({data.length})</h3>
     {data.length > 0 ? (
