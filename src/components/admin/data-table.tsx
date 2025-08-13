@@ -24,9 +24,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Search, AlertTriangle, UserPlus } from 'lucide-react';
+import { Loader2, Search, AlertTriangle, UserPlus, CalendarDays } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
+import { format, formatDistanceToNowStrict, isToday } from 'date-fns';
 
 // A simple debounce hook to prevent firing search queries on every keystroke
 const useDebouncedValue = (value: string, delay: number) => {
@@ -159,6 +160,17 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
     }
   };
 
+  const getRelativeDate = (date: any) => {
+    if (!date) return 'No date';
+    const timestamp = date.toDate ? date.toDate() : new Date(date);
+    if (isNaN(timestamp.getTime())) return 'Invalid date';
+
+    if (isToday(timestamp)) {
+      return "Today";
+    }
+    return `${formatDistanceToNowStrict(timestamp)} ago`;
+  };
+
   return (
     <div className="space-y-4">
       {/* Hidden audio element for notification sound */}
@@ -196,6 +208,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
                   <TableCell className="p-3">
                     <Skeleton className="h-5 w-3/4 mb-1" />
                     <Skeleton className="h-4 w-1/2" />
+                    <Skeleton className="h-3 w-1/4 mt-2" />
                   </TableCell>
                 </TableRow>
               ))
@@ -215,11 +228,14 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">{student.email}</div>
-                    <div className="mt-1 flex items-center justify-between text-xs">
-                      <span className="text-muted-foreground">{student.assignedTo || 'Unassigned'}</span>
+                    <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                       <Badge variant={getFeeStatusBadgeVariant(student.serviceFeeStatus)} className="py-0.5 px-1.5 text-xs">
                         {student.serviceFeeStatus || 'N/A'}
                       </Badge>
+                      <div className="flex items-center">
+                        <CalendarDays className="mr-1 h-3 w-3" />
+                        <span>{student.timestamp ? format(student.timestamp, 'dd MMM yyyy') : 'N/A'} ({getRelativeDate(student.timestamp)})</span>
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>
