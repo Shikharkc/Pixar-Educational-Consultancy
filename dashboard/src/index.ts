@@ -42,7 +42,8 @@ const updateMetrics = (
  * @return {admin.firestore.FieldValue} The FieldValue increment operation.
  */
 const increment = (currentValue: number | undefined) => {
-  return admin.firestore.FieldValue.increment(currentValue === undefined ? 1: 1);
+  const val = currentValue === undefined ? 1 : 1;
+  return admin.firestore.FieldValue.increment(val);
 };
 
 /**
@@ -110,7 +111,8 @@ export const onStudentChange = onDocumentWritten(
         const test = toTitleCase(after.englishProficiencyTest);
         const date = after.timestamp.toDate();
         const monthYear =
-          `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+          `${date.getFullYear()}-` +
+          `${String(date.getMonth() + 1).padStart(2, "0")}`;
 
         data.totalStudents = increment(data.totalStudents);
         data.studentsByDestination = {
@@ -204,3 +206,5 @@ export const onStudentChange = onDocumentWritten(
       return data;
     });
   });
+
+    
