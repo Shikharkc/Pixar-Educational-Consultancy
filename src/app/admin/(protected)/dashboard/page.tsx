@@ -135,7 +135,7 @@ export default function DashboardPage() {
                     <AlertTitle>Action Required: Firestore Permissions</AlertTitle>
                     <AlertDescription>
                         The dashboard failed to load due to missing Firestore security rules. Please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and ensure your rules allow authenticated users to read documents from the `metrics` collection.
-                    </Description>
+                    </AlertDescription>
                 </Alert>
              ) : error === 'no-data' ? (
                 <Alert>
@@ -156,7 +156,7 @@ export default function DashboardPage() {
                 <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
                     <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>An unknown error occurred: {error}</AlertDescription>
+                    <AlertDescription>{error}</AlertDescription>
                 </Alert>
              )}
         </main>
@@ -356,3 +356,4 @@ export default function DashboardPage() {
       </div>
     </main>
   );
+
