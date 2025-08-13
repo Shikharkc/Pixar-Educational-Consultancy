@@ -32,8 +32,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
-import { Badge } from "../ui/badge";
-import { Separator } from "../ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 
 const studentSchema = z.object({
@@ -126,6 +126,15 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
       setIsEditing(isNewStudent); // Automatically enter edit mode for new students
     }
   }, [student, form, isNewStudent]);
+
+  React.useEffect(() => {
+      if (serviceFeeStatus === 'Paid' && !form.getValues('serviceFeePaidDate')) {
+        form.setValue('serviceFeePaidDate', new Date(), { shouldValidate: true, shouldDirty: true });
+      }
+      if (visaStatus !== 'Not Applied' && !form.getValues('visaStatusUpdateDate')) {
+        form.setValue('visaStatusUpdateDate', new Date(), { shouldValidate: true, shouldDirty: true });
+      }
+  }, [serviceFeeStatus, visaStatus, form]);
 
   const onSubmit = async (data: StudentFormValues) => {
     setIsLoading(true);

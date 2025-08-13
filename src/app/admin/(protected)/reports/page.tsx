@@ -4,7 +4,7 @@
 
 import { useState, useCallback } from 'react';
 import { DateRange } from 'react-day-picker';
-import { addDays, format } from 'date-fns';
+import { addDays, format, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
 import { collection, query, where, getDocs, Timestamp, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { counselorNames, Student } from '@/lib/data';
@@ -24,7 +24,8 @@ interface ReportData {
   newlyAssigned: Student[];
   visasApproved: Student[];
   visasRejected: Student[];
-  feesPaid: Student[];
+  feesPaidInPeriod: Student[];
+  totalFeesPaidCount: number;
 }
 
 const ReportStatCard = ({ title, value, icon: Icon, className }: { title: string, value: number, icon: React.ElementType, className?: string }) => (
@@ -91,23 +92,29 @@ export default function ReportsPage() {
 
       const studentsRef = collection(db, 'students');
 
+      // Specific queries for actions within the date range
       const newlyAssignedQuery = query(studentsRef, where('assignedTo', '==', counselor), where('timestamp', '>=', fromTimestamp), where('timestamp', '<=', toTimestamp), orderBy('timestamp', 'desc'));
       const visasApprovedQuery = query(studentsRef, where('assignedTo', '==', counselor), where('visaStatus', '==', 'Approved'), where('visaStatusUpdateDate', '>=', fromTimestamp), where('visaStatusUpdateDate', '<=', toTimestamp), orderBy('visaStatusUpdateDate', 'desc'));
       const visasRejectedQuery = query(studentsRef, where('assignedTo', '==', counselor), where('visaStatus', '==', 'Rejected'), where('visaStatusUpdateDate', '>=', fromTimestamp), where('visaStatusUpdateDate', '<=', toTimestamp), orderBy('visaStatusUpdateDate', 'desc'));
-      const feesPaidQuery = query(studentsRef, where('assignedTo', '==', counselor), where('serviceFeeStatus', '==', 'Paid'), where('serviceFeePaidDate', '>=', fromTimestamp), where('serviceFeePaidDate', '<=', toTimestamp), orderBy('serviceFeePaidDate', 'desc'));
+      const feesPaidInPeriodQuery = query(studentsRef, where('assignedTo', '==', counselor), where('serviceFeeStatus', '==', 'Paid'), where('serviceFeePaidDate', '>=', fromTimestamp), where('serviceFeePaidDate', '<=', toTimestamp), orderBy('serviceFeePaidDate', 'desc'));
 
-      const [newlyAssignedSnap, visasApprovedSnap, visasRejectedSnap, feesPaidSnap] = await Promise.all([
+      // Query for the total count of paid fees for the counselor, regardless of date
+      const totalFeesPaidQuery = query(studentsRef, where('assignedTo', '==', counselor), where('serviceFeeStatus', '==', 'Paid'));
+
+      const [newlyAssignedSnap, visasApprovedSnap, visasRejectedSnap, feesPaidInPeriodSnap, totalFeesPaidSnap] = await Promise.all([
         getDocs(newlyAssignedQuery),
         getDocs(visasApprovedQuery),
         getDocs(visasRejectedQuery),
-        getDocs(feesPaidQuery),
+        getDocs(feesPaidInPeriodQuery),
+        getDocs(totalFeesPaidQuery),
       ]);
 
       const data: ReportData = {
         newlyAssigned: newlyAssignedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student)),
         visasApproved: visasApprovedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student)),
         visasRejected: visasRejectedSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student)),
-        feesPaid: feesPaidSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student)),
+        feesPaidInPeriod: feesPaidInPeriodSnap.docs.map(doc => ({ id: doc.id, ...doc.data() } as Student)),
+        totalFeesPaidCount: totalFeesPaidSnap.size,
       };
 
       setReportData(data);
@@ -130,7 +137,7 @@ export default function ReportsPage() {
 
   const feeConversionRate = reportData ?
     (reportData.newlyAssigned.length > 0 ?
-      ((reportData.feesPaid.length / reportData.newlyAssigned.length) * 100).toFixed(1) : '0.0')
+      ((reportData.feesPaidInPeriod.length / reportData.newlyAssigned.length) * 100).toFixed(1) : '0.0')
     : '0.0';
 
   return (
@@ -170,7 +177,15 @@ export default function ReportsPage() {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              <Calendar initialFocus mode="range" defaultMonth={dateRange?.from} selected={dateRange} onSelect={setDateRange} numberOfMonths={2} />
+              <div className="flex">
+                  <div className="flex flex-col space-y-2 border-r p-2">
+                      <Button variant="ghost" className="justify-start" onClick={() => setDateRange({ from: addDays(new Date(), -7), to: new Date() })}>Last 7 Days</Button>
+                      <Button variant="ghost" className="justify-start" onClick={() => setDateRange({ from: addDays(new Date(), -30), to: new Date() })}>Last 30 Days</Button>
+                      <Button variant="ghost" className="justify-start" onClick={() => setDateRange({ from: startOfMonth(new Date()), to: endOfMonth(new Date()) })}>This Month</Button>
+                      <Button variant="ghost" className="justify-start" onClick={() => setDateRange({ from: startOfMonth(addDays(new Date(), -30)), to: endOfMonth(addDays(new Date(), -30)) })}>Last Month</Button>
+                  </div>
+                  <Calendar initialFocus mode="range" defaultMonth={dateRange?.from} selected={dateRange} onSelect={setDateRange} numberOfMonths={1} />
+              </div>
             </PopoverContent>
           </Popover>
           <Button onClick={handleGenerateReport} disabled={isLoading || !counselor}>
@@ -208,11 +223,11 @@ export default function ReportsPage() {
                 <ReportStatCard title="New Students" value={reportData.newlyAssigned.length} icon={UserPlus} className="bg-blue-100 dark:bg-blue-900/50 border-blue-300" />
                 <ReportStatCard title="Visas Approved" value={reportData.visasApproved.length} icon={CheckCircle} className="bg-green-100 dark:bg-green-900/50 border-green-300" />
                 <ReportStatCard title="Visas Rejected" value={reportData.visasRejected.length} icon={FileX} className="bg-red-100 dark:bg-red-900/50 border-red-300" />
-                <ReportStatCard title="Fees Fully Paid" value={reportData.feesPaid.length} icon={CircleDollarSign} className="bg-yellow-100 dark:bg-yellow-900/50 border-yellow-300" />
+                <ReportStatCard title="Total Fees Paid" value={reportData.totalFeesPaidCount} icon={CircleDollarSign} className="bg-yellow-100 dark:bg-yellow-900/50 border-yellow-300" />
               </div>
 
               <div>
-                <h3 className="text-lg font-semibold text-primary mb-2">Performance Snapshot</h3>
+                <h3 className="text-lg font-semibold text-primary mb-2">Performance Snapshot (During Period)</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -234,7 +249,7 @@ export default function ReportsPage() {
                         <CardContent>
                             <div className="text-2xl font-bold">{feeConversionRate}%</div>
                             <p className="text-xs text-muted-foreground">
-                                Based on {reportData.newlyAssigned.length} new students and {reportData.feesPaid.length} paid fees in this period.
+                                Based on {reportData.newlyAssigned.length} new students and {reportData.feesPaidInPeriod.length} fees paid in this period.
                             </p>
                         </CardContent>
                     </Card>
@@ -245,7 +260,7 @@ export default function ReportsPage() {
                  <ReportDetailTable title="Newly Assigned Students" data={reportData.newlyAssigned} dateField="timestamp" dateLabel="Date Assigned" />
                  <ReportDetailTable title="Visa Approvals" data={reportData.visasApproved} dateField="visaStatusUpdateDate" dateLabel="Approval Date" />
                  <ReportDetailTable title="Visa Rejections" data={reportData.visasRejected} dateField="visaStatusUpdateDate" dateLabel="Rejection Date" />
-                 <ReportDetailTable title="Full Service Fees Paid" data={reportData.feesPaid} dateField="serviceFeePaidDate" dateLabel="Date Paid" />
+                 <ReportDetailTable title="Service Fees Paid in Period" data={reportData.feesPaidInPeriod} dateField="serviceFeePaidDate" dateLabel="Date Paid" />
               </div>
             </CardContent>
           </Card>
@@ -264,5 +279,3 @@ export default function ReportsPage() {
     </main>
   );
 }
-
-    
