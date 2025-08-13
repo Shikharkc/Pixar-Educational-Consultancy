@@ -2,15 +2,17 @@
 
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
-import { collection, onSnapshot, query, orderBy, Timestamp, FirestoreError } from 'firebase/firestore';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { collection, onSnapshot, query, orderBy, Timestamp, FirestoreError, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert, LineChart, PieChart as PieChartIcon, DollarSign, GraduationCap, Languages, FileCheck, FileX, CircleDollarSign } from 'lucide-react';
+import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert, LineChart, PieChart as PieChartIcon, DollarSign, GraduationCap, Languages, FileCheck, FileX, CircleDollarSign, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import type { Student } from '@/lib/data';
+import { Button } from '@/components/ui/button';
+import { formatDistanceToNow } from 'date-fns';
 
 // Define the structure for the stats object that we'll compute on the client-side
 interface DashboardStats {
@@ -23,6 +25,14 @@ interface DashboardStats {
   studentsByEducation: { [education: string]: number };
   studentsByEnglishTest: { [test: string]: number };
 }
+
+interface CachedStats {
+    stats: DashboardStats;
+    timestamp: number;
+}
+
+const CACHE_KEY = 'dashboardStatsCache';
+const CACHE_DURATION_MINUTES = 15;
 
 // Define colors for the charts
 const PIE_CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
@@ -58,83 +68,108 @@ const toTitleCase = (str: string | undefined) => {
     });
 };
 
+const processStudentDocs = (studentDocs: Student[]): DashboardStats => {
+    const newStats: DashboardStats = {
+        totalStudents: 0,
+        studentsByDestination: {},
+        visaStatusCounts: {},
+        monthlyAdmissions: {},
+        studentsByCounselor: {},
+        serviceFeeStatusCounts: {},
+        studentsByEducation: {},
+        studentsByEnglishTest: {},
+    };
+
+    const twelveMonthsAgo = new Date();
+    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
+
+    studentDocs.forEach(student => {
+        newStats.totalStudents++;
+
+        const dest = toTitleCase(student.preferredStudyDestination);
+        newStats.studentsByDestination[dest] = (newStats.studentsByDestination[dest] || 0) + 1;
+
+        const visa = toTitleCase(student.visaStatus);
+        newStats.visaStatusCounts[visa] = (newStats.visaStatusCounts[visa] || 0) + 1;
+
+        const coun = toTitleCase(student.assignedTo);
+        newStats.studentsByCounselor[coun] = (newStats.studentsByCounselor[coun] || 0) + 1;
+        
+        const fee = toTitleCase(student.serviceFeeStatus);
+        newStats.serviceFeeStatusCounts[fee] = (newStats.serviceFeeStatusCounts[fee] || 0) + 1;
+
+        const edu = toTitleCase(student.lastCompletedEducation);
+        newStats.studentsByEducation[edu] = (newStats.studentsByEducation[edu] || 0) + 1;
+
+        const test = toTitleCase(student.englishProficiencyTest);
+        newStats.studentsByEnglishTest[test] = (newStats.studentsByEnglishTest[test] || 0) + 1;
+
+        if (student.timestamp && (student.timestamp as Timestamp).toDate) {
+            const date = (student.timestamp as Timestamp).toDate();
+            if (date > twelveMonthsAgo) {
+                const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                newStats.monthlyAdmissions[monthYear] = (newStats.monthlyAdmissions[monthYear] || 0) + 1;
+            }
+        }
+    });
+    return newStats;
+};
+
+
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isCachedData, setIsCachedData] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
-  useEffect(() => {
-    const studentsQuery = query(collection(db, 'students'), orderBy('timestamp', 'desc'));
-    
-    const unsubscribe = onSnapshot(studentsQuery, (querySnapshot) => {
+  const fetchAndSetStats = useCallback(async (force = false) => {
+    setLoading(true);
+    setIsCachedData(false);
+    setError(null);
+    try {
+        const studentsQuery = query(collection(db, 'students'), orderBy('timestamp', 'desc'));
+        const querySnapshot = await getDocs(studentsQuery);
         const studentDocs = querySnapshot.docs.map(doc => doc.data() as Student);
 
         if (studentDocs.length === 0) {
             setError('no-data');
             setStats(null);
+        } else {
+            const newStats = processStudentDocs(studentDocs);
+            setStats(newStats);
+            const cache: CachedStats = { stats: newStats, timestamp: Date.now() };
+            localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
+            setLastUpdated(cache.timestamp);
+        }
+    } catch (err: any) {
+        if (err.code === 'permission-denied') {
+            setError('permission-denied');
+        } else {
+            console.error("Error fetching students collection:", err);
+            setError("An unknown error occurred while loading dashboard data.");
+        }
+    } finally {
+        setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const cachedItem = localStorage.getItem(CACHE_KEY);
+    if (cachedItem) {
+        const cachedData: CachedStats = JSON.parse(cachedItem);
+        const isCacheValid = (Date.now() - cachedData.timestamp) < CACHE_DURATION_MINUTES * 60 * 1000;
+        
+        if (isCacheValid) {
+            setStats(cachedData.stats);
+            setLastUpdated(cachedData.timestamp);
+            setIsCachedData(true);
             setLoading(false);
             return;
         }
-
-        const newStats: DashboardStats = {
-            totalStudents: 0,
-            studentsByDestination: {},
-            visaStatusCounts: {},
-            monthlyAdmissions: {},
-            studentsByCounselor: {},
-            serviceFeeStatusCounts: {},
-            studentsByEducation: {},
-            studentsByEnglishTest: {},
-        };
-
-        const twelveMonthsAgo = new Date();
-        twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-
-        studentDocs.forEach(student => {
-            newStats.totalStudents++;
-
-            const dest = toTitleCase(student.preferredStudyDestination);
-            newStats.studentsByDestination[dest] = (newStats.studentsByDestination[dest] || 0) + 1;
-
-            const visa = toTitleCase(student.visaStatus);
-            newStats.visaStatusCounts[visa] = (newStats.visaStatusCounts[visa] || 0) + 1;
-
-            const coun = toTitleCase(student.assignedTo);
-            newStats.studentsByCounselor[coun] = (newStats.studentsByCounselor[coun] || 0) + 1;
-            
-            const fee = toTitleCase(student.serviceFeeStatus);
-            newStats.serviceFeeStatusCounts[fee] = (newStats.serviceFeeStatusCounts[fee] || 0) + 1;
-
-            const edu = toTitleCase(student.lastCompletedEducation);
-            newStats.studentsByEducation[edu] = (newStats.studentsByEducation[edu] || 0) + 1;
-
-            const test = toTitleCase(student.englishProficiencyTest);
-            newStats.studentsByEnglishTest[test] = (newStats.studentsByEnglishTest[test] || 0) + 1;
-
-            if (student.timestamp && (student.timestamp as Timestamp).toDate) {
-                const date = (student.timestamp as Timestamp).toDate();
-                if (date > twelveMonthsAgo) {
-                    const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                    newStats.monthlyAdmissions[monthYear] = (newStats.monthlyAdmissions[monthYear] || 0) + 1;
-                }
-            }
-        });
-
-        setError(null);
-        setStats(newStats);
-        setLoading(false);
-    }, (err: FirestoreError) => {
-      if (err.code === 'permission-denied') {
-        setError('permission-denied');
-      } else {
-        console.error("Error listening to students collection:", err);
-        setError("An unknown error occurred while loading dashboard data.");
-      }
-      setLoading(false);
-    });
-    
-    return () => unsubscribe();
-  }, []);
+    }
+    fetchAndSetStats();
+  }, [fetchAndSetStats]);
 
   const dataMappers = useMemo(() => {
     if (!stats) return {};
@@ -200,6 +235,21 @@ export default function DashboardPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+       {isCachedData && (
+        <Alert variant="default" className="bg-blue-100 border-blue-200 dark:bg-blue-900/30 dark:border-blue-700">
+            <Clock className="h-4 w-4" />
+            <AlertTitle>Displaying Cached Data</AlertTitle>
+            <AlertDescription className="flex justify-between items-center">
+                <span>
+                Data last updated {lastUpdated ? formatDistanceToNow(lastUpdated, { addSuffix: true }) : 'a moment'} ago. Click refresh for live data.
+                </span>
+                <Button variant="secondary" size="sm" onClick={() => fetchAndSetStats(true)}>
+                    <RefreshCw className="mr-2 h-4 w-4"/>
+                    Refresh
+                </Button>
+            </AlertDescription>
+        </Alert>
+       )}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
          <StatCard 
             title="Total Students" 
