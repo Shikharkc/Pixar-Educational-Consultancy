@@ -24,7 +24,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Search, AlertTriangle, UserPlus, CalendarDays } from 'lucide-react';
+import { Loader2, Search, AlertTriangle, UserPlus, CalendarDays, Users } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { format, formatDistanceToNowStrict, isToday } from 'date-fns';
@@ -150,16 +150,6 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
     
   }, [debouncedSearchTerm, toast]);
 
-
-  const getFeeStatusBadgeVariant = (status: Student['serviceFeeStatus']) => {
-    switch (status) {
-      case 'Paid': return 'default';
-      case 'Partial': return 'secondary';
-      case 'Unpaid': return 'destructive';
-      default: return 'outline';
-    }
-  };
-
   const getRelativeDate = (date: any) => {
     if (!date) return 'No date';
     const timestamp = date.toDate ? date.toDate() : new Date(date);
@@ -229,9 +219,10 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
                     </div>
                     <div className="text-xs text-muted-foreground truncate">{student.email}</div>
                     <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-                      <Badge variant={getFeeStatusBadgeVariant(student.serviceFeeStatus)} className="py-0.5 px-1.5 text-xs">
-                        {student.serviceFeeStatus || 'N/A'}
-                      </Badge>
+                       <div className="flex items-center">
+                        <Users className="mr-1 h-3 w-3" />
+                        <span>{student.assignedTo || 'N/A'}</span>
+                      </div>
                       <div className="flex items-center">
                         <CalendarDays className="mr-1 h-3 w-3" />
                         <span>{student.timestamp ? format(student.timestamp, 'dd MMM yyyy') : 'N/A'} ({getRelativeDate(student.timestamp)})</span>
