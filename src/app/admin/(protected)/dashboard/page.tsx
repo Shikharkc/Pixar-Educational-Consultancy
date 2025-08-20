@@ -61,12 +61,15 @@ const StatCard = ({ title, value, icon: Icon, className, description }: StatCard
 );
 
 // Helper to normalize strings to Title Case for consistency
-const toTitleCase = (str: string | undefined) => {
+const toTitleCase = (str: string | undefined | null): string => {
     if (!str) return "N/A";
-    return str.replace(/\w\S*/g, (txt) => {
-        return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
-    });
+    return str
+        .trim() // Trim leading/trailing whitespace
+        .replace(/\w\S*/g, (txt) => {
+            return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
+        });
 };
+
 
 const processStudentDocs = (studentDocs: Student[]): DashboardStats => {
     const newStats: DashboardStats = {
