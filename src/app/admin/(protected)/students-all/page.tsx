@@ -1,8 +1,7 @@
 
-
 'use client';
 
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import {
   collection,
   query,
@@ -23,14 +22,29 @@ import type { Student } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { StudentsAllTable } from '@/components/admin/students-all-table';
-import { Loader2, Database, AlertTriangle, Search } from 'lucide-react';
+import { Loader2, Database, AlertTriangle, Search, History } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { counselorNames, studyDestinationOptions } from '@/lib/data.tsx';
+import { formatDistanceToNow } from 'date-fns';
 
 const PAGE_SIZE = 50;
+
+interface FilterState {
+  visaStatus: string;
+  serviceFeeStatus: string;
+  assignedTo: string;
+  preferredStudyDestination: string;
+}
+
+interface FilterHistoryItem {
+  timestamp: number;
+  filters: FilterState;
+}
+
+const FILTER_HISTORY_KEY = 'filterHistory';
 
 export default function StudentsAllPage() {
   const [students, setStudents] = useState<Student[]>([]);
@@ -40,6 +54,7 @@ export default function StudentsAllPage() {
   const [lastVisible, setLastVisible] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [history, setHistory] = useState<FilterHistoryItem[]>([]);
   
   // State for filters
   const [visaStatusFilter, setVisaStatusFilter] = useState('all');
@@ -48,6 +63,28 @@ export default function StudentsAllPage() {
   const [destinationFilter, setDestinationFilter] = useState('all');
 
   const { toast } = useToast();
+
+  useEffect(() => {
+    try {
+      const storedHistory = localStorage.getItem(FILTER_HISTORY_KEY);
+      if (storedHistory) {
+        setHistory(JSON.parse(storedHistory));
+      }
+    } catch (error) {
+        console.error("Could not load filter history from localStorage", error);
+    }
+  }, []);
+
+  const addHistoryItem = (filters: FilterState) => {
+    const newItem = { filters, timestamp: Date.now() };
+    const newHistory = [newItem, ...history].slice(0, 5); // Keep last 5
+    setHistory(newHistory);
+     try {
+        localStorage.setItem(FILTER_HISTORY_KEY, JSON.stringify(newHistory));
+    } catch (error) {
+        console.error("Could not save filter history to localStorage", error);
+    }
+  };
   
   const filters = useMemo(() => ({
     visaStatus: visaStatusFilter,
@@ -88,6 +125,11 @@ export default function StudentsAllPage() {
       }
 
       const documentSnapshots = await getDocs(q);
+      
+      if(pageDirection === 'first') {
+        addHistoryItem(newFilters);
+      }
+
       const studentData: Student[] = documentSnapshots.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
@@ -120,7 +162,7 @@ export default function StudentsAllPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [lastVisible, firstVisible, isDataLoaded, currentPage, toast, filters]);
+  }, [lastVisible, firstVisible, isDataLoaded, currentPage, toast, filters, addHistoryItem]);
   
   const handleFilterChange = () => {
     fetchStudents('first', {
@@ -129,6 +171,28 @@ export default function StudentsAllPage() {
         assignedTo: counselorFilter,
         preferredStudyDestination: destinationFilter,
     });
+  };
+
+  const renderFilterHistory = () => {
+    if (history.length === 0) {
+      return <p className="text-sm text-muted-foreground text-center py-4">No filter history found.</p>;
+    }
+    return (
+      <ul className="space-y-2 text-sm text-muted-foreground">
+        {history.map((item, index) => {
+          const appliedFilters = Object.entries(item.filters)
+            .filter(([, value]) => value !== 'all')
+            .map(([key, value]) => `${key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}: ${value}`)
+            .join(', ');
+          return (
+            <li key={index} className="flex justify-between items-center p-2 rounded-md bg-muted/50">
+              <span>{appliedFilters || 'No filters applied'}</span>
+              <span>{formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}</span>
+            </li>
+          );
+        })}
+      </ul>
+    );
   };
 
   return (
@@ -241,6 +305,18 @@ export default function StudentsAllPage() {
           )}
         </CardContent>
       </Card>
+
+      <div className="mt-8">
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center"><History className="mr-2 h-5 w-5" /> Filter History</CardTitle>
+                <CardDescription>History of the last 5 filters applied on this browser.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {renderFilterHistory()}
+            </CardContent>
+        </Card>
+      </div>
     </main>
   );
 }

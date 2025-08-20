@@ -1,9 +1,9 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { DateRange } from 'react-day-picker';
-import { addDays, format, startOfMonth, endOfMonth, startOfWeek, endOfWeek } from 'date-fns';
+import { addDays, format, startOfMonth, endOfMonth } from 'date-fns';
 import { collection, query, where, getDocs, Timestamp, orderBy } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { counselorNames, Student } from '@/lib/data';
@@ -14,10 +14,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Calendar as CalendarIcon, ClipboardList, Printer, CheckCircle, FileX, CircleDollarSign, UserPlus, TrendingUp, Percent } from 'lucide-react';
+import { Loader2, Calendar as CalendarIcon, ClipboardList, Printer, CheckCircle, FileX, CircleDollarSign, UserPlus, TrendingUp, Percent, History } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import SectionTitle from '@/components/ui/section-title';
+import { formatDistanceToNow } from 'date-fns';
 
 interface ReportData {
   newlyAssigned: Student[];
@@ -26,6 +27,14 @@ interface ReportData {
   feesPaidInPeriod: Student[];
   totalFeesPaidCount: number;
 }
+
+interface ReportHistoryItem {
+  timestamp: number;
+  counselor: string;
+  dateRange: { from: string; to: string };
+}
+
+const REPORT_HISTORY_KEY = 'reportHistory';
 
 const ReportStatCard = ({ title, value, icon: Icon, className }: { title: string, value: number, icon: React.ElementType, className?: string }) => (
     <Card className={cn("text-center shadow-lg", className)}>
@@ -41,7 +50,7 @@ const ReportStatCard = ({ title, value, icon: Icon, className }: { title: string
     </Card>
 );
 
-const ReportDetailTable = ({ title, data, dateField, dateLabel = "Date" }: { title: string, data: Student[], dateField?: keyof Student, dateLabel?: string }) => (
+const ReportDetailTable = ({ title, data, dateField, dateLabel = "Date" }: { title: string; data: Student[]; dateField?: keyof Student; dateLabel?: string; }) => (
   <div>
     <h3 className="text-lg font-semibold text-primary mb-2">{title} ({data.length})</h3>
     {data.length > 0 ? (
@@ -75,6 +84,30 @@ export default function ReportsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [reportData, setReportData] = useState<ReportData | null>(null);
   const { toast } = useToast();
+  const [history, setHistory] = useState<ReportHistoryItem[]>([]);
+
+  useEffect(() => {
+    try {
+        const storedHistory = localStorage.getItem(REPORT_HISTORY_KEY);
+        if (storedHistory) {
+            setHistory(JSON.parse(storedHistory));
+        }
+    } catch (error) {
+        console.error("Could not load report history from localStorage", error);
+    }
+  }, []);
+
+  const addHistoryItem = (item: Omit<ReportHistoryItem, 'timestamp'>) => {
+    const newItem = { ...item, timestamp: Date.now() };
+    const newHistory = [newItem, ...history].slice(0, 5); // Keep last 5
+    setHistory(newHistory);
+    try {
+        localStorage.setItem(REPORT_HISTORY_KEY, JSON.stringify(newHistory));
+    } catch (error) {
+        console.error("Could not save report history to localStorage", error);
+    }
+  };
+
 
   const handleGenerateReport = useCallback(async () => {
     if (!counselor || !dateRange?.from || !dateRange?.to) {
@@ -114,6 +147,14 @@ export default function ReportsPage() {
       };
 
       setReportData(data);
+      addHistoryItem({
+        counselor,
+        dateRange: {
+            from: format(dateRange.from, 'yyyy-MM-dd'),
+            to: format(dateRange.to, 'yyyy-MM-dd'),
+        },
+      });
+
     } catch (error: any) {
         console.error("Error generating report:", error);
         let errorMessage = "An error occurred while generating the report. Please try again.";
@@ -124,7 +165,7 @@ export default function ReportsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [counselor, dateRange, toast]);
+  }, [counselor, dateRange, toast, history]);
 
   const visaApprovalRate = reportData ?
     (reportData.visasApproved.length + reportData.visasRejected.length > 0 ?
@@ -247,7 +288,7 @@ export default function ReportsPage() {
                         <CardContent>
                             <div className="text-2xl font-bold">{feeConversionRate}%</div>
                             <p className="text-xs text-muted-foreground">
-                                Of the {reportData.newlyAssigned.length} new students in this period, {totalPaidInNewCohort} have paid their fees.
+                                Of the {reportData.newlyAssigned.length} new students in this period, {totalPaidInNewCohort} have a 'Paid' fee status.
                             </p>
                         </CardContent>
                     </Card>
@@ -265,6 +306,32 @@ export default function ReportsPage() {
         </div>
       )}
 
+      <div className="no-print mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center"><History className="mr-2 h-5 w-5" /> Recent Reports</CardTitle>
+            <CardDescription>History of the last 5 reports generated on this browser.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {history.length > 0 ? (
+              <ul className="space-y-2 text-sm text-muted-foreground">
+                {history.map((item, index) => (
+                  <li key={index} className="flex justify-between items-center p-2 rounded-md bg-muted/50">
+                    <div>
+                      <span className="font-semibold text-foreground">{item.counselor}</span> - 
+                      <span> {format(new Date(item.dateRange.from), 'dd MMM yyyy')} to {format(new Date(item.dateRange.to), 'dd MMM yyyy')}</span>
+                    </div>
+                    <span>{formatDistanceToNow(new Date(item.timestamp), { addSuffix: true })}</span>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">No report history found.</p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
        {!isLoading && !reportData && (
          <Alert className="text-center no-print">
             <ClipboardList className="h-4 w-4" />
@@ -277,5 +344,3 @@ export default function ReportsPage() {
     </main>
   );
 }
-
-    
