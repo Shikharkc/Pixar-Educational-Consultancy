@@ -11,7 +11,10 @@
  *   2. Incrementally updating aggregated dashboard metrics for real-time stats.
  */
 
-import {onDocumentWritten} from "firebase-functions/v2/firestore";
+import {
+  onDocumentWritten,
+  FirestoreEvent,
+} from "firebase-functions/v2/firestore";
 import * as admin from "firebase-admin";
 import {Change} from "firebase-functions";
 import {DocumentData, DocumentSnapshot} from "firebase-admin/firestore";
@@ -72,7 +75,6 @@ const regenerateWelcomeScreen = async () => {
   }
 };
 
-
 /**
  * @param {number | undefined} currentValue The current value to increment.
  * @return {admin.firestore.FieldValue} The FieldValue increment operation.
@@ -84,7 +86,7 @@ const increment = (currentValue: number | undefined) => {
 
 /**
  * @param {number | undefined} currentValue The current value to decrement.
- * @return {admin.firestore.FieldValue} The FieldValue decrement operation.\
+ * @return {admin.firestore.FieldValue} The FieldValue decrement operation.
  */
 const decrement = (currentValue: number | undefined) => {
   const value = currentValue === undefined || currentValue <= 0 ? 0 : -1;
@@ -92,22 +94,25 @@ const decrement = (currentValue: number | undefined) => {
 };
 
 
-export const onStudentChange = onDocumentWritten("students/{studentId}",
-  async (event: Change<DocumentSnapshot<DocumentData>>) => {
-    console.log(`Function triggered for studentId: ${event.after.id}`);
-    const before = event.before.data();
-    const after = event.after.data();
+export const onStudentChange = onDocumentWritten(
+  "students/{studentId}",
+  async (event: FirestoreEvent<Change<DocumentSnapshot> | undefined,
+    { studentId: string }>) => {
+    if (!event.data) {
+      console.log("No data associated with the event. Exiting function.");
+      return;
+    }
 
-    // Regenerate Welcome Screen on ANY change. This is a simple and robust
-    // way to ensure the list is always accurate. The function itself contains
-    // the logic to only get recent, unassigned students.
+    console.log(`Function triggered for studentId: ${event.params.studentId}`);
+    const before = event.data.before.data();
+    const after = event.data.after.data();
+
     const welcomeScreenPromise = regenerateWelcomeScreen();
 
-    // --- Handle Metrics ---
     const metricsPromise = updateMetrics((data) => {
       // --- Handle Deletes ---
       if (!after) {
-        if (!before) return data; // Should not happen
+        if (!before) return data;
         console.log(`Processing DELETE for student: ${before.fullName}`);
         const dest = toTitleCase(before.preferredStudyDestination);
         const visa = toTitleCase(before.visaStatus);
@@ -251,7 +256,7 @@ export const onStudentChange = onDocumentWritten("students/{studentId}",
       return data;
     });
 
-    // Await both promises to complete
     await Promise.all([welcomeScreenPromise, metricsPromise]);
-    console.log(`Function finished for studentId: ${event.after.id}`);
-  });
+    console.log(`Function finished for studentId: ${event.params.studentId}`);
+  }
+);
