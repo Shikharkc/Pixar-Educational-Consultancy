@@ -37,6 +37,19 @@ const updateMetrics = (
   });
 };
 
+const updateWelcomeScreen = async (
+  updateFn: (names: string[]) => string[]
+) => {
+  const welcomeRef = db.collection("display").doc("officeTV");
+  return db.runTransaction(async (transaction) => {
+    const doc = await transaction.get(welcomeRef);
+    const currentNames = doc.data()?.studentNames || [];
+    const updatedNames = updateFn(currentNames);
+    // Use set with merge to create the document if it doesn't exist.
+    transaction.set(welcomeRef, { studentNames: updatedNames }, { merge: true });
+  });
+};
+
 /**
  * @param {number | undefined} currentValue The current value to increment.
  * @return {admin.firestore.FieldValue} The FieldValue increment operation.
@@ -58,11 +71,47 @@ const decrement = (currentValue: number | undefined) => {
 
 export const onStudentChange = onDocumentWritten(
   "students/{studentId}",
-  (event) => {
-    return updateMetrics((data) => {
-      const before = event.data?.before.data();
-      const after = event.data?.after.data();
+  async (event) => {
+    const before = event.data?.before.data();
+    const after = event.data?.after.data();
 
+    // --- Handle Welcome Screen ---
+    const welcomeScreenPromises = [];
+    if (!after) { // --- On Delete ---
+      if (before && before.assignedTo === 'Unassigned') {
+        welcomeScreenPromises.push(updateWelcomeScreen((names) => names.filter(name => name !== before.fullName)));
+      }
+    } else if (!before) { // --- On Create ---
+      if (after.assignedTo === 'Unassigned') {
+         welcomeScreenPromises.push(updateWelcomeScreen((names) => [...names, after.fullName]));
+      }
+    } else { // --- On Update ---
+      const oldAssigned = before.assignedTo;
+      const newAssigned = after.assignedTo;
+      const oldName = before.fullName;
+      const newName = after.fullName;
+
+      if (oldAssigned !== newAssigned || oldName !== newName) {
+        welcomeScreenPromises.push(updateWelcomeScreen(names => {
+          let updatedNames = [...names];
+          // Remove old name if they were unassigned before
+          if (oldAssigned === 'Unassigned') {
+            updatedNames = updatedNames.filter(name => name !== oldName);
+          }
+          // Add new name if they are unassigned now
+          if (newAssigned === 'Unassigned') {
+            // Avoid duplicates
+            if (!updatedNames.includes(newName)) {
+              updatedNames.push(newName);
+            }
+          }
+          return updatedNames;
+        }));
+      }
+    }
+
+
+    const metricsPromise = updateMetrics((data) => {
       // --- Handle Deletes ---
       if (!after) {
         if (!before) return data; // Should not happen
@@ -205,5 +254,7 @@ export const onStudentChange = onDocumentWritten(
       }
       return data;
     });
+
+    await Promise.all([...welcomeScreenPromises, metricsPromise]);
   }
 );
