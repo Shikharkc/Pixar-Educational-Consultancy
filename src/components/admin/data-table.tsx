@@ -12,6 +12,8 @@ import {
   endAt,
   Query,
   DocumentData,
+  where,
+  Timestamp,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Student } from '@/lib/data.tsx';
@@ -23,11 +25,12 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Search, AlertTriangle, UserPlus, CalendarDays, Users } from 'lucide-react';
+import { Loader2, Search, AlertTriangle, UserPlus, CalendarDays, Users, FilterX } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { format, formatDistanceToNowStrict, isToday } from 'date-fns';
+import { format, formatDistanceToNowStrict, isToday, sub } from 'date-fns';
 
 // A simple debounce hook to prevent firing search queries on every keystroke
 const useDebouncedValue = (value: string, delay: number) => {
@@ -55,6 +58,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
+  const [showOnlyUnassigned, setShowOnlyUnassigned] = useState(false);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -69,8 +73,19 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
 
     let q: Query<DocumentData>;
 
-    if (debouncedSearchTerm.trim()) {
-      // Search Query: listens for real-time updates on search results
+    if (showOnlyUnassigned) {
+      // Unassigned in last 24 hours query
+      const yesterday = sub(new Date(), { days: 1 });
+      const yesterdayTimestamp = Timestamp.fromDate(yesterday);
+      
+      q = query(
+        collection(db, 'students'), 
+        where('assignedTo', '==', 'Unassigned'),
+        where('timestamp', '>=', yesterdayTimestamp),
+        orderBy('timestamp', 'desc')
+      );
+    } else if (debouncedSearchTerm.trim()) {
+      // Search Query
       const searchLower = debouncedSearchTerm.toLowerCase();
       q = query(
         collection(db, 'students'),
@@ -79,7 +94,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
         endAt(searchLower + '\uf8ff')
       );
     } else {
-      // Default Query: listens for real-time updates on the 20 newest students
+      // Default Query: 20 newest students
       q = query(
         collection(db, 'students'), 
         orderBy('timestamp', 'desc'), 
@@ -103,16 +118,16 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
           currentStudentIds.add(doc.id);
         });
 
-        // Check for new students only after the initial load
-        if (!isInitialLoad.current) {
-          const newStudents = currentStudents.filter(s => !previousStudentIds.current.has(s.id));
-          if (newStudents.length > 0 && !debouncedSearchTerm) {
+        // Check for new students only after the initial load and when not searching/filtering
+        if (!isInitialLoad.current && !debouncedSearchTerm && !showOnlyUnassigned) {
+          const newStudents = currentStudents.filter(s => !previousStudentIds.current.has(s.id) && s.assignedTo === 'Unassigned');
+          if (newStudents.length > 0) {
             newStudents.forEach(newStudent => {
               toast({
                 title: (
                   <div className="flex items-center">
                     <UserPlus className="mr-2 h-5 w-5 text-primary" />
-                    New Student Registered
+                    New Unassigned Student
                   </div>
                 ),
                 description: `${newStudent.fullName} has been added.`,
@@ -121,15 +136,17 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
             });
           }
         } else {
-          // It's the first load, so don't trigger notifications
           isInitialLoad.current = false;
         }
 
         setStudents(currentStudents);
-        previousStudentIds.current = currentStudentIds; // Update the set of known IDs
+        // Only update previous IDs when in default view to correctly detect new arrivals
+        if (!debouncedSearchTerm && !showOnlyUnassigned) {
+             previousStudentIds.current = currentStudentIds;
+        }
         
-        if (currentStudents.length === 0 && debouncedSearchTerm.trim()) {
-            setError("No students found matching your search.");
+        if (currentStudents.length === 0 && (debouncedSearchTerm.trim() || showOnlyUnassigned)) {
+            setError(`No students found matching your ${showOnlyUnassigned ? "filter" : "search"}.`);
         } else {
             setError(null);
         }
@@ -139,7 +156,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
         console.error("Error with real-time listener: ", err);
         let userFriendlyError = "Failed to load student data. Please check your internet connection and Firestore permissions.";
         if (err.code === 'failed-precondition' || (err.message && err.message.includes("index"))) {
-            userFriendlyError = `A required database index is missing. Please contact support to create a composite index on the 'students' collection for the 'searchableName' and 'timestamp' fields.`;
+            userFriendlyError = `A required database index is missing. Please check the Firestore console for an index creation link in the error logs. You may need to create composite indexes.`;
         }
         setError(userFriendlyError);
         setLoading(false);
@@ -148,7 +165,12 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
 
     return () => unsubscribe();
     
-  }, [debouncedSearchTerm, toast]);
+  }, [debouncedSearchTerm, toast, showOnlyUnassigned]);
+
+  const toggleUnassignedFilter = () => {
+    setShowOnlyUnassigned(prev => !prev);
+    setSearchTerm(''); // Clear search when toggling filter
+  };
 
   const getRelativeDate = (date: any) => {
     if (!date) return 'No date';
@@ -173,13 +195,24 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
             <Input
               placeholder="Search by name..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (showOnlyUnassigned) setShowOnlyUnassigned(false); // Disable filter when searching
+              }}
               className="w-full pl-10"
             />
           </div>
+           <Button
+             variant={showOnlyUnassigned ? "secondary" : "outline"}
+             onClick={toggleUnassignedFilter}
+             className="flex-shrink-0"
+           >
+              {showOnlyUnassigned ? <FilterX className="mr-2 h-4 w-4" /> : <Users className="mr-2 h-4 w-4" />}
+              Unassigned
+           </Button>
         </div>
         <p className="text-xs text-muted-foreground px-1">
-          {debouncedSearchTerm ? `Showing results for "${debouncedSearchTerm}"` : 'Showing 20 newest students.'}
+          {showOnlyUnassigned ? `Showing unassigned students from the last 24 hours.` : debouncedSearchTerm ? `Showing results for "${debouncedSearchTerm}"` : 'Showing 20 newest students.'}
         </p>
       </div>
       <div className="max-h-[calc(100vh-350px)] overflow-auto">
