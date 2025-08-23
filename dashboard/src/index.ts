@@ -20,7 +20,8 @@ import {Change} from "firebase-functions";
 import {DocumentData, DocumentSnapshot} from "firebase-admin/firestore";
 
 admin.initializeApp();
-const db = admin.firestore();
+// Explicitly connect to the 'pixareducation' database. This is the crucial fix.
+const db = admin.firestore(undefined, "pixareducation");
 
 // Helper to normalize strings to Title Case for consistency
 const toTitleCase = (str: string | undefined | null): string => {
