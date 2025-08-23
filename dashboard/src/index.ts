@@ -21,7 +21,7 @@ import {DocumentData, DocumentSnapshot} from "firebase-admin/firestore";
 
 admin.initializeApp();
 // Explicitly connect to the 'pixareducation' database. This is the crucial fix.
-const db = admin.firestore('pixareducation');
+const db = admin.firestore("pixareducation");
 
 
 // Helper to normalize strings to Title Case for consistency
