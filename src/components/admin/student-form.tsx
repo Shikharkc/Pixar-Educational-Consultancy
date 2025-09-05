@@ -251,9 +251,10 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                       )}
                     >
                       {field.value
-                        ? universityList.find(
-                            (uni) => uni.value === field.value
-                          )?.label
+                        ? (() => {
+                            const uni = universityList.find(u => u.value === field.value);
+                            return uni ? `${uni.label} (${uni.country})` : "Select university";
+                          })()
                         : "Select university"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -280,7 +281,7 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                                 : "opacity-0"
                             )}
                           />
-                          {uni.label}
+                          {uni.label} <span className="text-muted-foreground ml-2">({uni.country})</span>
                         </CommandItem>
                       ))}
                     </CommandGroup>
@@ -367,6 +368,13 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
   const displayServiceFeeDate = safeToDate(student?.serviceFeePaidDate);
   const displayVisaStatusDate = safeToDate(student?.visaStatusUpdateDate);
 
+  const selectedUniversityLabel = student?.collegeUniversityName 
+    ? (() => {
+        const uni = universityList.find(u => u.value === student.collegeUniversityName);
+        return uni ? `${uni.label} (${uni.country})` : student.collegeUniversityName;
+      })() 
+    : 'N/A';
+
   return (
     <Card className="h-full flex flex-col">
         <CardHeader>
@@ -389,7 +397,7 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
             </div>
         </CardHeader>
         <CardContent className="flex-grow space-y-6 p-6 overflow-y-auto">
-            {/* Student Provided Data */}
+            {/* Student Information Section */}
             <div className="space-y-4">
                 <h3 className="font-semibold text-lg text-primary border-b pb-2">Student Information</h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
@@ -402,11 +410,11 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                 </div>
             </div>
             
-            {/* Internal Records */}
+            {/* Internal Records Section */}
             <div className="p-4 bg-muted/50 rounded-lg space-y-4">
                 <h3 className="font-semibold text-lg text-primary border-b pb-2">Internal Records</h3>
                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
-                    <DetailItem icon={Briefcase} label="College/University" value={student?.collegeUniversityName} />
+                    <DetailItem icon={Briefcase} label="College/University" value={selectedUniversityLabel} />
                     <DetailItem icon={ShieldQuestion} label="Visa Status" value={<Badge variant={getVisaStatusBadgeVariant(student?.visaStatus)}>{student?.visaStatus}</Badge>} />
                     {displayVisaStatusDate && <DetailItem icon={CalendarDays} label="Visa Status Date" value={format(displayVisaStatusDate, 'PPP')} />}
                     <DetailItem icon={CircleDollarSign} label="Service Fee Status" value={<Badge variant={getFeeStatusBadgeVariant(student?.serviceFeeStatus)}>{student?.serviceFeeStatus}</Badge>} />
