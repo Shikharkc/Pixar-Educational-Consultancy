@@ -208,37 +208,42 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
   };
 
   const formContent = (
-    <CardContent className="space-y-4 flex-grow overflow-y-auto p-4 sm:p-6 pr-2 sm:pr-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-          {/* Left Column */}
-          <div className="space-y-4">
-             <h4 className="font-medium text-primary border-b pb-1">Personal & Contact Information</h4>
-             <FormField control={form.control} name="fullName" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><BookUser className="mr-2 h-4 w-4"/>Full Name</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-             <FormField control={form.control} name="email" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><Mail className="mr-2 h-4 w-4"/>Email</FormLabel> <FormControl><Input type="email" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-             <FormField control={form.control} name="mobileNumber" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><Phone className="mr-2 h-4 w-4"/>Mobile Number</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-             <FormField control={form.control} name="emergencyContact" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><Phone className="mr-2 h-4 w-4"/>Emergency Contact</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-          </div>
-          {/* Right Column */}
-          <div className="space-y-4">
-            <h4 className="font-medium text-primary border-b pb-1">Academic & Study Preferences</h4>
-            <FormField control={form.control} name="lastCompletedEducation" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Last Education</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger></FormControl><SelectContent>{allEducationLevels.map(l => (<SelectItem key={l.value} value={l.value}>{l.name}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem> )}/>
-            <FormField control={form.control} name="englishProficiencyTest" render={({ field }) => ( <FormItem><FormLabel className="text-xs">English Test</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{englishTestOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem> )}/>
-            <FormField control={form.control} name="preferredStudyDestination" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Destination</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger></FormControl><SelectContent>{studyDestinationOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem> )}/>
-            
-            <div className="p-4 bg-muted/50 rounded-lg space-y-4 mt-4">
-                <h4 className="font-medium text-primary border-b pb-1">Internal Records</h4>
-                <FormField control={form.control} name="collegeUniversityName" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><Briefcase className="mr-2 h-4 w-4"/>College/University Name</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-                <FormField control={form.control} name="visaStatus" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Visa Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{['Not Applied', 'Pending', 'Approved', 'Rejected'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )}/>
-                {visaStatus && visaStatus !== 'Not Applied' && <FormField control={form.control} name="visaStatusUpdateDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel className="text-xs">Visa Status Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick date</span>}<CalendarIcon className="ml-auto h-4 w-4" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)}/>}
-                <FormField control={form.control} name="serviceFeeStatus" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Service Fee</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{['Unpaid', 'Paid'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )}/>
-                {serviceFeeStatus === 'Paid' && <FormField control={form.control} name="serviceFeePaidDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel className="text-xs">Fee Paid Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick date</span>}<CalendarIcon className="ml-auto h-4 w-4" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)}/>}
-            </div>
-          </div>
-          <div className="md:col-span-2">
-             <Separator/>
-             <FormField control={form.control} name="additionalNotes" render={({ field }) => ( <FormItem className="mt-4"><FormLabel className="flex items-center"><StickyNote className="mr-2 h-4 w-4"/>Additional Notes</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem> )}/>
-          </div>
+    <CardContent className="space-y-6 flex-grow overflow-y-auto p-4 sm:p-6 pr-2 sm:pr-4">
+      {/* Personal and Academic Info */}
+      <div className="space-y-4">
+        <h4 className="font-medium text-primary border-b pb-1">Student Information</h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField control={form.control} name="fullName" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><BookUser className="mr-2 h-4 w-4"/>Full Name</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+          <FormField control={form.control} name="email" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><Mail className="mr-2 h-4 w-4"/>Email</FormLabel> <FormControl><Input type="email" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <FormField control={form.control} name="mobileNumber" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><Phone className="mr-2 h-4 w-4"/>Mobile Number</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+          <FormField control={form.control} name="emergencyContact" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><Phone className="mr-2 h-4 w-4"/>Emergency Contact</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <FormField control={form.control} name="lastCompletedEducation" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Last Education</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger></FormControl><SelectContent>{allEducationLevels.map(l => (<SelectItem key={l.value} value={l.value}>{l.name}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem> )}/>
+          <FormField control={form.control} name="englishProficiencyTest" render={({ field }) => ( <FormItem><FormLabel className="text-xs">English Test</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{englishTestOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem> )}/>
+          <FormField control={form.control} name="preferredStudyDestination" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Destination</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger></FormControl><SelectContent>{studyDestinationOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem> )}/>
+        </div>
       </div>
+
+      <Separator />
+
+      {/* Internal Records */}
+      <div className="p-4 bg-muted/50 rounded-lg space-y-4">
+        <h4 className="font-medium text-primary border-b pb-1">Internal Records</h4>
+        <FormField control={form.control} name="collegeUniversityName" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><Briefcase className="mr-2 h-4 w-4"/>College/University Name</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <FormField control={form.control} name="visaStatus" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Visa Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{['Not Applied', 'Pending', 'Approved', 'Rejected'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )}/>
+            {visaStatus && visaStatus !== 'Not Applied' && <FormField control={form.control} name="visaStatusUpdateDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel className="text-xs">Visa Status Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick date</span>}<CalendarIcon className="ml-auto h-4 w-4" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)}/>}
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+           <FormField control={form.control} name="serviceFeeStatus" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Service Fee</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{['Unpaid', 'Paid'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )}/>
+           {serviceFeeStatus === 'Paid' && <FormField control={form.control} name="serviceFeePaidDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel className="text-xs">Fee Paid Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick date</span>}<CalendarIcon className="ml-auto h-4 w-4" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)}/>}
+        </div>
+      </div>
+
+       <FormField control={form.control} name="additionalNotes" render={({ field }) => ( <FormItem><FormLabel className="flex items-center"><StickyNote className="mr-2 h-4 w-4"/>Additional Notes</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem> )}/>
     </CardContent>
   );
 
@@ -324,39 +329,36 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                 </div>
             </div>
         </CardHeader>
-        <CardContent className="flex-grow space-y-4 p-6 overflow-y-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                {/* Left Column: Student Provided Data */}
-                <div className="space-y-4">
-                    <h3 className="font-semibold text-lg text-primary border-b pb-2">Student Information</h3>
+        <CardContent className="flex-grow space-y-6 p-6 overflow-y-auto">
+            {/* Student Provided Data */}
+            <div className="space-y-4">
+                <h3 className="font-semibold text-lg text-primary border-b pb-2">Student Information</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
                     <DetailItem icon={Mail} label="Email" value={student?.email} />
                     <DetailItem icon={Phone} label="Mobile Number" value={student?.mobileNumber} />
                     <DetailItem icon={Phone} label="Emergency Contact" value={student?.emergencyContact} />
-                    <Separator className="my-4"/>
                     <DetailItem icon={GraduationCap} label="Last Completed Education" value={student?.lastCompletedEducation} />
                     <DetailItem icon={Languages} label="English Proficiency Test" value={student?.englishProficiencyTest} />
                     <DetailItem icon={Target} label="Preferred Study Destination" value={student?.preferredStudyDestination} />
                 </div>
+            </div>
+            
+            {/* Internal Records */}
+            <div className="p-4 bg-muted/50 rounded-lg space-y-4">
+                <h3 className="font-semibold text-lg text-primary border-b pb-2">Internal Records</h3>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
+                    <DetailItem icon={Briefcase} label="College/University" value={student?.collegeUniversityName} />
+                    <DetailItem icon={ShieldQuestion} label="Visa Status" value={<Badge variant={getVisaStatusBadgeVariant(student?.visaStatus)}>{student?.visaStatus}</Badge>} />
+                    {displayVisaStatusDate && <DetailItem icon={CalendarDays} label="Visa Status Date" value={format(displayVisaStatusDate, 'PPP')} />}
+                    <DetailItem icon={CircleDollarSign} label="Service Fee Status" value={<Badge variant={getFeeStatusBadgeVariant(student?.serviceFeeStatus)}>{student?.serviceFeeStatus}</Badge>} />
+                    {displayServiceFeeDate && <DetailItem icon={CalendarDays} label="Fee Paid Date" value={format(displayServiceFeeDate, 'PPP')} />}
+                 </div>
+            </div>
 
-                {/* Right Column: Internal Data */}
-                <div className="space-y-4">
-                    <h3 className="font-semibold text-lg text-primary border-b pb-2">Internal Records</h3>
-                    <div className="p-4 bg-muted/50 rounded-lg space-y-4">
-                        <DetailItem icon={Briefcase} label="College/University" value={student?.collegeUniversityName} />
-                        <Separator/>
-                        <DetailItem icon={ShieldQuestion} label="Visa Status" value={<Badge variant={getVisaStatusBadgeVariant(student?.visaStatus)}>{student?.visaStatus}</Badge>} />
-                        {displayVisaStatusDate && <DetailItem icon={CalendarDays} label="Visa Status Date" value={format(displayVisaStatusDate, 'PPP')} />}
-                        <Separator />
-                        <DetailItem icon={CircleDollarSign} label="Service Fee Status" value={<Badge variant={getFeeStatusBadgeVariant(student?.serviceFeeStatus)}>{student?.serviceFeeStatus}</Badge>} />
-                        {displayServiceFeeDate && <DetailItem icon={CalendarDays} label="Fee Paid Date" value={format(displayServiceFeeDate, 'PPP')} />}
-                    </div>
-                     <DetailItem icon={CalendarDays} label="Date Added" value={displayTimestamp ? format(displayTimestamp, 'PPP, p') : 'N/A'} />
-                </div>
-                 {/* Full-width notes section */}
-                 <div className="md:col-span-2">
-                     <Separator className="my-2"/>
-                     <DetailItem icon={StickyNote} label="Additional Notes" value={<p className="text-sm text-foreground/80 whitespace-pre-wrap">{student?.additionalNotes}</p>} />
-                </div>
+            {/* Notes and Timestamps */}
+            <div className="space-y-4 pt-4">
+                <DetailItem icon={StickyNote} label="Additional Notes" value={<p className="text-sm text-foreground/80 whitespace-pre-wrap">{student?.additionalNotes}</p>} />
+                <DetailItem icon={CalendarDays} label="Date Added" value={displayTimestamp ? format(displayTimestamp, 'PPP, p') : 'N/A'} />
             </div>
         </CardContent>
          <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
