@@ -733,3 +733,33 @@ export const socialPlatforms = [
   { name: 'YouTube', icon: Youtube, url: 'https://www.youtube.com/@pixareducation', colorClass: 'hover:text-red-600', dataAiHint: 'youtube logo' },
   { name: 'Instagram', icon: Instagram, url: 'https://www.instagram.com/pixar.education?igsh=MXE5ZWJhZ2tmNTMybQ==', colorClass: 'hover:text-pink-500', dataAiHint: 'instagram logo' },
 ];
+
+export const universityList = [
+  { value: 'Arkansas State University', label: 'Arkansas State University' },
+  { value: 'Cardiff Metropolitan University', label: 'Cardiff Metropolitan University' },
+  { value: 'Eastern Institute of Technology', label: 'Eastern Institute of Technology' },
+  { value: 'Flinders University', label: 'Flinders University' },
+  { value: 'Georgian College', label: 'Georgian College' },
+  { value: 'Harrisburg University', label: 'Harrisburg University' },
+  { value: 'La Trobe University', label: 'La Trobe University' },
+  { value: 'Louisiana Tech University', label: 'Louisiana Tech University' },
+  { value: 'Midwestern State University', label: 'Midwestern State University' },
+  { value: 'Montana State University', label: 'Montana State University' },
+  { value: 'Murray State University', label: 'Murray State University' },
+  { value: 'NorthWest Missouri State University', label: 'NorthWest Missouri State University' },
+  { value: 'Otago Polytechnic', label: 'Otago Polytechnic' },
+  { value: 'Southeast Missouri State University', label: 'Southeast Missouri State University' },
+  { value: 'St.Cloud State University', label: 'St.Cloud State University' },
+  { value: 'University of Central Arkansas', label: 'University of Central Arkansas' },
+  { value: 'University of Central Missouri', label: 'University of Central Missouri' },
+  { value: 'University of New Castle', label: 'University of New Castle' },
+  { value: 'University Of South Dakota', label: 'University Of South Dakota' },
+  { value: 'University of Wollongong', label: 'University of Wollongong' },
+  { value: 'Victoria University', label: 'Victoria University' },
+  { value: 'Washington University Of Science And Technology', label: 'Washington University Of Science And Technology' },
+  { value: 'Webster University', label: 'Webster University' },
+  { value: 'Westcliff University', label: 'Westcliff University' },
+  { value: 'Wichita State University', label: 'Wichita State University' },
+  { value: 'Wright State University', label: 'Wright State University' },
+  // Add more universities here to expand the list
+];
