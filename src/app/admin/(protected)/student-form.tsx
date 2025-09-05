@@ -321,37 +321,39 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                 </div>
             </div>
         </CardHeader>
-        <CardContent className="space-y-6 flex-grow overflow-y-auto p-4 sm:p-6 pr-2 sm:pr-4">
-             <div className="space-y-4">
-                <h3 className="font-semibold text-lg text-primary">Personal & Contact Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <DetailItem icon={Mail} label="Email" value={student?.email} />
-                  <DetailItem icon={Phone} label="Mobile Number" value={student?.mobileNumber} />
-                  <DetailItem icon={Phone} label="Emergency Contact" value={student?.emergencyContact} />
-                  <DetailItem icon={Briefcase} label="College/University" value={student?.collegeUniversityName} />
-                </div>
-              </div>
-              <Separator />
-              <div className="space-y-4">
-                 <h3 className="font-semibold text-lg text-primary">Academic & Study Preferences</h3>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <CardContent className="flex-grow space-y-4 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                {/* Left Column: Student Provided Data */}
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-lg text-primary border-b pb-2">Student Information</h3>
+                    <DetailItem icon={Mail} label="Email" value={student?.email} />
+                    <DetailItem icon={Phone} label="Mobile Number" value={student?.mobileNumber} />
+                    <DetailItem icon={Phone} label="Emergency Contact" value={student?.emergencyContact} />
+                    <Separator className="my-4"/>
                     <DetailItem icon={GraduationCap} label="Last Completed Education" value={student?.lastCompletedEducation} />
                     <DetailItem icon={Languages} label="English Proficiency Test" value={student?.englishProficiencyTest} />
                     <DetailItem icon={Target} label="Preferred Study Destination" value={student?.preferredStudyDestination} />
-                 </div>
-                 <DetailItem icon={StickyNote} label="Additional Notes" value={<p className="whitespace-pre-wrap">{student?.additionalNotes}</p>} />
-              </div>
-               <Separator />
-               <div className="space-y-4">
-                 <h3 className="font-semibold text-lg text-primary">Internal Records</h3>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                    <DetailItem icon={ShieldQuestion} label="Visa Status" value={<Badge variant={getVisaStatusBadgeVariant(student?.visaStatus)}>{student?.visaStatus}</Badge>} />
-                    {displayVisaStatusDate && <DetailItem icon={CalendarDays} label="Visa Status Date" value={format(displayVisaStatusDate, 'PPP')} />}
-                    <DetailItem icon={CircleDollarSign} label="Service Fee Status" value={<Badge variant={getFeeStatusBadgeVariant(student?.serviceFeeStatus)}>{student?.serviceFeeStatus}</Badge>} />
-                    {displayServiceFeeDate && <DetailItem icon={CalendarDays} label="Fee Paid Date" value={format(displayServiceFeeDate, 'PPP')} />}
-                    <DetailItem icon={CalendarDays} label="Date Added" value={displayTimestamp ? format(displayTimestamp, 'PPP, p') : 'N/A'} />
-                 </div>
-              </div>
+                    <DetailItem icon={Briefcase} label="College/University" value={student?.collegeUniversityName} />
+                </div>
+
+                {/* Right Column: Internal Data */}
+                <div className="space-y-4">
+                    <h3 className="font-semibold text-lg text-primary border-b pb-2">Internal Records</h3>
+                    <div className="p-4 bg-muted/50 rounded-lg space-y-4">
+                        <DetailItem icon={ShieldQuestion} label="Visa Status" value={<Badge variant={getVisaStatusBadgeVariant(student?.visaStatus)}>{student?.visaStatus}</Badge>} />
+                        {displayVisaStatusDate && <DetailItem icon={CalendarDays} label="Visa Status Date" value={format(displayVisaStatusDate, 'PPP')} />}
+                        <Separator />
+                        <DetailItem icon={CircleDollarSign} label="Service Fee Status" value={<Badge variant={getFeeStatusBadgeVariant(student?.serviceFeeStatus)}>{student?.serviceFeeStatus}</Badge>} />
+                        {displayServiceFeeDate && <DetailItem icon={CalendarDays} label="Fee Paid Date" value={format(displayServiceFeeDate, 'PPP')} />}
+                    </div>
+                     <DetailItem icon={CalendarDays} label="Date Added" value={displayTimestamp ? format(displayTimestamp, 'PPP, p') : 'N/A'} />
+                </div>
+                 {/* Full-width notes section */}
+                 <div className="md:col-span-2">
+                     <Separator className="my-2"/>
+                     <DetailItem icon={StickyNote} label="Additional Notes" value={<p className="text-sm text-foreground/80 whitespace-pre-wrap">{student?.additionalNotes}</p>} />
+                </div>
+            </div>
         </CardContent>
          <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
             <AlertDialogContent>
