@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { collection, query, where, orderBy, limit, onSnapshot, QueryConstraint } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { DataTable } from '@/components/admin/data-table';
@@ -38,34 +38,56 @@ export default function StudentManagementPage() {
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
   const { toast } = useToast();
 
+  const handleRowSelect = (student: Student) => {
+    setSelectedStudent(student);
+  };
+  
+  const handleDeselect = () => {
+    setSelectedStudent(null);
+  }
+
+  const studentsToDisplay = useMemo(() => {
+    return activeTab === 'recent' ? recentStudents : remoteStudents;
+  }, [activeTab, recentStudents, remoteStudents]);
+
   useEffect(() => {
     setLoading(true);
-    
-    // Base constraints
-    const recentBaseConstraints: QueryConstraint[] = [orderBy('timestamp', 'desc')];
-    const remoteBaseConstraints: QueryConstraint[] = [where('inquiryType', 'in', ['visit', 'phone']), where('assignedTo', '==', 'Unassigned'), orderBy('timestamp', 'desc')];
-    
     const searchLower = debouncedSearchTerm.toLowerCase();
+
+    // Base queries for each tab
+    const baseRecentQueryConstraints: QueryConstraint[] = [orderBy('timestamp', 'desc')];
+    const baseRemoteQueryConstraints: QueryConstraint[] = [
+      where('inquiryType', 'in', ['visit', 'phone']),
+      where('assignedTo', '==', 'Unassigned'),
+      orderBy('timestamp', 'desc')
+    ];
     
+    // Apply search or limit
     if (searchLower) {
-        // If searching, apply search constraints to both queries
-        recentBaseConstraints.unshift(orderBy('searchableName'));
-        recentBaseConstraints.push(where('searchableName', '>=', searchLower), where('searchableName', '<=', searchLower + '\uf8ff'));
-        
-        remoteBaseConstraints.unshift(orderBy('searchableName'));
-        remoteBaseConstraints.push(where('searchableName', '>=', searchLower), where('searchableName', '<=', searchLower + '\uf8ff'));
+      baseRecentQueryConstraints.unshift(orderBy('searchableName'));
+      baseRecentQueryConstraints.push(where('searchableName', '>=', searchLower), where('searchableName', '<=', searchLower + '\uf8ff'));
+      // Remote search is not implemented as per new logic, but we can add it if needed later.
+      // For now, remote search will show no results to keep it simple.
     } else {
-        // If not searching, apply limit
-        recentBaseConstraints.push(limit(20));
-        remoteBaseConstraints.push(limit(20));
+      baseRecentQuery_constraints.push(limit(20));
+      baseRemoteQueryConstraints.push(limit(20));
     }
 
-    const recentQuery = query(collection(db, 'students'), ...recentBaseConstraints);
-    const remoteQuery = query(collection(db, 'students'), ...remoteBaseConstraints);
+    const recentQuery = query(collection(db, 'students'), ...baseRecentQueryConstraints);
+    const remoteQuery = query(collection(db, 'students'), ...baseRemoteQueryConstraints);
     
     const unsubRecent = onSnapshot(recentQuery, (querySnapshot) => {
       const studentData: Student[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), timestamp: doc.data().timestamp?.toDate() } as Student));
-      setRecentStudents(studentData);
+      
+      if (!searchLower) { // Only update if not searching, to avoid overwriting search results
+        setRecentStudents(studentData);
+      } else {
+        // If searching, we need a different logic to fetch all data or paginate
+        // For now, let's just filter the already loaded recent students if searching
+         const filtered = recentStudents.filter(s => s.fullName.toLowerCase().includes(searchLower));
+         setRecentStudents(filtered);
+      }
+
       setLoading(false);
     }, (error) => {
       console.error("Error fetching recent students:", error);
@@ -81,19 +103,34 @@ export default function StudentManagementPage() {
       toast({ title: "Error", description: "Could not fetch remote inquiries.", variant: "destructive" });
     });
 
+    // New logic for search to query the entire database
+    if (searchLower) {
+        setLoading(true);
+        const allStudentsQuery = query(
+            collection(db, 'students'),
+            orderBy('searchableName'),
+            where('searchableName', '>=', searchLower),
+            where('searchableName', '<=', searchLower + '\uf8ff')
+        );
+        const unsubSearch = onSnapshot(allStudentsQuery, (querySnapshot) => {
+            const studentData: Student[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), timestamp: doc.data().timestamp?.toDate() } as Student));
+            setRecentStudents(studentData); // Load search results into the main tab
+            setActiveTab('recent'); // Switch to recent tab to show search results
+            setLoading(false);
+        }, (error) => {
+            console.error("Error during search:", error);
+            toast({ title: "Search Error", description: "Could not perform search.", variant: "destructive" });
+            setLoading(false);
+        });
+        return () => unsubSearch();
+    }
+
+
     return () => {
       unsubRecent();
       unsubRemote();
     };
   }, [debouncedSearchTerm, toast]);
-
-  const handleRowSelect = (student: Student) => {
-    setSelectedStudent(student);
-  };
-  
-  const handleDeselect = () => {
-    setSelectedStudent(null);
-  }
 
   useEffect(() => {
     const handleOpenNewStudentForm = () => {
@@ -126,13 +163,13 @@ export default function StudentManagementPage() {
               <CardHeader className="p-0">
                   <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                       <TabsList className="grid w-full grid-cols-2 rounded-t-lg rounded-b-none">
-                          <TabsTrigger value="recent"><Users className="mr-2 h-4 w-4" />Recent / Walk-ins</TabsTrigger>
+                          <TabsTrigger value="recent"><Users className="mr-2 h-4 w-4" />Recent / Assigned</TabsTrigger>
                           <TabsTrigger value="remote"><Phone className="mr-2 h-4 w-4" />Remote Inquiries</TabsTrigger>
                       </TabsList>
                       <TabsContent value="recent" className="m-0">
                           <DataTable 
                             students={recentStudents} 
-                            loading={loading}
+                            loading={loading && !debouncedSearchTerm}
                             onRowSelect={handleRowSelect} 
                             selectedStudentId={selectedStudent?.id}
                             searchTerm={searchTerm}
@@ -143,7 +180,7 @@ export default function StudentManagementPage() {
                       <TabsContent value="remote" className="m-0">
                           <DataTable 
                             students={remoteStudents} 
-                            loading={loading}
+                            loading={loading && !debouncedSearchTerm}
                             onRowSelect={handleRowSelect} 
                             selectedStudentId={selectedStudent?.id}
                             searchTerm={searchTerm}
