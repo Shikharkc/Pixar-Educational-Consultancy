@@ -53,63 +53,91 @@ export default function CounselorDashboard({ counselorName, onLogout }: Counselo
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
   const { toast } = useToast();
 
-  const fetchStudents = useCallback(async () => {
-    if (!counselorName) return;
+  const searchStudents = useCallback(async () => {
+    if (!counselorName || !debouncedSearchTerm) return;
 
     setLoading(true);
     setError(null);
-    
+
     try {
-        const constraints: QueryConstraint[] = [
-            where('assignedTo', '==', counselorName)
-        ];
+      const searchLower = debouncedSearchTerm.toLowerCase();
+      const constraints: QueryConstraint[] = [
+        where('assignedTo', '==', counselorName),
+        orderBy('searchableName'),
+        where('searchableName', '>=', searchLower),
+        where('searchableName', '<=', searchLower + '\uf8ff')
+      ];
 
-        const searchLower = debouncedSearchTerm.toLowerCase();
-        if (searchLower) {
-            constraints.push(orderBy('searchableName'));
-            constraints.push(where('searchableName', '>=', searchLower));
-            constraints.push(where('searchableName', '<=', searchLower + '\uf8ff'));
-        } else {
-            constraints.push(orderBy('timestamp', 'desc'));
-            constraints.push(limit(15));
-        }
+      const q = query(collection(db, 'students'), ...constraints);
+      const querySnapshot = await getDocs(q);
+      const studentData: Student[] = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().timestamp?.toDate(),
+      } as Student));
 
-        const q = query(collection(db, 'students'), ...constraints);
-        const querySnapshot = await getDocs(q);
-
-        const studentData: Student[] = [];
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            studentData.push({
-            id: doc.id,
-            ...data,
-            timestamp: data.timestamp?.toDate(),
-            } as Student);
-        });
-
-        if (studentData.length === 0 && searchLower) {
-          toast({ title: "No results", description: `No students found matching "${debouncedSearchTerm}".`});
-        }
-        
-        setStudents(studentData);
-
+      if (studentData.length === 0) {
+        toast({ title: "No results", description: `No students found matching "${debouncedSearchTerm}".` });
+      }
+      setStudents(studentData);
     } catch (err: any) {
-        console.error("Firestore Error:", err);
-        let errorMessage = "Could not load your assigned students. Please check your connection or contact an admin.";
-        if (err.code === 'failed-precondition') {
-            errorMessage = "A required database index is missing. Please contact your administrator to create the necessary Firestore index for searching.";
-        }
-        setError(errorMessage);
+      console.error("Firestore Search Error:", err);
+      let errorMessage = "Could not perform search. Please check your connection or contact an admin.";
+      if (err.code === 'failed-precondition') {
+        errorMessage = "A required database index is missing for search. Please contact your administrator.";
+      }
+      setError(errorMessage);
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   }, [counselorName, debouncedSearchTerm, toast]);
 
 
   useEffect(() => {
-    // This effect triggers fetching when the component mounts or the search term changes
-    fetchStudents();
-  }, [fetchStudents]);
+    if (!counselorName) return;
+
+    // If there's a search term, use the one-time search function
+    if (debouncedSearchTerm) {
+      searchStudents();
+      return; // Stop here and don't set up the real-time listener
+    }
+    
+    // Otherwise, set up the real-time listener for the default view
+    setLoading(true);
+    setError(null);
+
+    const q = query(
+      collection(db, 'students'),
+      where('assignedTo', '==', counselorName),
+      orderBy('timestamp', 'desc'),
+      limit(15)
+    );
+
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      const studentData: Student[] = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        studentData.push({
+          id: doc.id,
+          ...data,
+          timestamp: data.timestamp?.toDate(),
+        } as Student);
+      });
+      setStudents(studentData);
+      setLoading(false);
+    }, (err: any) => {
+      console.error("Firestore Snapshot Error:", err);
+      let errorMessage = "Could not load your assigned students. Please check your connection or contact an admin.";
+      if (err.code === 'permission-denied') {
+        errorMessage = "You do not have permission to view this data. Please contact an admin.";
+      }
+      setError(errorMessage);
+      setLoading(false);
+    });
+
+    // Cleanup function to unsubscribe from the listener when the component unmounts
+    return () => unsubscribe();
+  }, [counselorName, debouncedSearchTerm, searchStudents]);
 
 
   const handleRowSelect = (student: Student) => {
@@ -122,8 +150,7 @@ export default function CounselorDashboard({ counselorName, onLogout }: Counselo
   
   const handleFormSubmitSuccess = () => {
       handleDeselect();
-      // Refetch the data to show the latest changes
-      fetchStudents();
+      // No need to manually refetch, onSnapshot will handle updates automatically
   };
 
   return (
