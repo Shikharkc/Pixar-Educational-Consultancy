@@ -64,6 +64,7 @@ export default function CounselorDashboard({ counselorName }: CounselorDashboard
         });
         setStudents(studentData);
         setLoading(false);
+        setError(null); // Clear previous errors on success
       },
       (err: any) => {
         console.error("Firestore Error:", err);

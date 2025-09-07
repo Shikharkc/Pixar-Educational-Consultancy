@@ -1,41 +1,49 @@
-rules_version = '2';
 
+rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper function to get the user's role and name from the 'counselors' collection.
-    // This makes rules cleaner and easier to read.
-    function getUserData(userId) {
-      return get(/databases/$(database)/documents/counselors/$(userId)).data;
+    // Helper function to get user's role
+    function getUserRole(userId) {
+      return get(/databases/$(database)/documents/counselors/$(userId)).data.role;
     }
 
-    // Allow any authenticated user to read their own profile to get their role and name.
+    // Helper function to get user's name
+    function getUserName(userId) {
+      return get(/databases/$(database)/documents/counselors/$(userId)).data.name;
+    }
+
+    // Rules for the counselors collection
     match /counselors/{userId} {
-      allow read: if request.auth != null && request.auth.uid == userId;
+      // Admins can manage counselor roles
+      allow read, write: if getUserRole(request.auth.uid) == 'admin';
+      // A counselor can read their own profile
+      allow get: if request.auth.uid == userId;
     }
 
-    // Rules for the 'students' collection
+    // Rules for the students collection
     match /students/{studentId} {
+      // Anyone can create a student record (e.g., from the contact form)
+      allow create: if request.auth == null || request.auth.uid != null;
+
+      // Admins can read/write any single student document
+      allow get, update, delete: if getUserRole(request.auth.uid) == 'admin';
       
-      // RULE FOR ADMINS:
-      // Admins can perform any action (read, write, create, delete) on any student document.
-      allow read, write: if getUserData(request.auth.uid).role == 'admin';
+      // Counselors can read/write a single student document IF it's assigned to them
+      allow get, update: if getUserName(request.auth.uid) == resource.data.assignedTo;
 
-      // RULE FOR COUNSELORS (Reading single documents):
-      // A counselor can read a single student document IF that student is assigned to them.
-      allow get: if getUserData(request.auth.uid).role == 'counselor' 
-                  && resource.data.assignedTo == getUserData(request.auth.uid).name;
-                  
-      // RULE FOR COUNSELORS (Updating single documents):
-      // A counselor can update a single student document IF that student is assigned to them.
-      allow update: if getUserData(request.auth.uid).role == 'counselor'
-                    && resource.data.assignedTo == getUserData(request.auth.uid).name;
-
-      // RULE FOR COUNSELORS (Reading a LIST of documents):
-      // This is the most important rule for fixing the current error.
-      // A counselor can query the students collection IF the query specifically filters for their own name.
-      allow list: if getUserData(request.auth.uid).role == 'counselor'
-                   && request.query.where.assignedTo == getUserData(request.auth.uid).name;
+      // --- THIS IS THE CRITICAL FIX FOR THE QUERY ---
+      // Define who can LIST (query) documents
+      allow list: if 
+        // Admins can list all students
+        getUserRole(request.auth.uid) == 'admin' ||
+        // Counselors can list students IF the query's "where" clause is filtering by their own name
+        (getUserRole(request.auth.uid) == 'counselor' && request.query.where.assignedTo == getUserName(request.auth.uid));
+    }
+    
+    // Default deny all other collections
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }
