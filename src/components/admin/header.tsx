@@ -1,36 +1,19 @@
 
 'use client';
 
-import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { LogOut, PlusCircle, List, BarChart3, Database, ClipboardList } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import Image from 'next/image';
 
 interface AdminHeaderProps {
   onAddNew: () => void;
+  onLogout: () => void;
 }
 
-export default function AdminHeader({ onAddNew }: AdminHeaderProps) {
-  const router = useRouter();
+export default function AdminHeader({ onAddNew, onLogout }: AdminHeaderProps) {
   const pathname = usePathname();
-  const { toast } = useToast();
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      // Clear session storage on logout
-      sessionStorage.removeItem('adminName');
-      toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
-      router.push('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast({ title: 'Logout Failed', description: 'An error occurred during logout.', variant: 'destructive' });
-    }
-  };
   
   const navItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: BarChart3 },
@@ -64,7 +47,7 @@ export default function AdminHeader({ onAddNew }: AdminHeaderProps) {
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Student
         </Button>
-        <Button variant="outline" onClick={handleLogout} size="sm">
+        <Button variant="outline" onClick={onLogout} size="sm">
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </Button>

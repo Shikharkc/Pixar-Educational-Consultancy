@@ -37,7 +37,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
       return;
     }
     if (!user) {
-      router.push('/admin/login');
+      router.replace('/admin/login');
       return;
     }
 
@@ -52,11 +52,13 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
         } else {
           toast({ title: 'Access Denied', description: 'You do not have permissions to access this area.', variant: 'destructive'});
           await signOut(auth);
+          router.replace('/admin/login');
         }
       } catch (e) {
           console.error("Error fetching user role:", e);
           toast({ title: 'Error', description: 'Could not verify your user role.', variant: 'destructive'});
           await signOut(auth);
+          router.replace('/admin/login');
       } finally {
           setIsCheckingRole(false);
       }
@@ -66,10 +68,11 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }, [user, loading, router, toast]);
 
   const handleLogout = async () => {
+    // Navigate away first to ensure listeners are detached cleanly before sign-out
+    router.push('/admin/login'); 
     try {
       await signOut(auth);
       toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
-      router.push('/');
     } catch (error) {
       console.error('Logout error:', error);
       toast({ title: 'Logout Failed', description: 'An error occurred during logout.', variant: 'destructive' });
@@ -102,7 +105,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   if (userRole === 'admin') {
     return (
       <div className="bg-muted/40 min-h-screen">
-          <AdminHeader onAddNew={handleAddNewStudent} />
+          <AdminHeader onAddNew={handleAddNewStudent} onLogout={handleLogout} />
           {children}
           <AlertDialog open={isWarningActive}>
             <AlertDialogContent>
@@ -125,15 +128,15 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     );
   }
   
-  if (userRole === 'counselor') {
-    return <CounselorDashboard counselorName={userName || 'Counselor'} />;
+  if (userRole === 'counselor' && userName) {
+    return <CounselorDashboard counselorName={userName} onLogout={handleLogout} />;
   }
 
   // This fallback will show the loader until a role is determined or the user is redirected.
   return (
     <div className="flex h-screen w-full items-center justify-center bg-background">
       <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      <p className="ml-2">Verifying authentication...</p>
+      <p className="ml-2">Verifying role...</p>
     </div>
   );
 }

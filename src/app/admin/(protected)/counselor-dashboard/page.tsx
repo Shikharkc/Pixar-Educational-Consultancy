@@ -7,12 +7,10 @@ import {
   query,
   where,
   onSnapshot,
-  Query,
-  DocumentData,
-  QueryConstraint,
   orderBy,
+  QueryConstraint,
 } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import type { Student } from '@/lib/data';
 import { DataTable } from '@/components/admin/data-table';
 import { StudentForm } from '@/components/admin/student-form';
@@ -20,35 +18,30 @@ import { Card } from '@/components/ui/card';
 import { Users, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { signOut } from 'firebase/auth';
-import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface CounselorDashboardProps {
   counselorName: string;
+  onLogout: () => void;
 }
 
-export default function CounselorDashboard({ counselorName }: CounselorDashboardProps) {
+export default function CounselorDashboard({ counselorName, onLogout }: CounselorDashboardProps) {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-  const router = useRouter();
 
   useEffect(() => {
     if (!counselorName) return;
 
     setLoading(true);
-    // This query is now simpler: It only filters by the counselor's name.
-    // The sorting will be handled by the data-table component on the client-side.
-    // This makes the query easier to secure with Firestore rules.
-    const q = query(
-        collection(db, 'students'), 
-        where('assignedTo', '==', counselorName),
-        orderBy('timestamp', 'desc')
-    );
+
+    const constraints: QueryConstraint[] = [
+      where('assignedTo', '==', counselorName),
+      orderBy('timestamp', 'desc')
+    ];
+    
+    const q = query(collection(db, 'students'), ...constraints);
 
     const unsubscribe = onSnapshot(
       q,
@@ -64,7 +57,7 @@ export default function CounselorDashboard({ counselorName }: CounselorDashboard
         });
         setStudents(studentData);
         setLoading(false);
-        setError(null); // Clear previous errors on success
+        setError(null);
       },
       (err: any) => {
         console.error("Firestore Error:", err);
@@ -85,17 +78,6 @@ export default function CounselorDashboard({ counselorName }: CounselorDashboard
     setSelectedStudent(null);
   };
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
-      router.push('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast({ title: 'Logout Failed', description: 'An error occurred during logout.', variant: 'destructive' });
-    }
-  };
-
   return (
     <div className="bg-muted/40 min-h-screen">
       <header className="sticky top-0 z-30 flex h-auto items-center justify-between border-b bg-background px-4 sm:px-6 py-2">
@@ -106,7 +88,7 @@ export default function CounselorDashboard({ counselorName }: CounselorDashboard
             <p className="text-sm text-muted-foreground">Welcome, {counselorName}</p>
           </div>
         </div>
-        <Button variant="outline" onClick={handleLogout} size="sm">
+        <Button variant="outline" onClick={onLogout} size="sm">
           <LogOut className="mr-2 h-4 w-4" />
           Logout
         </Button>
