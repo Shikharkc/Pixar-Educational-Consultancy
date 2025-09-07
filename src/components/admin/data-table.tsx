@@ -14,6 +14,7 @@ import {
   DocumentData,
   where,
   Timestamp,
+  QueryConstraint,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Student } from '@/lib/data.tsx';
@@ -27,10 +28,10 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Search, AlertTriangle, UserPlus, CalendarDays, Users, FilterX, X } from 'lucide-react';
+import { Loader2, Search, AlertTriangle, UserPlus, CalendarDays, X } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-import { format, formatDistanceToNowStrict, isToday, sub } from 'date-fns';
+import { format, formatDistanceToNowStrict, isToday } from 'date-fns';
 
 // A simple debounce hook to prevent firing search queries on every keystroke
 const useDebouncedValue = (value: string, delay: number) => {
@@ -50,15 +51,15 @@ const useDebouncedValue = (value: string, delay: number) => {
 interface DataTableProps {
   onRowSelect: (student: Student) => void;
   selectedStudentId?: string | null;
+  filterMode: 'recent' | 'remote';
 }
 
-export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
+export function DataTable({ onRowSelect, selectedStudentId, filterMode }: DataTableProps) {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
-  const [showOnlyUnassigned, setShowOnlyUnassigned] = useState(false);
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement>(null);
 
@@ -71,36 +72,26 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
     setLoading(true);
     setError(null);
 
-    let q: Query<DocumentData>;
+    const constraints: QueryConstraint[] = [];
 
-    if (showOnlyUnassigned) {
-      // Unassigned in last 24 hours query
-      const yesterday = sub(new Date(), { days: 1 });
-      const yesterdayTimestamp = Timestamp.fromDate(yesterday);
-      
-      q = query(
-        collection(db, 'students'), 
-        where('assignedTo', '==', 'Unassigned'),
-        where('timestamp', '>=', yesterdayTimestamp),
-        orderBy('timestamp', 'desc')
-      );
-    } else if (debouncedSearchTerm.trim()) {
-      // Search Query
-      const searchLower = debouncedSearchTerm.toLowerCase();
-      q = query(
-        collection(db, 'students'),
-        orderBy('searchableName'),
-        startAt(searchLower),
-        endAt(searchLower + '\uf8ff')
-      );
+    if (debouncedSearchTerm.trim()) {
+        const searchLower = debouncedSearchTerm.toLowerCase();
+        constraints.push(orderBy('searchableName'));
+        constraints.push(startAt(searchLower));
+        constraints.push(endAt(searchLower + '\uf8ff'));
     } else {
-      // Default Query: 20 newest students
-      q = query(
-        collection(db, 'students'), 
-        orderBy('timestamp', 'desc'), 
-        limit(20)
-      );
+        constraints.push(orderBy('timestamp', 'desc'));
     }
+
+    if (filterMode === 'remote') {
+        constraints.push(where('assignedTo', '==', 'Unassigned'));
+        constraints.push(where('inquiryType', 'in', ['visit', 'phone']));
+    } else {
+        constraints.push(limit(20));
+    }
+
+
+    const q = query(collection(db, 'students'), ...constraints);
 
     const unsubscribe = onSnapshot(
       q,
@@ -118,8 +109,8 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
           currentStudentIds.add(doc.id);
         });
 
-        // Check for new students only after the initial load and when not searching/filtering
-        if (!isInitialLoad.current && !debouncedSearchTerm && !showOnlyUnassigned) {
+        // Check for new students only after the initial load and when in 'recent' mode
+        if (!isInitialLoad.current && !debouncedSearchTerm && filterMode === 'recent') {
           const newStudents = currentStudents.filter(s => !previousStudentIds.current.has(s.id) && s.assignedTo === 'Unassigned');
           if (newStudents.length > 0) {
             newStudents.forEach(newStudent => {
@@ -127,26 +118,26 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
                 title: (
                   <div className="flex items-center">
                     <UserPlus className="mr-2 h-5 w-5 text-primary" />
-                    New Unassigned Student
+                    New Student Inquiry
                   </div>
                 ),
-                description: `${newStudent.fullName} has been added.`,
+                description: `${newStudent.fullName} has been added to the list.`,
               });
               audioRef.current?.play().catch(e => console.log("Audio play failed:", e));
             });
           }
-        } else {
-          isInitialLoad.current = false;
         }
+        
+        isInitialLoad.current = false;
 
         setStudents(currentStudents);
         // Only update previous IDs when in default view to correctly detect new arrivals
-        if (!debouncedSearchTerm && !showOnlyUnassigned) {
+        if (!debouncedSearchTerm && filterMode === 'recent') {
              previousStudentIds.current = currentStudentIds;
         }
         
-        if (currentStudents.length === 0 && (debouncedSearchTerm.trim() || showOnlyUnassigned)) {
-            setError(`No students found matching your ${showOnlyUnassigned ? "filter" : "search"}.`);
+        if (querySnapshot.empty && (debouncedSearchTerm.trim() || filterMode === 'remote')) {
+            setError(`No students found matching your criteria.`);
         } else {
             setError(null);
         }
@@ -165,12 +156,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
 
     return () => unsubscribe();
     
-  }, [debouncedSearchTerm, toast, showOnlyUnassigned]);
-
-  const toggleUnassignedFilter = () => {
-    setShowOnlyUnassigned(prev => !prev);
-    setSearchTerm(''); // Clear search when toggling filter
-  };
+  }, [debouncedSearchTerm, toast, filterMode]);
 
   const getRelativeDate = (date: any) => {
     if (!date) return 'No date';
@@ -183,23 +169,38 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
     return `${formatDistanceToNowStrict(timestamp)} ago`;
   };
 
+  const getInquiryTypeBadge = (student: Student) => {
+    if (student.inquiryType === 'visit' && student.appointmentDate) {
+        return <Badge variant="secondary" className="py-0.5 px-1.5 text-xs">Visit: {format(safeToDate(student.appointmentDate)!, 'dd MMM')}</Badge>;
+    }
+    if (student.inquiryType === 'phone') {
+        return <Badge variant="secondary" className="py-0.5 px-1.5 text-xs">Phone Call</Badge>;
+    }
+    return null;
+  };
+
+  const safeToDate = (dateValue: any): Date | null => {
+    if (!dateValue) return null;
+    if (typeof dateValue.toDate === 'function') return dateValue.toDate();
+    if (dateValue instanceof Date) return dateValue;
+    const parsedDate = new Date(dateValue);
+    if (!isNaN(parsedDate.getTime())) return parsedDate;
+    return null;
+  };
+
   return (
     <div className="space-y-4">
       {/* Hidden audio element for notification sound */}
       <audio ref={audioRef} src="/sounds/notification.mp3" preload="auto"></audio>
 
       <div className="px-4 pt-2 space-y-2">
-        <div className="flex items-center space-x-2">
-          <div className="relative w-full">
+        <div className="relative w-full">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by name..."
               value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                if (showOnlyUnassigned) setShowOnlyUnassigned(false); // Disable filter when searching
-              }}
-              className="w-full pl-10 pr-10" // Add pr-10 for clear button
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-10"
             />
             {searchTerm && (
                 <Button
@@ -211,19 +212,7 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
                     <X className="h-4 w-4" />
                 </Button>
             )}
-          </div>
-           <Button
-             variant={showOnlyUnassigned ? "secondary" : "outline"}
-             onClick={toggleUnassignedFilter}
-             className="flex-shrink-0"
-           >
-              {showOnlyUnassigned ? <FilterX className="mr-2 h-4 w-4" /> : <Users className="mr-2 h-4 w-4" />}
-              Unassigned
-           </Button>
         </div>
-        <p className="text-xs text-muted-foreground px-1">
-          {showOnlyUnassigned ? `Showing unassigned students from the last 24 hours.` : debouncedSearchTerm ? `Showing results for "${debouncedSearchTerm}"` : 'Showing 20 newest students.'}
-        </p>
       </div>
       <div className="max-h-[calc(100vh-350px)] overflow-auto">
         {error && !loading && (
@@ -256,19 +245,21 @@ export function DataTable({ onRowSelect, selectedStudentId }: DataTableProps) {
                   <TableCell className="font-medium p-3">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold">{student.fullName}</span>
-                      {student.assignedTo === 'Unassigned' && (
-                        <Badge className="py-0.5 px-1.5 text-xs bg-accent text-accent-foreground">New</Badge>
-                      )}
+                      {getInquiryTypeBadge(student) || (student.assignedTo === 'Unassigned' && <Badge className="py-0.5 px-1.5 text-xs bg-accent text-accent-foreground">New</Badge>)}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">{student.email}</div>
                     <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                        <div className="flex items-center">
-                        <Users className="mr-1 h-3 w-3" />
-                        <span>{student.assignedTo || 'N/A'}</span>
+                         <UserPlus className="mr-1 h-3 w-3" />
+                        <span>{getRelativeDate(student.timestamp)}</span>
                       </div>
                       <div className="flex items-center">
-                        <CalendarDays className="mr-1 h-3 w-3" />
-                        <span>{student.timestamp ? format(student.timestamp, 'dd MMM yyyy') : 'N/A'} ({getRelativeDate(student.timestamp)})</span>
+                        {student.assignedTo !== 'Unassigned' && (
+                            <>
+                                <Users className="mr-1 h-3 w-3" />
+                                <span>{student.assignedTo || 'N/A'}</span>
+                            </>
+                        )}
                       </div>
                     </div>
                   </TableCell>
