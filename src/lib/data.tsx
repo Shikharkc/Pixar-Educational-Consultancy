@@ -63,12 +63,13 @@ export interface Student {
 
 export const counselorNames = [
   'Unassigned', 
-  'Pradeep Sir', 
-  'Mujal Sir', 
-  'Sabina Mam', 
-  'Pawan Sir', 
-  'Shyam Sir', 
-  'Mamta Miss'];
+  'Pradeep Khadka', 
+  'Pawan Acharya',
+  'Mujal Amatya', 
+  'Sabina Thapa', 
+  'Shyam Babu Ojha', 
+  'Mamata Chapagain',
+];
 
 export interface Testimonial {
   id: string;
