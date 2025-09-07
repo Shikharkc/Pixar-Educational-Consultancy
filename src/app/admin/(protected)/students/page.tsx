@@ -128,7 +128,7 @@ export default function StudentManagementPage() {
           <div className="lg:col-span-4 xl:col-span-2">
             {selectedStudent ? (
               <StudentForm 
-                student={student.id ? selectedStudent : null} 
+                student={selectedStudent?.id ? selectedStudent : null} 
                 onFormClose={handleDeselect} 
                 onFormSubmitSuccess={handleDeselect}
               />
