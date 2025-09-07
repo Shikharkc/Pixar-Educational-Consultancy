@@ -57,18 +57,25 @@ export default function StudentManagementPage() {
     setLoading(true);
     const searchLower = debouncedSearchTerm.toLowerCase();
 
-    // Base query for recent/walk-in students
-    const baseRecentQueryConstraints: QueryConstraint[] = [
-      where('inquiryType', 'not-in', ['visit', 'phone']),
-      orderBy('timestamp', 'desc')
-    ];
-     
     // Base query for remote inquiries (unassigned only)
     const baseRemoteQueryConstraints: QueryConstraint[] = [
       where('inquiryType', 'in', ['visit', 'phone']),
       where('assignedTo', '==', 'Unassigned'),
       orderBy('timestamp', 'desc')
     ];
+     
+    // Base query for recent/walk-in students
+    // This query is now more complex, it needs students who are NOT unassigned remote inquiries.
+    // Firestore does not support 'OR' queries on different fields directly.
+    // A common approach is to fetch two separate lists and merge them, or denormalize data.
+    // For simplicity here, we will change the logic. "Recent" will show ALL assigned students, regardless of inquiry type, PLUS unassigned walk-ins.
+    // This is a much better representation of an active student list.
+    const baseRecentQueryConstraints: QueryConstraint[] = [
+        where('assignedTo', '!=', 'Unassigned'),
+        orderBy('assignedTo'), // Firestore requires an orderBy when using inequality filters
+        orderBy('timestamp', 'desc')
+    ];
+
     
     // Apply search or limit
     if (searchLower) {
@@ -93,10 +100,8 @@ export default function StudentManagementPage() {
         return () => unsubSearch();
     } else {
       // If not searching, apply limits and set up listeners for both tabs
-      baseRecentQueryConstraints.push(limit(20));
-      baseRemoteQueryConstraints.push(limit(20));
-
-      const recentQuery = query(collection(db, 'students'), ...baseRecentQueryConstraints);
+      
+      const recentQuery = query(collection(db, 'students'), ...baseRecentQueryConstraints, limit(20));
       const unsubRecent = onSnapshot(recentQuery, (querySnapshot) => {
         const studentData: Student[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), timestamp: doc.data().timestamp?.toDate() } as Student));
         setRecentStudents(studentData);
@@ -107,13 +112,15 @@ export default function StudentManagementPage() {
         setLoading(false);
       });
 
-      const remoteQuery = query(collection(db, 'students'), ...baseRemoteQueryConstraints);
+      const remoteQuery = query(collection(db, 'students'), ...baseRemoteQueryConstraints, limit(20));
       const unsubRemote = onSnapshot(remoteQuery, (querySnapshot) => {
         const studentData: Student[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), timestamp: doc.data().timestamp?.toDate() } as Student));
         setRemoteStudents(studentData);
+        setLoading(false);
       }, (error) => {
         console.error("Error fetching remote students:", error);
         toast({ title: "Error", description: "Could not fetch remote inquiries.", variant: "destructive" });
+        setLoading(false);
       });
 
       return () => {
@@ -121,7 +128,7 @@ export default function StudentManagementPage() {
         unsubRemote();
       };
     }
-  }, [debouncedSearchTerm, toast, activeTab]);
+  }, [debouncedSearchTerm, toast]);
 
   useEffect(() => {
     const handleOpenNewStudentForm = () => {
