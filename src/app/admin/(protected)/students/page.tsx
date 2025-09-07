@@ -51,7 +51,6 @@ export default function StudentManagementPage() {
   }, [activeTab, recentStudents, remoteStudents]);
 
   useEffect(() => {
-    // Add a guard clause to prevent running with undefined state
     if (!activeTab) return;
 
     setLoading(true);
@@ -65,21 +64,14 @@ export default function StudentManagementPage() {
     ];
      
     // Base query for recent/walk-in students
-    // This query is now more complex, it needs students who are NOT unassigned remote inquiries.
-    // Firestore does not support 'OR' queries on different fields directly.
-    // A common approach is to fetch two separate lists and merge them, or denormalize data.
-    // For simplicity here, we will change the logic. "Recent" will show ALL assigned students, regardless of inquiry type, PLUS unassigned walk-ins.
-    // This is a much better representation of an active student list.
     const baseRecentQueryConstraints: QueryConstraint[] = [
-        where('assignedTo', '!=', 'Unassigned'),
-        orderBy('assignedTo'), // Firestore requires an orderBy when using inequality filters
+        where('inquiryType', '==', 'office_walk_in'),
         orderBy('timestamp', 'desc')
     ];
 
     
     // Apply search or limit
     if (searchLower) {
-      // If searching, create a new query from scratch that searches all students
       const allStudentsQuery = query(
             collection(db, 'students'),
             orderBy('searchableName'),
@@ -89,8 +81,8 @@ export default function StudentManagementPage() {
       
         const unsubSearch = onSnapshot(allStudentsQuery, (querySnapshot) => {
             const studentData: Student[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), timestamp: doc.data().timestamp?.toDate() } as Student));
-            setRecentStudents(studentData); // Load search results into the main tab
-            setActiveTab('recent'); // Switch to recent tab to show search results
+            setRecentStudents(studentData); 
+            setActiveTab('recent'); 
             setLoading(false);
         }, (error) => {
             console.error("Error during search:", error);
@@ -99,8 +91,6 @@ export default function StudentManagementPage() {
         });
         return () => unsubSearch();
     } else {
-      // If not searching, apply limits and set up listeners for both tabs
-      
       const recentQuery = query(collection(db, 'students'), ...baseRecentQueryConstraints, limit(20));
       const unsubRecent = onSnapshot(recentQuery, (querySnapshot) => {
         const studentData: Student[] = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data(), timestamp: doc.data().timestamp?.toDate() } as Student));
@@ -128,7 +118,7 @@ export default function StudentManagementPage() {
         unsubRemote();
       };
     }
-  }, [debouncedSearchTerm, toast]);
+  }, [activeTab, debouncedSearchTerm, toast]);
 
   useEffect(() => {
     const handleOpenNewStudentForm = () => {
@@ -161,7 +151,7 @@ export default function StudentManagementPage() {
               <CardHeader className="p-0">
                   <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                       <TabsList className="grid w-full grid-cols-2 rounded-t-lg rounded-b-none">
-                          <TabsTrigger value="recent"><Users className="mr-2 h-4 w-4" />Recent / Assigned</TabsTrigger>
+                          <TabsTrigger value="recent"><Users className="mr-2 h-4 w-4" />Recent / Walk-ins</TabsTrigger>
                           <TabsTrigger value="remote"><Phone className="mr-2 h-4 w-4" />Remote Inquiries</TabsTrigger>
                       </TabsList>
                       <TabsContent value="recent" className="m-0">
