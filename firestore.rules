@@ -4,33 +4,35 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Helper function to get user's role and name from the 'counselors' collection
-    function getUserData(userId) {
-      return get(/databases/$(database)/documents/counselors/$(userId)).data;
+    // Default deny all access unless explicitly allowed
+    match /{document=**} {
+      allow read, write: if false;
     }
 
     // Allow authenticated users to read their own counselor profile
     match /counselors/{uid} {
-      allow read: if request.auth.uid == uid;
+      allow read: if request.auth != null && request.auth.uid == uid;
     }
 
-    // Student data rules
+    // Rules for the 'students' collection
     match /students/{studentId} {
-      // ADMIN ACCESS: Admins can perform any action on any student document.
-      allow read, write: if getUserData(request.auth.uid).role == 'admin';
+      // ADMINS: Admins can read and write any student document.
+      // This rule checks if the logged-in user's document in the 'counselors' collection has the role 'admin'.
+      allow read, write: if request.auth != null && get(/databases/$(database)/documents/counselors/$(request.auth.uid)).data.role == 'admin';
 
-      // COUNSELOR READ: Allow a counselor to read a single student document if it's assigned to them.
-      allow get: if getUserData(request.auth.uid).role == 'counselor'
-                  && resource.data.assignedTo == getUserData(request.auth.uid).name;
-                  
-      // COUNSELOR UPDATE: Allow a counselor to update a single student document if it's assigned to them.
-      allow update: if getUserData(request.auth.uid).role == 'counselor'
-                  && resource.data.assignedTo == getUserData(request.auth.uid).name;
-
-      // COUNSELOR LIST/QUERY: Allow counselors to query the students collection ONLY IF
-      // the query is explicitly filtering for their own name. This is the key fix.
-      allow list: if getUserData(request.auth.uid).role == 'counselor'
-                  && request.query.where.assignedTo == getUserData(request.auth.uid).name;
+      // COUNSELORS: Counselors can only update student documents.
+      // This rule checks if the logged-in user's role is 'counselor'.
+      allow update: if request.auth != null && get(/databases/$(database)/documents/counselors/$(request.auth.uid)).data.role == 'counselor';
+    }
+    
+    // LIST RULE FOR COUNSELORS: This is the most important rule to fix the error.
+    // It allows a user to perform a LIST (query) operation on the 'students' collection
+    // ONLY IF the query includes a 'where' clause that filters for students
+    // assigned to that counselor's name.
+    match /students/{studentId} {
+        allow list: if request.auth != null &&
+                     request.auth.token.name == request.query.filters[0].value &&
+                     get(/databases/$(database)/documents/counselors/$(request.auth.uid)).data.role == 'counselor';
     }
   }
 }

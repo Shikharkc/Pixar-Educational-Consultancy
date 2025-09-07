@@ -10,6 +10,7 @@ import {
   Query,
   DocumentData,
   QueryConstraint,
+  orderBy,
 } from 'firebase/firestore';
 import { db, auth } from '@/lib/firebase';
 import type { Student } from '@/lib/data';
@@ -43,7 +44,11 @@ export default function CounselorDashboard({ counselorName }: CounselorDashboard
     // This query is now simpler: It only filters by the counselor's name.
     // The sorting will be handled by the data-table component on the client-side.
     // This makes the query easier to secure with Firestore rules.
-    const q = query(collection(db, 'students'), where('assignedTo', '==', counselorName));
+    const q = query(
+        collection(db, 'students'), 
+        where('assignedTo', '==', counselorName),
+        orderBy('timestamp', 'desc')
+    );
 
     const unsubscribe = onSnapshot(
       q,
@@ -57,8 +62,6 @@ export default function CounselorDashboard({ counselorName }: CounselorDashboard
             timestamp: data.timestamp?.toDate(),
           } as Student);
         });
-        // Sort students by timestamp descending here in the client
-        studentData.sort((a, b) => (b.timestamp as any) - (a.timestamp as any));
         setStudents(studentData);
         setLoading(false);
       },
