@@ -56,8 +56,9 @@ export function DataTable({ students, onRowSelect, selectedStudentId, loading, s
     if (student.inquiryType === 'phone') {
         return <Badge variant="secondary" className="py-0.5 px-1.5 text-xs">Phone Call</Badge>;
     }
-     if (student.inquiryType === 'office_walk_in') {
-        return <Badge variant="secondary" className="py-0.5 px-1.5 text-xs">Walk-In</Badge>;
+     // Only show the "New" badge for unassigned walk-ins, not for assigned remote inquiries
+    if (student.assignedTo === 'Unassigned' && student.inquiryType === 'office_walk_in') {
+        return <Badge className="py-0.5 px-1.5 text-xs bg-accent text-accent-foreground">New Walk-in</Badge>;
     }
     return null;
   };
@@ -109,7 +110,7 @@ export function DataTable({ students, onRowSelect, selectedStudentId, loading, s
                   <TableCell className="font-medium p-3">
                     <div className="flex items-center justify-between">
                       <span className="font-semibold">{student.fullName}</span>
-                      {getInquiryTypeBadge(student) || (student.assignedTo === 'Unassigned' && <Badge className="py-0.5 px-1.5 text-xs bg-accent text-accent-foreground">New</Badge>)}
+                      {getInquiryTypeBadge(student)}
                     </div>
                     <div className="text-xs text-muted-foreground truncate">{student.email}</div>
                     <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
