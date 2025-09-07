@@ -6,8 +6,7 @@ import {
   collection,
   query,
   where,
-  orderBy,
-  getDocs, // Changed from onSnapshot for one-time fetch to generate index link
+  onSnapshot,
   Query,
   DocumentData,
   QueryConstraint,
@@ -40,16 +39,15 @@ export default function CounselorDashboard({ counselorName }: CounselorDashboard
   useEffect(() => {
     if (!counselorName) return;
 
-    const fetchStudents = async () => {
-      setLoading(true);
-      try {
-        const constraints: QueryConstraint[] = [
-          where('assignedTo', '==', counselorName),
-          orderBy('timestamp', 'desc'),
-        ];
-        const q = query(collection(db, 'students'), ...constraints);
+    setLoading(true);
+    // This query is now simpler: It only filters by the counselor's name.
+    // The sorting will be handled by the data-table component on the client-side.
+    // This makes the query easier to secure with Firestore rules.
+    const q = query(collection(db, 'students'), where('assignedTo', '==', counselorName));
 
-        const querySnapshot = await getDocs(q); // Using getDocs to trigger the index error
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
         const studentData: Student[] = [];
         querySnapshot.forEach((doc) => {
           const data = doc.data();
@@ -59,25 +57,19 @@ export default function CounselorDashboard({ counselorName }: CounselorDashboard
             timestamp: data.timestamp?.toDate(),
           } as Student);
         });
+        // Sort students by timestamp descending here in the client
+        studentData.sort((a, b) => (b.timestamp as any) - (a.timestamp as any));
         setStudents(studentData);
-      } catch (err: any) {
+        setLoading(false);
+      },
+      (err: any) => {
         console.error("Firestore Error:", err);
-        if (err.code === 'failed-precondition') {
-             const firestoreError = "The query requires an index. You can create it here: " + (err.message.match(/https?:\/\/[^\s]+/g) || [])[0];
-             setError("A database index is required. Please check the browser console (F12) for a link to create it automatically.");
-             console.error(firestoreError); // This will log the error with the clickable link
-        } else {
-            setError("Could not load your assigned students. Please check your connection or contact an admin.");
-        }
-      } finally {
+        setError("Could not load your assigned students. Please check your connection or contact an admin.");
         setLoading(false);
       }
-    };
+    );
     
-    fetchStudents();
-    
-    // Since we are not using a real-time listener now, we return an empty cleanup function.
-    return () => {};
+    return () => unsubscribe();
 
   }, [counselorName]);
 
