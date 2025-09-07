@@ -14,6 +14,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Student } from '@/lib/data';
+import { teamMembers } from '@/lib/data';
 import { DataTable } from '@/components/admin/data-table';
 import { StudentForm } from '@/components/admin/student-form';
 import { Card } from '@/components/ui/card';
@@ -23,6 +24,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 // A simple debounce hook
 const useDebouncedValue = (value: string, delay: number) => {
@@ -52,6 +55,11 @@ export default function CounselorDashboard({ counselorName, onLogout }: Counselo
   const [searchTerm, setSearchTerm] = useState('');
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
   const { toast } = useToast();
+
+  const counselorDetails = useMemo(
+    () => teamMembers.find(member => member.name === counselorName),
+    [counselorName]
+  );
 
   const searchStudents = useCallback(async () => {
     if (!counselorName || !debouncedSearchTerm) return;
@@ -150,23 +158,34 @@ export default function CounselorDashboard({ counselorName, onLogout }: Counselo
   
   const handleFormSubmitSuccess = () => {
       handleDeselect();
-      // No need to manually refetch, onSnapshot will handle updates automatically
   };
 
   return (
     <div className="bg-muted/40 min-h-screen">
       <header className="sticky top-0 z-30 flex h-auto items-center justify-between border-b bg-background px-4 sm:px-6 py-2">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-4">
           <Image src="/navbar.png" alt="Pixar Edu Logo" width={48} height={48} />
           <div>
             <h1 className="text-xl font-bold">Counselor Dashboard</h1>
-            <p className="text-sm text-muted-foreground">Welcome, {counselorName}</p>
+            <p className="text-sm text-muted-foreground">Pixar Educational Consultancy</p>
           </div>
         </div>
-        <Button variant="outline" onClick={onLogout} size="sm">
-          <LogOut className="mr-2 h-4 w-4" />
-          Logout
-        </Button>
+         <div className="flex items-center space-x-4">
+          <div className="text-right">
+            <p className="font-semibold">{counselorName}</p>
+            <p className="text-xs text-muted-foreground">{counselorDetails?.role || 'Counselor'}</p>
+          </div>
+           {counselorDetails && (
+            <Avatar className="h-12 w-12 border-2 border-primary">
+              <AvatarImage src={counselorDetails.imageUrl} alt={counselorDetails.name} />
+              <AvatarFallback>{counselorName.charAt(0)}</AvatarFallback>
+            </Avatar>
+          )}
+          <Button variant="outline" onClick={onLogout} size="sm">
+            <LogOut className="mr-2 h-4 w-4" />
+            Logout
+          </Button>
+        </div>
       </header>
       <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7 xl:grid-cols-3">
