@@ -60,8 +60,26 @@ try {
 const db = getFirestore(DATABASE_ID);
 console.log(`✅ Connected to Firestore database: ${DATABASE_ID}`);
 
+// Name mapping to consolidate old names to new full names for metrics
+const counselorNameMapping: {[oldName: string]: string} = {
+  "Pawan Sir": "Pawan Acharya",
+  "Mujal Sir": "Mujal Amatya",
+  "Sabina Mam": "Sabina Thapa",
+  "Shyam Sir": "Shyam Babu Ojha",
+  "Mamta Miss": "Mamata Chapagain",
+  "Pradeep Sir": "Pradeep Khadka",
+};
+
+// Helper to normalize and map counselor names
+const getNormalizedCounselorName = (name: string | undefined | null): string => {
+    if (!name) return "Unassigned";
+    const trimmedName = name.trim();
+    // Return the new full name if the input is an old name, otherwise return the name as is.
+    return counselorNameMapping[trimmedName] || toTitleCase(trimmedName);
+};
+
 // Helper to normalize strings to Title Case for consistency
-const toTitleCase = (str: string) => {
+const toTitleCase = (str: string): string => {
   if (!str) return "N/A";
   return str.replace(/\w\S*/g, (txt) => {
     return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
@@ -118,7 +136,7 @@ async function aggregateStudentStats() {
       }
 
       // Count by assigned counselor
-      const counselor = toTitleCase(student.assignedTo);
+      const counselor = getNormalizedCounselorName(student.assignedTo);
       stats.studentsByCounselor[counselor] = (stats.studentsByCounselor[counselor] || 0) + 1;
 
       // Count by service fee status

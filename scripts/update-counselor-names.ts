@@ -23,7 +23,6 @@ import fs from 'fs';
 import path from 'path';
 
 // --- Configuration ---
-// !!! IMPORTANT: This mapping has been updated to ONLY include the 6 specified counselors.
 const nameMapping: { [oldName: string]: string } = {
   "Pawan Sir": "Pawan Acharya",
   "Mujal Sir": "Mujal Amatya",
