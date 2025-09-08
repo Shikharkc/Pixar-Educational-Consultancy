@@ -16,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -27,7 +28,7 @@ import { collection, addDoc, updateDoc, doc, serverTimestamp, Timestamp, deleteD
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useState, useEffect } from 'react';
-import { CalendarIcon, Loader2, BookUser, Mail, Phone, GraduationCap, Languages, Target, StickyNote, Users, CalendarDays, CircleDollarSign, Briefcase, ShieldQuestion, FilePenLine, Trash2, X, Check, ChevronsUpDown } from 'lucide-react';
+import { CalendarIcon, Loader2, BookUser, Mail, Phone, GraduationCap, Languages, Target, StickyNote, Users, CalendarDays, CircleDollarSign, Briefcase, ShieldQuestion, FilePenLine, Trash2, X, Check, ChevronsUpDown, Send } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandInput, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Calendar } from "@/components/ui/calendar";
@@ -72,19 +73,14 @@ const DetailItem = ({ icon: Icon, label, value, valueClassName }: { icon: React.
   </div>
 );
 
-// Helper function to safely convert a date value to a Date object
-// It handles Firestore Timestamps, JS Date objects, and null/undefined values.
 const safeToDate = (dateValue: any): Date | null => {
   if (!dateValue) return null;
-  // It's a Firestore Timestamp
   if (typeof dateValue.toDate === 'function') {
     return dateValue.toDate();
   }
-  // It's already a JS Date
   if (dateValue instanceof Date) {
     return dateValue;
   }
-  // It might be a string - try to parse it
   const parsedDate = new Date(dateValue);
   if (!isNaN(parsedDate.getTime())) {
     return parsedDate;
@@ -92,6 +88,80 @@ const safeToDate = (dateValue: any): Date | null => {
   return null;
 };
 
+const emailTemplates = {
+    welcome: {
+      subject: "Welcome to Pixar Educational Consultancy!",
+      body: (name: string) => `Dear ${name},\n\nThank you for choosing Pixar Educational Consultancy. We are excited to be a part of your journey to study abroad.\n\nA counselor will be in touch with you shortly to discuss the next steps.\n\nBest regards,\nThe Pixar Edu Team`
+    },
+    paymentConfirmation: {
+      subject: "Payment Confirmation - Pixar Educational Consultancy",
+      body: (name: string) => `Dear ${name},\n\nThis email is to confirm that we have successfully received your service fee payment. Thank you!\n\nWe appreciate your trust in us and will continue to provide you with the best support for your application process.\n\nBest regards,\nThe Pixar Edu Team`
+    },
+    visaApplied: {
+      subject: "Update on Your Student Visa Application",
+      body: (name: string) => `Dear ${name},\n\nThis is to inform you that your student visa application has been successfully lodged. We will monitor its progress closely and keep you updated.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nThe Pixar Edu Team`
+    },
+    visaCongratulations: {
+      subject: "Congratulations on Your Student Visa Approval!",
+      body: (name: string) => `Dear ${name},\n\nWe are absolutely thrilled to inform you that your student visa has been approved! Congratulations on this huge achievement.\n\nThis is a major step towards your dream of studying abroad, and we are so proud to have been a part of your journey.\n\nWe will be in touch soon to discuss the next steps, including our pre-departure briefing.\n\nBest regards,\nThe Pixar Edu Team`
+    }
+};
+
+type TemplateKey = keyof typeof emailTemplates;
+
+const EmailDialog = ({ student }: { student: Student }) => {
+    const [selectedTemplate, setSelectedTemplate] = useState<TemplateKey>('welcome');
+    const [mailtoLink, setMailtoLink] = useState('');
+
+    useEffect(() => {
+        const template = emailTemplates[selectedTemplate];
+        const subject = encodeURIComponent(template.subject);
+        const body = encodeURIComponent(template.body(student.fullName));
+        setMailtoLink(`mailto:${student.email}?subject=${subject}&body=${body}`);
+    }, [selectedTemplate, student]);
+
+    return (
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Send Email to {student.fullName}</DialogTitle>
+                <DialogDescription>
+                    Select a template to generate a pre-filled email. This will open in your default email client.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="py-4 space-y-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="template" className="text-right">Template</Label>
+                    <Select value={selectedTemplate} onValueChange={(value: TemplateKey) => setSelectedTemplate(value)}>
+                        <SelectTrigger id="template" className="col-span-3">
+                            <SelectValue placeholder="Select a template" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="welcome">Welcome Email</SelectItem>
+                            <SelectItem value="paymentConfirmation">Payment Confirmation</SelectItem>
+                            <SelectItem value="visaApplied">Visa Applied Notification</SelectItem>
+                            <SelectItem value="visaCongratulations">Visa Approval Congratulations</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+                <div className="space-y-2">
+                    <Label>Email Preview</Label>
+                    <div className="p-3 border rounded-md bg-muted text-sm max-h-60 overflow-y-auto">
+                        <p className="font-semibold">Subject: <span className="font-normal">{emailTemplates[selectedTemplate].subject}</span></p>
+                        <Separator className="my-2" />
+                        <p className="whitespace-pre-wrap">{emailTemplates[selectedTemplate].body(student.fullName)}</p>
+                    </div>
+                </div>
+            </div>
+            <DialogFooter>
+                <Button asChild>
+                    <a href={mailtoLink} target="_blank" rel="noopener noreferrer">
+                        <Send className="mr-2 h-4 w-4" /> Open in Email App
+                    </a>
+                </Button>
+            </DialogFooter>
+        </DialogContent>
+    );
+};
 
 export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: StudentFormProps) {
   const { toast } = useToast();
@@ -390,6 +460,12 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                     <CardDescription>Student Details Overview</CardDescription>
                 </div>
                  <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" disabled={!student?.email}><Mail className="mr-2 h-4 w-4" /> Send Email</Button>
+                        </DialogTrigger>
+                        {student && <EmailDialog student={student} />}
+                    </Dialog>
                     <Button variant="outline" size="icon" onClick={() => setIsEditing(true)}><FilePenLine className="h-4 w-4" /><span className="sr-only">Edit</span></Button>
                     <Button variant="destructive" size="icon" onClick={() => setIsAlertOpen(true)}><Trash2 className="h-4 w-4" /><span className="sr-only">Delete</span></Button>
                     <Button variant="ghost" size="icon" onClick={onFormClose}><X className="h-4 w-4" /></Button>
@@ -445,3 +521,4 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
     </Card>
   );
 }
+
