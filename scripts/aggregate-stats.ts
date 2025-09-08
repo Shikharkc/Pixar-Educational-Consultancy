@@ -70,6 +70,14 @@ const counselorNameMapping: {[oldName: string]: string} = {
   "Pradeep Sir": "Pradeep Khadka",
 };
 
+// Helper to normalize strings to Title Case for consistency
+const toTitleCase = (str: string | undefined | null): string => {
+  if (!str) return "N/A";
+  return str.trim().replace(/\w\S*/g, (txt) => {
+    return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
+  });
+};
+
 // Helper to normalize and map counselor names
 const getNormalizedCounselorName = (name: string | undefined | null): string => {
     if (!name) return "Unassigned";
@@ -78,13 +86,6 @@ const getNormalizedCounselorName = (name: string | undefined | null): string => 
     return counselorNameMapping[trimmedName] || toTitleCase(trimmedName);
 };
 
-// Helper to normalize strings to Title Case for consistency
-const toTitleCase = (str: string): string => {
-  if (!str) return "N/A";
-  return str.replace(/\w\S*/g, (txt) => {
-    return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
-  });
-};
 
 async function aggregateStudentStats() {
   console.log('🔵 Starting dashboard data aggregation...');
@@ -129,10 +130,12 @@ async function aggregateStudentStats() {
       stats.visaStatusCounts[visaStatus] = (stats.visaStatusCounts[visaStatus] || 0) + 1;
 
       // Count monthly admissions
-      if (student.timestamp && student.timestamp.toDate() > twelveMonthsAgo) {
+      if (student.timestamp && student.timestamp.toDate) {
         const date = student.timestamp.toDate();
-        const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        stats.monthlyAdmissions[monthYear] = (stats.monthlyAdmissions[monthYear] || 0) + 1;
+        if (date > twelveMonthsAgo) {
+            const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            stats.monthlyAdmissions[monthYear] = (stats.monthlyAdmissions[monthYear] || 0) + 1;
+        }
       }
 
       // Count by assigned counselor
@@ -154,7 +157,7 @@ async function aggregateStudentStats() {
 
     // Write the aggregated stats to the summary document
     const summaryDocRef = db.doc(SUMMARY_DOC_PATH);
-    await summaryDocRef.set(stats, { merge: true }); // Use set with merge to create or overwrite
+    await summaryDocRef.set(stats); // Use set to completely overwrite with new, clean data
 
     console.log(`✅ Successfully aggregated stats and saved to '${SUMMARY_DOC_PATH}'.`);
     console.log('📊 Dashboard data is now up-to-date.');
@@ -168,3 +171,5 @@ async function aggregateStudentStats() {
 aggregateStudentStats().catch(error => {
   console.error("❌ An unexpected error occurred during the script execution:", error);
 });
+
+    

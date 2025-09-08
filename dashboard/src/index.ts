@@ -40,14 +40,14 @@ const getNormalizedCounselorName = (name: string | undefined | null): string => 
     if (!name) return "Unassigned";
     const trimmedName = name.trim();
     // Return the new full name if the input is an old name, otherwise return the name as is.
-    return counselorNameMapping[trimmedName] || trimmedName;
+    return counselorNameMapping[trimmedName] || toTitleCase(trimmedName);
 };
 
 
 // Helper to normalize strings to Title Case for consistency
 const toTitleCase = (str: string | undefined | null): string => {
   if (!str) return "N/A";
-  return str.replace(/\w\S*/g, (txt) => {
+  return str.trim().replace(/\w\S*/g, (txt) => {
     return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
   });
 };
