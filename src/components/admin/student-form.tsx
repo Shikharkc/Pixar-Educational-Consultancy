@@ -95,15 +95,15 @@ const emailTemplates = {
     },
     paymentConfirmation: {
       subject: "Payment Confirmation - Pixar Educational Consultancy",
-      body: (name: string) => `Dear ${name},\n\nThis email is to confirm that we have successfully received your service fee payment. Thank you!\n\nWe appreciate your trust in us and will continue to provide you with the best support for your application process.\n\nBest regards,\nThe Pixar Edu Team`
+      body: (name: string, date?: Date | null) => `Dear ${name},\n\nThis email is to confirm that we have successfully received your service fee payment${date ? ` on ${format(date, 'PPP')}` : ''}. Thank you!\n\nWe appreciate your trust in us and will continue to provide you with the best support for your application process.\n\nBest regards,\nThe Pixar Edu Team`
     },
     visaApplied: {
       subject: "Update on Your Student Visa Application",
-      body: (name: string) => `Dear ${name},\n\nThis is to inform you that your student visa application has been successfully lodged. We will monitor its progress closely and keep you updated.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nThe Pixar Edu Team`
+      body: (name: string, date?: Date | null) => `Dear ${name},\n\nThis is to inform you that your student visa application has been successfully lodged${date ? ` on ${format(date, 'PPP')}` : ''}. We will monitor its progress closely and keep you updated.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nThe Pixar Edu Team`
     },
     visaCongratulations: {
       subject: "Congratulations on Your Student Visa Approval!",
-      body: (name: string) => `Dear ${name},\n\nWe are absolutely thrilled to inform you that your student visa has been approved! Congratulations on this huge achievement.\n\nThis is a major step towards your dream of studying abroad, and we are so proud to have been a part of your journey.\n\nWe will be in touch soon to discuss the next steps, including our pre-departure briefing.\n\nBest regards,\nThe Pixar Edu Team`
+      body: (name: string, date?: Date | null) => `Dear ${name},\n\nWe are absolutely thrilled to inform you that your student visa has been approved${date ? `, as of ${format(date, 'PPP')}` : ''}! Congratulations on this huge achievement.\n\nThis is a major step towards your dream of studying abroad, and we are so proud to have been a part of your journey.\n\nWe will be in touch soon to discuss the next steps, including our pre-departure briefing.\n\nBest regards,\nThe Pixar Edu Team`
     }
 };
 
@@ -111,16 +111,26 @@ type TemplateKey = keyof typeof emailTemplates;
 
 const EmailDialog = ({ student }: { student: Student }) => {
     const [selectedTemplate, setSelectedTemplate] = useState<TemplateKey>('welcome');
-    const [mailtoLink, setMailtoLink] = useState('');
+    const [gmailUrl, setGmailUrl] = useState('');
 
     useEffect(() => {
         const template = emailTemplates[selectedTemplate];
-        const subject = encodeURIComponent(template.subject);
-        const body = encodeURIComponent(template.body(student.fullName));
+        let bodyContent = '';
         
-        // Construct the Gmail URL
-        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${student.email}&su=${subject}&body=${body}`;
-        setMailtoLink(gmailUrl);
+        // Use a type guard to check if the body function expects a date
+        if (selectedTemplate === 'paymentConfirmation') {
+            bodyContent = template.body(student.fullName, safeToDate(student.serviceFeePaidDate));
+        } else if (selectedTemplate === 'visaApplied' || selectedTemplate === 'visaCongratulations') {
+            bodyContent = template.body(student.fullName, safeToDate(student.visaStatusUpdateDate));
+        } else {
+            // For templates that don't need a date
+            bodyContent = template.body(student.fullName, null);
+        }
+
+        const subject = encodeURIComponent(template.subject);
+        const body = encodeURIComponent(bodyContent);
+        
+        setGmailUrl(`https://mail.google.com/mail/?view=cm&fs=1&to=${student.email}&su=${subject}&body=${body}`);
 
     }, [selectedTemplate, student]);
 
@@ -152,13 +162,18 @@ const EmailDialog = ({ student }: { student: Student }) => {
                     <div className="p-3 border rounded-md bg-muted text-sm max-h-60 overflow-y-auto">
                         <p className="font-semibold">Subject: <span className="font-normal">{emailTemplates[selectedTemplate].subject}</span></p>
                         <Separator className="my-2" />
-                        <p className="whitespace-pre-wrap">{emailTemplates[selectedTemplate].body(student.fullName)}</p>
+                        <p className="whitespace-pre-wrap">
+                          {emailTemplates[selectedTemplate].body(
+                              student.fullName,
+                              selectedTemplate === 'paymentConfirmation' ? safeToDate(student.serviceFeePaidDate) : safeToDate(student.visaStatusUpdateDate)
+                          )}
+                        </p>
                     </div>
                 </div>
             </div>
             <DialogFooter>
                 <Button asChild>
-                    <a href={mailtoLink} target="_blank" rel="noopener noreferrer">
+                    <a href={gmailUrl} target="_blank" rel="noopener noreferrer">
                         <Send className="mr-2 h-4 w-4" /> Compose in Gmail
                     </a>
                 </Button>
@@ -525,4 +540,3 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
     </Card>
   );
 }
-
