@@ -3,7 +3,7 @@
 
 import { useRouter, usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { LogOut, PlusCircle, List, BarChart3, Database, ClipboardList } from 'lucide-react';
+import { LogOut, PlusCircle, List, BarChart3, Database, ClipboardList, Users } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -20,6 +20,7 @@ export default function AdminHeader({ onAddNew, onLogout }: AdminHeaderProps) {
     { href: '/admin/students', label: 'Student Management', icon: List },
     { href: '/admin/students-all', label: 'Full Data', icon: Database },
     { href: '/admin/reports', label: 'Reports', icon: ClipboardList },
+    { href: '/admin/counselors', label: 'Manage Counselors', icon: Users },
   ];
 
   return (
