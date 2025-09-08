@@ -3,7 +3,7 @@
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { collection, onSnapshot, query, orderBy, Timestamp, FirestoreError, getDocs } from 'firebase/firestore';
+import { collection, onSnapshot, query, orderBy, Timestamp, FirestoreError, getDocs, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
@@ -60,6 +60,24 @@ const StatCard = ({ title, value, icon: Icon, className, description }: StatCard
   </Card>
 );
 
+// Name mapping to consolidate old names to new full names for metrics
+const counselorNameMapping: {[oldName: string]: string} = {
+  "Pawan Sir": "Pawan Acharya",
+  "Mujal Sir": "Mujal Amatya",
+  "Sabina Mam": "Sabina Thapa",
+  "Shyam Sir": "Shyam Babu Ojha",
+  "Mamta Miss": "Mamata Chapagain",
+  "Pradeep Sir": "Pradeep Khadka",
+};
+
+// Helper to normalize and map counselor names
+const getNormalizedCounselorName = (name: string | undefined | null): string => {
+    if (!name) return "Unassigned";
+    const trimmedName = name.trim();
+    // Return the new full name if the input is an old name, otherwise return the name as is.
+    return counselorNameMapping[trimmedName] || toTitleCase(trimmedName);
+};
+
 // Helper to normalize strings to Title Case for consistency
 const toTitleCase = (str: string | undefined | null): string => {
     if (!str) return "N/A";
@@ -95,7 +113,7 @@ const processStudentDocs = (studentDocs: Student[]): DashboardStats => {
         const visa = toTitleCase(student.visaStatus);
         newStats.visaStatusCounts[visa] = (newStats.visaStatusCounts[visa] || 0) + 1;
 
-        const coun = toTitleCase(student.assignedTo);
+        const coun = getNormalizedCounselorName(student.assignedTo);
         newStats.studentsByCounselor[coun] = (newStats.studentsByCounselor[coun] || 0) + 1;
         
         const fee = toTitleCase(student.serviceFeeStatus);
@@ -131,25 +149,22 @@ export default function DashboardPage() {
     setIsCachedData(false);
     setError(null);
     try {
-        const studentsQuery = query(collection(db, 'students'), orderBy('timestamp', 'desc'));
-        const querySnapshot = await getDocs(studentsQuery);
-        const studentDocs = querySnapshot.docs.map(doc => doc.data() as Student);
+        const metricsDocRef = doc(db, 'metrics', 'dashboard');
+        const metricsDocSnap = await getDocs(query(collection(db, 'metrics'), where('__name__', '==', 'dashboard')));
 
-        if (studentDocs.length === 0) {
-            setError('no-data');
-            setStats(null);
+        if (!metricsDocSnap.empty) {
+            const data = metricsDocSnap.docs[0].data() as DashboardStats;
+            setStats(data);
+            setLastUpdated(Date.now());
         } else {
-            const newStats = processStudentDocs(studentDocs);
-            setStats(newStats);
-            const cache: CachedStats = { stats: newStats, timestamp: Date.now() };
-            localStorage.setItem(CACHE_KEY, JSON.stringify(cache));
-            setLastUpdated(cache.timestamp);
+            // Fallback if the metrics doc doesn't exist
+            setError("no-summary-doc");
         }
     } catch (err: any) {
         if (err.code === 'permission-denied') {
             setError('permission-denied');
         } else {
-            console.error("Error fetching students collection:", err);
+            console.error("Error fetching metrics document:", err);
             setError("An unknown error occurred while loading dashboard data.");
         }
     } finally {
@@ -158,21 +173,32 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    const cachedItem = localStorage.getItem(CACHE_KEY);
-    if (cachedItem) {
-        const cachedData: CachedStats = JSON.parse(cachedItem);
-        const isCacheValid = (Date.now() - cachedData.timestamp) < CACHE_DURATION_MINUTES * 60 * 1000;
-        
-        if (isCacheValid) {
-            setStats(cachedData.stats);
-            setLastUpdated(cachedData.timestamp);
-            setIsCachedData(true);
-            setLoading(false);
-            return;
-        }
-    }
-    fetchAndSetStats();
-  }, [fetchAndSetStats]);
+      // Use a real-time listener for the metrics document
+      const metricsDocRef = doc(db, 'metrics', 'dashboard');
+      const unsubscribe = onSnapshot(metricsDocRef, (docSnap) => {
+          if (docSnap.exists()) {
+              const data = docSnap.data() as DashboardStats;
+              setStats(data);
+              setLastUpdated(Date.now());
+              setError(null);
+          } else {
+              setError('no-summary-doc');
+              setStats(null);
+          }
+          setLoading(false);
+      }, (err: any) => {
+          if (err.code === 'permission-denied') {
+              setError('permission-denied');
+          } else {
+              console.error("Error with metrics snapshot:", err);
+              setError("An unknown error occurred while loading dashboard data.");
+          }
+          setLoading(false);
+      });
+
+      // Cleanup listener on component unmount
+      return () => unsubscribe();
+  }, []);
 
   const dataMappers = useMemo(() => {
     if (!stats) return {};
@@ -214,15 +240,15 @@ export default function DashboardPage() {
                     <ShieldAlert className="h-4 w-4" />
                     <AlertTitle>Action Required: Firestore Permissions</AlertTitle>
                     <AlertDescription>
-                        The dashboard failed to load due to missing Firestore security rules. Please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and ensure your rules allow authenticated admin users to read the `students` collection. A common rule for development is `allow read, write: if request.auth != null;`.
+                        The dashboard failed to load due to missing Firestore security rules. Please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and ensure your rules allow authenticated admin users to read the `metrics/dashboard` document. A common rule for development is `allow read, write: if request.auth != null;`.
                     </AlertDescription>
                 </Alert>
-             ) : error === 'no-data' ? (
+             ) : error === 'no-summary-doc' ? (
                 <Alert>
                     <LineChart className="h-4 w-4" />
-                    <AlertTitle>No Student Data Found</AlertTitle>
+                    <AlertTitle>Dashboard Data Not Found</AlertTitle>
                     <AlertDescription>
-                        The dashboard is working, but there are no student records in the database to display. Add a new student to see the dashboard populate with data.
+                        The pre-calculated dashboard summary document ('metrics/dashboard') could not be found. Please run the aggregation script (`npx tsx scripts/aggregate-stats.ts`) in your project's terminal to generate it. This script calculates all stats and creates the necessary document for the dashboard to display.
                     </AlertDescription>
                 </Alert>
              ) : (
@@ -238,21 +264,15 @@ export default function DashboardPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-       {isCachedData && (
-        <Alert variant="default" className="bg-blue-100 border-blue-200 dark:bg-blue-900/30 dark:border-blue-700">
+       <Alert variant="default" className="bg-blue-100 border-blue-200 dark:bg-blue-900/30 dark:border-blue-700">
             <Clock className="h-4 w-4" />
-            <AlertTitle>Displaying Cached Data</AlertTitle>
+            <AlertTitle>Live Dashboard</AlertTitle>
             <AlertDescription className="flex justify-between items-center">
                 <span>
-                Data last updated {lastUpdated ? formatDistanceToNow(lastUpdated, { addSuffix: true }) : 'a moment'} ago. Click refresh for live data.
+                This dashboard is updated in real-time. Last data update detected {lastUpdated ? formatDistanceToNow(lastUpdated, { addSuffix: true }) : 'a moment'} ago.
                 </span>
-                <Button variant="secondary" size="sm" onClick={() => fetchAndSetStats(true)}>
-                    <RefreshCw className="mr-2 h-4 w-4"/>
-                    Refresh
-                </Button>
             </AlertDescription>
         </Alert>
-       )}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
          <StatCard 
             title="Total Students" 
