@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import * as React from "react";
@@ -36,6 +35,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Label } from "@/components/ui/label";
 
 
 const studentSchema = z.object({
@@ -522,3 +522,4 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
   );
 }
 
+    
