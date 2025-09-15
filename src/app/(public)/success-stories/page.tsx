@@ -7,19 +7,35 @@ import { visaSuccesses } from '@/lib/data.tsx';
 import { CheckCircle, Trophy } from 'lucide-react';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+
+interface TrophyStyle {
+  id: number;
+  x: string;
+  duration: number;
+  delay: number;
+  scale: number;
+  opacity: number;
+}
+
 
 // New component for the background animation
 const AnimatedBackground = () => {
-  const trophies = useMemo(() => Array.from({ length: 15 }).map((_, i) => ({
-    id: i,
-    x: `${Math.random() * 100}%`,
-    duration: Math.random() * 5 + 10, // Slower duration: 10s to 15s
-    delay: Math.random() * 10, // Staggered start times
-    scale: Math.random() * 0.4 + 0.3, // Smaller icons: 0.3x to 0.7x
-    opacity: Math.random() * 0.2 + 0.05, // More subtle: 5% to 25% opacity
-  })), []);
+  const [trophies, setTrophies] = useState<TrophyStyle[]>([]);
+
+  useEffect(() => {
+    // Generate random values only on the client-side to prevent hydration mismatch
+    const generatedTrophies = Array.from({ length: 15 }).map((_, i) => ({
+      id: i,
+      x: `${Math.random() * 100}%`,
+      duration: Math.random() * 5 + 10, // Slower duration: 10s to 15s
+      delay: Math.random() * 10, // Staggered start times
+      scale: Math.random() * 0.4 + 0.3, // Smaller icons: 0.3x to 0.7x
+      opacity: Math.random() * 0.2 + 0.05, // More subtle: 5% to 25% opacity
+    }));
+    setTrophies(generatedTrophies);
+  }, []); // Empty dependency array ensures this runs only once on the client
 
   return (
     <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
