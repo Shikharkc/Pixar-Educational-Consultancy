@@ -1,67 +1,68 @@
+
+'use client';
+
 import SectionTitle from '@/components/ui/section-title';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 import { visaSuccesses } from '@/lib/data.tsx';
 import { CheckCircle, Trophy } from 'lucide-react';
+import { useScrollAnimation } from '@/hooks/useScrollAnimation';
+import { cn } from '@/lib/utils';
+import { useMemo } from 'react';
 
 export default function SuccessStoriesPage() {
-  const countryOrder = ['USA', 'Australia', 'New Zealand', 'UK', 'Canada'];
+  const [titleRef, isTitleVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true });
+  const [gridRef, isGridVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.05 });
+
+  // Combine all students into a single array
+  const allSuccesses = useMemo(() => {
+    return Object.values(visaSuccesses).flat();
+  }, []);
 
   return (
     <div className="space-y-12 md:space-y-16">
-      <section>
+      <section ref={titleRef} className={cn("transition-all duration-700 ease-out", isTitleVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
         <SectionTitle 
           title="Our Student Success Stories" 
           subtitle="We take pride in the achievements of our students. Here are some of the many who have successfully obtained their visas with our guidance."
         />
       </section>
 
-      <section>
-        <Tabs defaultValue="usa" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 mx-auto mb-8">
-            {countryOrder.map(country => (
-              <TabsTrigger key={country} value={country.toLowerCase()} className="py-2.5 text-sm md:text-base">
-                {country}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-
-          {countryOrder.map(country => (
-            <TabsContent key={country} value={country.toLowerCase()}>
-              <Card className="shadow-lg bg-card">
-                <CardHeader>
-                  <CardTitle className="font-headline text-primary flex items-center">
-                    <Trophy className="mr-2 h-6 w-6" /> Visa Success for {country}
-                  </CardTitle>
-                   <CardDescription>
-                    A selection of students who have successfully received their visas for {country}.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {visaSuccesses[country]?.map((student, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center space-x-3 p-3 bg-secondary/30 rounded-lg h-full"
-                      >
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0" />
-                        <div>
-                          <p className="font-semibold text-foreground">{student.name}</p>
-                          <p className="text-xs text-muted-foreground">{student.destination}</p>
-                        </div>
+      <section ref={gridRef} className={cn("transition-all duration-700 ease-out", isGridVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")}>
+        <Card className="shadow-lg bg-card">
+          <CardContent className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {allSuccesses.map((student, index) => {
+                const [itemRef, isItemVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
+                return (
+                  <div
+                    key={index}
+                    ref={itemRef}
+                    className={cn(
+                        "transition-all duration-500 ease-out",
+                        isItemVisible ? "opacity-100 scale-100" : "opacity-0 scale-90"
+                    )}
+                    style={{transitionDelay: `${Math.min(index * 20, 1000)}ms`}}
+                  >
+                    <div
+                      className="flex items-center space-x-3 p-4 bg-secondary/30 rounded-lg h-full border border-transparent hover:border-primary/20 hover:shadow-md"
+                    >
+                      <CheckCircle className="h-6 w-6 text-green-500 flex-shrink-0" />
+                      <div>
+                        <p className="font-semibold text-foreground">{student.name}</p>
+                        <p className="text-xs text-muted-foreground">{student.destination}</p>
                       </div>
-                    ))}
+                    </div>
                   </div>
-                  {(!visaSuccesses[country] || visaSuccesses[country].length === 0) && (
-                    <p className="text-center text-muted-foreground py-8">
-                      More success stories for {country} will be updated soon!
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
-            </TabsContent>
-          ))}
-        </Tabs>
+                );
+              })}
+            </div>
+            {allSuccesses.length === 0 && (
+              <p className="text-center text-muted-foreground py-8">
+                Success stories will be updated soon!
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </section>
     </div>
   );
