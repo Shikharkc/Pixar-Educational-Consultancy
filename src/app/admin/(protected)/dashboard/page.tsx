@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
@@ -25,14 +24,6 @@ interface DashboardStats {
   studentsByEducation: { [education: string]: number };
   studentsByEnglishTest: { [test: string]: number };
 }
-
-interface CachedStats {
-    stats: DashboardStats;
-    timestamp: number;
-}
-
-const CACHE_KEY = 'dashboardStatsCache';
-const CACHE_DURATION_MINUTES = 15;
 
 // Define colors for the charts
 const PIE_CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
@@ -60,88 +51,10 @@ const StatCard = ({ title, value, icon: Icon, className, description }: StatCard
   </Card>
 );
 
-// Name mapping to consolidate old names to new full names for metrics
-const counselorNameMapping: {[oldName: string]: string} = {
-  "Pawan Sir": "Pawan Acharya",
-  "Mujal Sir": "Mujal Amatya",
-  "Sabina Mam": "Sabina Thapa",
-  "Shyam Sir": "Shyam Babu Ojha",
-  "Mamta Miss": "Mamata Chapagain",
-  "Pradeep Sir": "Pradeep Khadka",
-};
-
-// Helper to normalize and map counselor names
-const getNormalizedCounselorName = (name: string | undefined | null): string => {
-    if (!name) return "Unassigned";
-    const trimmedName = name.trim();
-    // Return the new full name if the input is an old name, otherwise return the name as is.
-    return counselorNameMapping[trimmedName] || toTitleCase(trimmedName);
-};
-
-// Helper to normalize strings to Title Case for consistency
-const toTitleCase = (str: string | undefined | null): string => {
-    if (!str) return "N/A";
-    return str
-        .trim() // Trim leading/trailing whitespace
-        .replace(/\w\S*/g, (txt) => {
-            return txt.charAt(0).toUpperCase() + txt.substring(1).toLowerCase();
-        });
-};
-
-
-const processStudentDocs = (studentDocs: Student[]): DashboardStats => {
-    const newStats: DashboardStats = {
-        totalStudents: 0,
-        studentsByDestination: {},
-        visaStatusCounts: {},
-        monthlyAdmissions: {},
-        studentsByCounselor: {},
-        serviceFeeStatusCounts: {},
-        studentsByEducation: {},
-        studentsByEnglishTest: {},
-    };
-
-    const twelveMonthsAgo = new Date();
-    twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
-
-    studentDocs.forEach(student => {
-        newStats.totalStudents++;
-
-        const dest = toTitleCase(student.preferredStudyDestination);
-        newStats.studentsByDestination[dest] = (newStats.studentsByDestination[dest] || 0) + 1;
-
-        const visa = toTitleCase(student.visaStatus);
-        newStats.visaStatusCounts[visa] = (newStats.visaStatusCounts[visa] || 0) + 1;
-
-        const coun = getNormalizedCounselorName(student.assignedTo);
-        newStats.studentsByCounselor[coun] = (newStats.studentsByCounselor[coun] || 0) + 1;
-        
-        const fee = toTitleCase(student.serviceFeeStatus);
-        newStats.serviceFeeStatusCounts[fee] = (newStats.serviceFeeStatusCounts[fee] || 0) + 1;
-
-        const edu = toTitleCase(student.lastCompletedEducation);
-        newStats.studentsByEducation[edu] = (newStats.studentsByEducation[edu] || 0) + 1;
-
-        const test = toTitleCase(student.englishProficiencyTest);
-        newStats.studentsByEnglishTest[test] = (newStats.studentsByEnglishTest[test] || 0) + 1;
-
-        if (student.timestamp && (student.timestamp as Timestamp).toDate) {
-            const date = (student.timestamp as Timestamp).toDate();
-            if (date > twelveMonthsAgo) {
-                const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-                newStats.monthlyAdmissions[monthYear] = (newStats.monthlyAdmissions[monthYear] || 0) + 1;
-            }
-        }
-    });
-    return newStats;
-};
-
-
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isCachedData, setIsCachedData] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
   useEffect(() => {
@@ -429,5 +342,5 @@ export default function DashboardPage() {
         </Card>
       </div>
     </main>
-  );
-}
+  
+    
