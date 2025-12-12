@@ -1,8 +1,7 @@
-
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { collection, query, where, orderBy, limit, onSnapshot, getDocs, QueryConstraint } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, onSnapshot, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { DataTable } from '@/components/admin/data-table';
 import { StudentForm } from '@/components/admin/student-form';
@@ -149,11 +148,17 @@ export default function StudentManagementPage() {
           <div className="lg:col-span-3 xl:col-span-1">
             <Card className="h-full">
               <CardHeader className="p-0">
+                  {/* ================================================================= */}
+                  {/* CODE FOR TABS STARTS HERE                                         */}
+                  {/* This <Tabs> component controls the tabbed interface.               */}
+                  {/* ================================================================= */}
                   <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                       <TabsList className="grid w-full grid-cols-2 rounded-t-lg rounded-b-none">
+                          {/* These are the clickable tab buttons */}
                           <TabsTrigger value="recent"><Users className="mr-2 h-4 w-4" />Recent / Walk-ins</TabsTrigger>
                           <TabsTrigger value="remote"><Phone className="mr-2 h-4 w-4" />Remote Inquiries</TabsTrigger>
                       </TabsList>
+                      {/* This is the content shown for the 'Recent' tab */}
                       <TabsContent value="recent" className="m-0">
                           <DataTable 
                             students={recentStudentsToDisplay} 
@@ -165,6 +170,7 @@ export default function StudentManagementPage() {
                             searchPlaceholder="Search all students..."
                           />
                       </TabsContent>
+                       {/* This is the content shown for the 'Remote' tab */}
                       <TabsContent value="remote" className="m-0">
                            <DataTable 
                             students={remoteStudents} 
@@ -177,17 +183,27 @@ export default function StudentManagementPage() {
                            />
                       </TabsContent>
                   </Tabs>
+                   {/* ================================================================= */}
+                  {/* CODE FOR TABS ENDS HERE                                           */}
+                  {/* ================================================================= */}
               </CardHeader>
             </Card>
           </div>
           <div className="lg:col-span-4 xl:col-span-2">
+            {/* ================================================================= */}
+            {/* CODE FOR THE RIGHT-SIDE DISPLAY STARTS HERE                       */}
+            {/* This is a conditional check. It decides what to show based on    */}
+            {/* whether a student is selected or not.                            */}
+            {/* ================================================================= */}
             {selectedStudent ? (
+              // IF a student IS selected, show the StudentForm component
               <StudentForm 
                 student={selectedStudent?.id ? selectedStudent : null} 
                 onFormClose={handleDeselect} 
                 onFormSubmitSuccess={handleDeselect}
               />
             ) : (
+              // IF a student IS NOT selected, show this placeholder card
               <Card className="h-full flex items-center justify-center bg-background border-dashed shadow-none">
                 <div className="text-center text-muted-foreground p-8">
                    <Users className="h-16 w-16 mx-auto mb-4 text-gray-300 dark:text-gray-700" />
@@ -196,8 +212,11 @@ export default function StudentManagementPage() {
                 </div>
               </Card>
             )}
+            {/* ================================================================= */}
+            {/* CODE FOR THE RIGHT-SIDE DISPLAY ENDS HERE                         */}
+            {/* ================================================================= */}
           </div>
         </div>
-      </main>
+    </main>
   );
 }

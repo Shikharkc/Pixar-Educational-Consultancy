@@ -1,16 +1,14 @@
-
 'use client';
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { collection, onSnapshot, query, Timestamp, FirestoreError, getDocs, doc } from 'firebase/firestore';
+import { useState, useEffect, useMemo } from 'react';
+import { doc, onSnapshot } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { AlertTriangle, BarChart3, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert, LineChart, PieChart as PieChartIcon, DollarSign, GraduationCap, Languages, FileCheck, FileX, CircleDollarSign, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Calendar, CheckCircle, Clock, Globe, Loader2, Users, ShieldAlert, LineChart, PieChart as PieChartIcon, DollarSign, GraduationCap, Languages, FileCheck, FileX, CircleDollarSign, Activity, ArrowUpRight } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
 import type { Student } from '@/lib/data';
-import { Button } from '@/components/ui/button';
 import { formatDistanceToNow } from 'date-fns';
 
 // Define the structure for the stats object that we'll compute on the client-side
@@ -25,31 +23,59 @@ interface DashboardStats {
   studentsByEnglishTest: { [test: string]: number };
 }
 
-// Define colors for the charts
-const PIE_CHART_COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
-const BAR_CHART_COLOR_PRIMARY = 'hsl(var(--chart-1))';
-const BAR_CHART_COLOR_SECONDARY = 'hsl(var(--chart-2))';
+// Define colors for the charts - Professional Palette
+const PIE_CHART_COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
+const BAR_CHART_COLOR_PRIMARY = '#0f172a'; // Slate 900
+const BAR_CHART_COLOR_SECONDARY = '#64748b'; // Slate 500
 
 interface StatCardProps {
   title: string;
   value: string | number;
   icon: React.ElementType;
-  className?: string;
+  className?: string; // We'll keep this for compatibility but might override styles
   description?: string;
+  iconClassName?: string;
+  trend?: string;
 }
 
-const StatCard = ({ title, value, icon: Icon, className, description }: StatCardProps) => (
-  <Card className={cn("transform transition-transform duration-300 hover:scale-105 shadow-lg", className)}>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3">
-      <CardTitle className="text-xs font-medium">{title}</CardTitle>
-      <Icon className="h-4 w-4" />
+const StatCard = ({ title, value, icon: Icon, className, description, iconClassName }: StatCardProps) => (
+  <Card className="overflow-hidden border-none shadow-sm hover:shadow-md transition-all duration-200 bg-white/95 dark:bg-slate-900/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
+    <CardHeader className="flex flex-row items-center justify-between space-y-0 p-5 pb-2">
+      <CardTitle className="text-sm font-medium text-slate-500 dark:text-slate-400 capitalize">{title}</CardTitle>
+      <div className={cn("p-2 rounded-xl bg-slate-100 dark:bg-slate-800", iconClassName)}>
+        <Icon className="h-4 w-4" />
+      </div>
     </CardHeader>
-    <CardContent className="p-3 pt-0">
-      <div className="text-2xl font-bold">{value}</div>
-      {description && <p className="text-xs opacity-80">{description}</p>}
+    <CardContent className="p-5 pt-2">
+      <div className="flex items-baseline space-x-2">
+        <div className="text-3xl font-bold text-slate-900 dark:text-slate-50">{value}</div>
+      </div>
+      {description && (
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 flex items-center">
+          {description}
+        </p>
+      )}
     </CardContent>
   </Card>
 );
+
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white/90 dark:bg-slate-900/95 backdrop-blur px-3 py-2 rounded-lg shadow-xl border border-slate-100 dark:border-slate-800 text-xs">
+        <p className="font-semibold text-slate-700 dark:text-slate-200 mb-1">{label}</p>
+        {payload.map((entry: any, index: number) => (
+          <div key={index} className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
+            <span className="text-slate-500 dark:text-slate-400 capitalize">{entry.name}:</span>
+            <span className="font-medium text-slate-900 dark:text-slate-100">{entry.value}</span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+  return null;
+};
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
@@ -58,287 +84,357 @@ export default function DashboardPage() {
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
   useEffect(() => {
-      // Use a real-time listener for the metrics document
-      const metricsDocRef = doc(db, 'metrics', 'dashboard');
-      const unsubscribe = onSnapshot(metricsDocRef, (docSnap) => {
-          if (docSnap.exists()) {
-              const data = docSnap.data() as DashboardStats;
-              setStats(data);
-              setLastUpdated(Date.now());
-              setError(null);
-          } else {
-              setError('no-summary-doc');
-              setStats(null);
-          }
-          setLoading(false);
-      }, (err: any) => {
-          if (err.code === 'permission-denied') {
-              setError('permission-denied');
-          } else {
-              console.error("Error with metrics snapshot:", err);
-              setError("An unknown error occurred while loading dashboard data.");
-          }
-          setLoading(false);
-      });
+    // Use a real-time listener for the metrics document
+    const metricsDocRef = doc(db, 'metrics', 'dashboard');
+    const unsubscribe = onSnapshot(metricsDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data() as DashboardStats;
+        setStats(data);
+        setLastUpdated(Date.now());
+        setError(null);
+      } else {
+        setError('no-summary-doc');
+        setStats(null);
+      }
+      setLoading(false);
+    }, (err: any) => {
+      if (err.code === 'permission-denied') {
+        setError('permission-denied');
+      } else {
+        console.error("Error with metrics snapshot:", err);
+        setError("An unknown error occurred while loading dashboard data.");
+      }
+      setLoading(false);
+    });
 
-      // Cleanup listener on component unmount
-      return () => unsubscribe();
+    // Cleanup listener on component unmount
+    return () => unsubscribe();
   }, []);
 
   const dataMappers = useMemo(() => {
     if (!stats) return {};
 
     const sortAndMap = (data: { [key: string]: number } | undefined, nameKey: string, valueKey: string) => {
-        if (!data) return [];
-        return Object.entries(data)
-            .map(([name, value]) => ({ [nameKey]: name, [valueKey]: value }))
-            .sort((a, b) => b[valueKey] - a[valueKey]);
+      if (!data) return [];
+      return Object.entries(data)
+        .map(([name, value]) => ({ [nameKey]: name, [valueKey]: value }))
+        .sort((a, b) => b[valueKey] - a[valueKey]);
     };
-    
+
     return {
-        destinationData: sortAndMap(stats.studentsByDestination, 'name', 'students'),
-        visaStatusData: sortAndMap(stats.visaStatusCounts, 'name', 'value'),
-        monthlyAdmissionsData: stats.monthlyAdmissions ? Object.entries(stats.monthlyAdmissions)
-            .map(([month, value]) => ({ name: month, students: value }))
-            .sort((a, b) => a.name.localeCompare(b.name)) : [],
-        counselorData: sortAndMap(stats.studentsByCounselor, 'name', 'students'),
-        educationData: sortAndMap(stats.studentsByEducation, 'name', 'students'),
-        englishTestData: sortAndMap(stats.studentsByEnglishTest, 'name', 'value'),
+      destinationData: sortAndMap(stats.studentsByDestination, 'name', 'students'),
+      visaStatusData: sortAndMap(stats.visaStatusCounts, 'name', 'value'),
+      monthlyAdmissionsData: stats.monthlyAdmissions ? Object.entries(stats.monthlyAdmissions)
+        .map(([month, value]) => ({ name: month, students: value }))
+        .sort((a, b) => a.name.localeCompare(b.name)) : [],
+      counselorData: sortAndMap(stats.studentsByCounselor, 'name', 'students'),
+      educationData: sortAndMap(stats.studentsByEducation, 'name', 'students'),
+      englishTestData: sortAndMap(stats.studentsByEnglishTest, 'name', 'value'),
     };
   }, [stats]);
 
 
   if (loading) {
     return (
-      <div className="flex h-[calc(100vh-100px)] w-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-2">Loading Dashboard...</p>
+      <div className="flex h-[calc(100vh-100px)] w-full flex-col items-center justify-center bg-slate-50/50 dark:bg-slate-950/50">
+        <Loader2 className="h-10 w-10 animate-spin text-slate-800 dark:text-slate-200 mb-4" />
+        <p className="text-sm text-slate-500 font-medium animate-pulse">Loading Analytics...</p>
       </div>
     );
   }
 
   if (error) {
-     return (
-        <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-             {error === 'permission-denied' ? (
-                <Alert variant="destructive">
-                    <ShieldAlert className="h-4 w-4" />
-                    <AlertTitle>Action Required: Firestore Permissions</AlertTitle>
-                    <AlertDescription>
-                        The dashboard failed to load due to missing Firestore security rules. Please go to your Firebase Console, navigate to **Firestore Database &gt; Rules**, and ensure your rules allow authenticated admin users to read the `metrics/dashboard` document. A common rule for development is `allow read, write: if request.auth != null;`.
-                    </AlertDescription>
-                </Alert>
-             ) : error === 'no-summary-doc' ? (
-                <Alert>
-                    <LineChart className="h-4 w-4" />
-                    <AlertTitle>Dashboard Data Not Found</AlertTitle>
-                    <AlertDescription>
-                        The pre-calculated dashboard summary document ('metrics/dashboard') could not be found. Please run the aggregation script (`npx tsx scripts/aggregate-stats.ts`) in your project's terminal to generate it. This script calculates all stats and creates the necessary document for the dashboard to display.
-                    </AlertDescription>
-                </Alert>
-             ) : (
-                <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{error}</AlertDescription>
-                </Alert>
-             )}
-        </main>
-     );
+    return (
+      <main className="flex flex-1 flex-col gap-6 p-6 md:p-10 bg-slate-50/30 min-h-screen">
+        {error === 'permission-denied' ? (
+          <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-900">
+            <ShieldAlert className="h-4 w-4 text-red-600" />
+            <AlertTitle>Access Denied</AlertTitle>
+            <AlertDescription>
+              Missing permissions to view dashboard metrics. Please check your Firestore security rules.
+            </AlertDescription>
+          </Alert>
+        ) : error === 'no-summary-doc' ? (
+          <Alert className="bg-amber-50 border-amber-200 text-amber-900">
+            <LineChart className="h-4 w-4 text-amber-600" />
+            <AlertTitle>Setup Required</AlertTitle>
+            <AlertDescription>
+              Dashboard data initialization needed. Run `npx tsx scripts/aggregate-stats.ts`.
+            </AlertDescription>
+          </Alert>
+        ) : (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>System Error</AlertTitle>
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
+      </main>
+    );
   }
 
   return (
-    <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-       <Alert variant="default" className="bg-blue-100 border-blue-200 dark:bg-blue-900/30 dark:border-blue-700">
-            <Clock className="h-4 w-4" />
-            <AlertTitle>Live Dashboard</AlertTitle>
-            <AlertDescription className="flex justify-between items-center">
-                <span>
-                This dashboard is updated in real-time. Last data update detected {lastUpdated ? formatDistanceToNow(lastUpdated, { addSuffix: true }) : 'a moment'} ago.
-                </span>
-            </AlertDescription>
-        </Alert>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2">
-         <StatCard 
-            title="Total Students" 
-            value={stats?.totalStudents || 0}
-            icon={Users}
-            className="bg-primary text-primary-foreground"
-          />
-          <StatCard 
-            title="Visas Approved" 
-            value={stats?.visaStatusCounts?.Approved || 0}
-            icon={FileCheck}
-            className="bg-green-600 text-white"
-          />
-          <StatCard 
-            title="Visas Rejected" 
-            value={stats?.visaStatusCounts?.Rejected || 0}
-            icon={FileX}
-            className="bg-red-600 text-white"
-          />
-          <StatCard 
-            title="Visas Pending" 
-            value={stats?.visaStatusCounts?.Pending || 0}
-            icon={Clock}
-            className="bg-amber-500 text-white"
-          />
-          <StatCard 
-            title="Fees Paid" 
-            value={stats?.serviceFeeStatusCounts?.Paid || 0}
-            icon={CircleDollarSign}
-            className="bg-chart-3 text-white"
-          />
-           <StatCard 
-            title="Fees Unpaid" 
-            value={stats?.serviceFeeStatusCounts?.Unpaid || 0}
-            icon={DollarSign}
-            className="bg-chart-5 text-white"
-          />
-          <StatCard 
-            title="Unassigned" 
-            value={stats?.studentsByCounselor?.Unassigned || 0}
-            icon={Users}
-            className="bg-accent text-accent-foreground"
-            description="New Leads"
-          />
+    <main className="flex flex-1 flex-col space-y-8 p-6 md:px-8 md:py-10 bg-slate-50/30 dark:bg-slate-950 min-h-screen font-sans">
+
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-50">Admin Dashboard</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Overview of student admissions, visas, and performance metrics.</p>
+        </div>
+        <div className="flex items-center gap-2 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm text-xs font-medium text-slate-600 dark:text-slate-300">
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+          </span>
+          <span>Last updated {lastUpdated ? formatDistanceToNow(lastUpdated, { addSuffix: true }) : 'just now'}</span>
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-1 lg:col-span-4">
-            <CardHeader>
-                <CardTitle className="flex items-center"><Calendar className="mr-2 h-5 w-5" />Monthly New Students</CardTitle>
-                <CardDescription>New student registrations over the last 12 months.</CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
-                 <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={dataMappers.monthlyAdmissionsData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="students" fill={BAR_CHART_COLOR_PRIMARY} radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                 </ResponsiveContainer>
-            </CardContent>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+        <StatCard
+          title="Total Students"
+          value={stats?.totalStudents || 0}
+          icon={Users}
+          iconClassName="bg-blue-100 text-blue-600"
+        />
+        <StatCard
+          title="Visas Approved"
+          value={stats?.visaStatusCounts?.Approved || 0}
+          icon={FileCheck}
+          iconClassName="bg-emerald-100 text-emerald-600"
+        />
+        <StatCard
+          title="Visas Pending"
+          value={stats?.visaStatusCounts?.Pending || 0}
+          icon={Clock}
+          iconClassName="bg-amber-100 text-amber-600"
+        />
+        <StatCard
+          title="Visas Rejected"
+          value={stats?.visaStatusCounts?.Rejected || 0}
+          icon={FileX}
+          iconClassName="bg-red-100 text-red-600"
+        />
+        <StatCard
+          title="Fees Paid"
+          value={stats?.serviceFeeStatusCounts?.Paid || 0}
+          icon={CircleDollarSign}
+          iconClassName="bg-indigo-100 text-indigo-600"
+        />
+        <StatCard
+          title="Unpaid/Pending"
+          value={stats?.serviceFeeStatusCounts?.Unpaid || 0}
+          icon={DollarSign}
+          iconClassName="bg-slate-100 text-slate-600"
+        />
+      </div>
+
+      {/* Main Charts Section */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+
+        {/* Monthly Admissions Chart */}
+        <Card className="col-span-1 lg:col-span-4 shadow-sm hover:shadow-md transition-shadow duration-200 border-slate-200 dark:border-slate-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Calendar className="h-5 w-5 text-slate-500" />
+              Monthly Registrations
+            </CardTitle>
+            <CardDescription>New student enrollment trends over time</CardDescription>
+          </CardHeader>
+          <CardContent className="pl-0">
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={dataMappers.monthlyAdmissionsData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis
+                  dataKey="name"
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  stroke="#64748B"
+                  tickMargin={10}
+                />
+                <YAxis
+                  fontSize={12}
+                  tickLine={false}
+                  axisLine={false}
+                  allowDecimals={false}
+                  stroke="#64748B"
+                  tickFormatter={(value) => `${value}`}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: '#F1F5F9' }} />
+                <Bar
+                  dataKey="students"
+                  fill="#0F172A"
+                  radius={[6, 6, 0, 0]}
+                  barSize={32}
+                  name="Students"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
         </Card>
-        <Card className="col-span-1 lg:col-span-3">
-             <CardHeader>
-                <CardTitle className="flex items-center"><PieChartIcon className="mr-2 h-5 w-5" />Visa Status Distribution</CardTitle>
-                <CardDescription>Breakdown of current student visa statuses.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                    <PieChart>
-                        <Pie
-                            data={dataMappers.visaStatusData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={120}
-                            fill="#8884d8"
-                            dataKey="value"
-                            nameKey="name"
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        >
-                        {dataMappers.visaStatusData?.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} />
-                        ))}
-                        </Pie>
-                         <Tooltip />
-                         <Legend />
-                    </PieChart>
-                </ResponsiveContainer>
-            </CardContent>
+
+        {/* Visa Status Distribution */}
+        <Card className="col-span-1 lg:col-span-3 shadow-sm hover:shadow-md transition-shadow duration-200 border-slate-200 dark:border-slate-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <PieChartIcon className="h-5 w-5 text-slate-500" />
+              Visa Status
+            </CardTitle>
+            <CardDescription>Current distribution of visa applications</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={320}>
+              <PieChart>
+                <Pie
+                  data={dataMappers.visaStatusData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={100}
+                  paddingAngle={5}
+                  dataKey="value"
+                  nameKey="name"
+                  strokeWidth={0}
+                >
+                  {dataMappers.visaStatusData?.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+                <Legend
+                  layout="vertical"
+                  verticalAlign="middle"
+                  align="right"
+                  iconType="circle"
+                  formatter={(value) => <span className="text-slate-600 dark:text-slate-400 text-sm ml-1">{value}</span>}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
         </Card>
       </div>
 
-       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-        <Card className="col-span-1 lg:col-span-3">
-             <CardHeader>
-                <CardTitle className="flex items-center"><Languages className="mr-2 h-5 w-5" />English Proficiency Status</CardTitle>
-                <CardDescription>Breakdown of students by English test taken.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={350}>
-                    <PieChart>
-                        <Pie
-                            data={dataMappers.englishTestData}
-                            cx="50%"
-                            cy="50%"
-                            labelLine={false}
-                            outerRadius={120}
-                            fill="#8884d8"
-                            dataKey="value"
-                            nameKey="name"
-                            label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        >
-                        {dataMappers.englishTestData?.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} />
-                        ))}
-                        </Pie>
-                         <Tooltip />
-                         <Legend />
-                    </PieChart>
-                </ResponsiveContainer>
-            </CardContent>
+      {/* Secondary Charts Section */}
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+
+        {/* English Proficiency */}
+        <Card className="col-span-1 lg:col-span-3 shadow-sm hover:shadow-md transition-shadow duration-200 border-slate-200 dark:border-slate-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Languages className="h-5 w-5 text-slate-500" />
+              English Proficiency
+            </CardTitle>
+            <CardDescription>Test types taken by students</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={320}>
+              <PieChart>
+                <Pie
+                  data={dataMappers.englishTestData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100}
+                  dataKey="value"
+                  nameKey="name"
+                  label={({ name, percent }) => percent > 0.05 ? `${name}` : ''}
+                  labelLine={false}
+                >
+                  {dataMappers.englishTestData?.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]} opacity={0.8} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
         </Card>
-        <Card className="col-span-1 lg:col-span-4">
-            <CardHeader>
-                <CardTitle className="flex items-center"><Users className="mr-2 h-5 w-5" />Student Distribution by Counselor</CardTitle>
-                <CardDescription>Number of students assigned to each counselor.</CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
-                 <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={dataMappers.counselorData} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis type="number" fontSize={12} allowDecimals={false}/>
-                        <YAxis type="category" dataKey="name" fontSize={12} width={80} />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="students" fill={BAR_CHART_COLOR_SECONDARY} radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                 </ResponsiveContainer>
-            </CardContent>
+
+        {/* Counselor Stats */}
+        <Card className="col-span-1 lg:col-span-4 shadow-sm hover:shadow-md transition-shadow duration-200 border-slate-200 dark:border-slate-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Users className="h-5 w-5 text-slate-500" />
+              Counselor Portfolio
+            </CardTitle>
+            <CardDescription>Students assigned per counselor</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={320}>
+              <BarChart data={dataMappers.counselorData} layout="vertical" margin={{ left: 20, right: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
+                <XAxis type="number" fontSize={12} allowDecimals={false} stroke="#64748B" axisLine={false} tickLine={false} />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  fontSize={12}
+                  width={100}
+                  stroke="#64748B"
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: '#F1F5F9' }} />
+                <Bar
+                  dataKey="students"
+                  fill="#64748B"
+                  radius={[0, 4, 4, 0]}
+                  barSize={20}
+                  name="Assigned Students"
+                >
+                  {/* Gradient effect if desired, or simpler solid color */}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
         </Card>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-         <Card className="col-span-1">
-            <CardHeader>
-                <CardTitle className="flex items-center"><Globe className="mr-2 h-5 w-5" />Student Distribution by Destination</CardTitle>
-                <CardDescription>Number of students aspiring for each country.</CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
-                 <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={dataMappers.destinationData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" fontSize={12} />
-                        <YAxis fontSize={12} allowDecimals={false}/>
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="students" fill={BAR_CHART_COLOR_PRIMARY} radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                 </ResponsiveContainer>
-            </CardContent>
+
+      {/* Bottom Charts */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Destination Distribution */}
+        <Card className="col-span-1 shadow-sm hover:shadow-md transition-shadow duration-200 border-slate-200 dark:border-slate-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Globe className="h-5 w-5 text-slate-500" />
+              Target Destinations
+            </CardTitle>
+            <CardDescription>Preferred countries for study</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={dataMappers.destinationData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis dataKey="name" fontSize={12} stroke="#64748B" axisLine={false} tickLine={false} />
+                <YAxis fontSize={12} allowDecimals={false} stroke="#64748B" axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: '#F1F5F9' }} />
+                <Bar dataKey="students" fill="#3B82F6" radius={[4, 4, 0, 0]} barSize={40} name="Students" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
         </Card>
-         <Card className="col-span-1">
-            <CardHeader>
-                <CardTitle className="flex items-center"><GraduationCap className="mr-2 h-5 w-5" />Student Distribution by Education</CardTitle>
-                <CardDescription>Breakdown by last completed education level.</CardDescription>
-            </CardHeader>
-            <CardContent className="pl-2">
-                 <ResponsiveContainer width="100%" height={350}>
-                    <BarChart data={dataMappers.educationData}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" fontSize={12} />
-                        <YAxis fontSize={12} allowDecimals={false}/>
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="students" fill={BAR_CHART_COLOR_SECONDARY} radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                 </ResponsiveContainer>
-            </CardContent>
+
+        {/* Education Levels */}
+        <Card className="col-span-1 shadow-sm hover:shadow-md transition-shadow duration-200 border-slate-200 dark:border-slate-800">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <GraduationCap className="h-5 w-5 text-slate-500" />
+              Education Background
+            </CardTitle>
+            <CardDescription>Previous qualifications of applicants</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={dataMappers.educationData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                <XAxis dataKey="name" fontSize={11} stroke="#64748B" axisLine={false} tickLine={false} interval={0} />
+                <YAxis fontSize={12} allowDecimals={false} stroke="#64748B" axisLine={false} tickLine={false} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: '#F1F5F9' }} />
+                <Bar dataKey="students" fill="#8B5CF6" radius={[4, 4, 0, 0]} barSize={40} name="Students" />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
         </Card>
       </div>
     </main>
