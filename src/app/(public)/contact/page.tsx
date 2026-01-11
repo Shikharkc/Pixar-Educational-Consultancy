@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from 'react';
 import { useScrollAnimation } from '@/hooks/useScrollAnimation';
 import { cn } from '@/lib/utils';
-import { allEducationLevels, englishTestOptions, studyDestinationOptions, testPreparationOptions } from '@/lib/data.tsx';
+import { allEducationLevels, englishTestOptions, studyDestinationOptions, testPreparationOptions } from '@/lib/data';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
@@ -96,7 +96,7 @@ async function submitToPrepClassGoogleSheet(data: PreparationClassFormValues): P
     if (data.preferredStartDate) {
         formData.append(PREP_CLASS_PREFERRED_START_DATE_ENTRY_ID, format(data.preferredStartDate, "yyyy-MM-dd"));
     }
-    if (data.additionalNotes && PREP_CLASS_ADDITIONAL_NOTES_ENTRY_ID !== 'REPLACE_WITH_YOUR_ADDITIONAL_NOTES_FIELD_ENTRY_ID_FOR_PREP') {
+    if (data.additionalNotes) {
         formData.append(PREP_CLASS_ADDITIONAL_NOTES_ENTRY_ID, data.additionalNotes);
     }
 
@@ -165,7 +165,7 @@ export default function ContactPage() {
         setIsClient(true);
     }, []);
 
-    const [titleSectionRef, isTitleSectionVisible] = useScrollAnimation<HTMLElement>({ triggerOnExit: true });
+    const [titleSectionRef, isTitleSectionVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true });
     const [formTabsRef, isFormTabsVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
     const [infoSectionRef, isInfoSectionVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
 
@@ -506,7 +506,7 @@ export default function ContactPage() {
                                                                                     <CalendarIconLucide className="ml-auto h-5 w-5 opacity-50" />
                                                                                 </Button>
                                                                             </FormControl></PopoverTrigger>
-                                                                                <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value} onSelect={field.onChange} disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))} initialFocus /></PopoverContent>
+                                                                                <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))} initialFocus /></PopoverContent>
                                                                             </Popover><FormMessage />
                                                                         </FormItem>
                                                                     )} />

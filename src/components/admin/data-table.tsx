@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import { Student } from '@/lib/data.tsx';
+import { Student } from '@/lib/data';
 import {
   Table,
   TableBody,

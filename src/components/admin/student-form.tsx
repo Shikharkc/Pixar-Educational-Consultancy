@@ -22,7 +22,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Student, allEducationLevels, englishTestOptions, studyDestinationOptions, counselorNames, universityList } from '@/lib/data.tsx';
+import { Student, allEducationLevels, englishTestOptions, studyDestinationOptions, counselorNames, universityList } from '@/lib/data';
 import { collection, addDoc, updateDoc, doc, serverTimestamp, Timestamp, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
@@ -89,97 +89,97 @@ const safeToDate = (dateValue: any): Date | null => {
 };
 
 const emailTemplates = {
-    welcome: {
-      subject: "Welcome to Pixar Educational Consultancy!",
-      body: (name: string) => `Dear ${name},\n\nThank you for choosing Pixar Educational Consultancy. We are excited to be a part of your journey to study abroad.\n\nA counselor will be in touch with you shortly to discuss the next steps.\n\nBest regards,\nThe Pixar Edu Team`
-    },
-    paymentConfirmation: {
-      subject: "Payment Confirmation - Pixar Educational Consultancy",
-      body: (name: string, date?: Date | null) => `Dear ${name},\n\nThis email is to confirm that we have successfully received your service fee payment${date ? ` on ${format(date, 'PPP')}` : ''}. Thank you!\n\nWe appreciate your trust in us and will continue to provide you with the best support for your application process.\n\nBest regards,\nThe Pixar Edu Team`
-    },
-    visaApplied: {
-      subject: "Update on Your Student Visa Application",
-      body: (name: string, date?: Date | null) => `Dear ${name},\n\nThis is to inform you that your student visa application has been successfully lodged${date ? ` on ${format(date, 'PPP')}` : ''}. We will monitor its progress closely and keep you updated.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nThe Pixar Edu Team`
-    },
-    visaCongratulations: {
-      subject: "Congratulations on Your Student Visa Approval!",
-      body: (name: string, date?: Date | null) => `Dear ${name},\n\nWe are absolutely thrilled to inform you that your student visa has been approved${date ? `, as of ${format(date, 'PPP')}` : ''}! Congratulations on this huge achievement.\n\nThis is a major step towards your dream of studying abroad, and we are so proud to have been a part of your journey.\n\nWe will be in touch soon to discuss the next steps, including our pre-departure briefing.\n\nBest regards,\nThe Pixar Edu Team`
-    }
+  welcome: {
+    subject: "Welcome to Pixar Educational Consultancy!",
+    body: (name: string) => `Dear ${name},\n\nThank you for choosing Pixar Educational Consultancy. We are excited to be a part of your journey to study abroad.\n\nA counselor will be in touch with you shortly to discuss the next steps.\n\nBest regards,\nThe Pixar Edu Team`
+  },
+  paymentConfirmation: {
+    subject: "Payment Confirmation - Pixar Educational Consultancy",
+    body: (name: string, date?: Date | null) => `Dear ${name},\n\nThis email is to confirm that we have successfully received your service fee payment${date ? ` on ${format(date, 'PPP')}` : ''}. Thank you!\n\nWe appreciate your trust in us and will continue to provide you with the best support for your application process.\n\nBest regards,\nThe Pixar Edu Team`
+  },
+  visaApplied: {
+    subject: "Update on Your Student Visa Application",
+    body: (name: string, date?: Date | null) => `Dear ${name},\n\nThis is to inform you that your student visa application has been successfully lodged${date ? ` on ${format(date, 'PPP')}` : ''}. We will monitor its progress closely and keep you updated.\n\nPlease feel free to reach out if you have any questions.\n\nBest regards,\nThe Pixar Edu Team`
+  },
+  visaCongratulations: {
+    subject: "Congratulations on Your Student Visa Approval!",
+    body: (name: string, date?: Date | null) => `Dear ${name},\n\nWe are absolutely thrilled to inform you that your student visa has been approved${date ? `, as of ${format(date, 'PPP')}` : ''}! Congratulations on this huge achievement.\n\nThis is a major step towards your dream of studying abroad, and we are so proud to have been a part of your journey.\n\nWe will be in touch soon to discuss the next steps, including our pre-departure briefing.\n\nBest regards,\nThe Pixar Edu Team`
+  }
 };
 
 type TemplateKey = keyof typeof emailTemplates;
 
 const EmailDialog = ({ student }: { student: Student }) => {
-    const [selectedTemplate, setSelectedTemplate] = useState<TemplateKey>('welcome');
-    const [gmailUrl, setGmailUrl] = useState('');
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateKey>('welcome');
+  const [gmailUrl, setGmailUrl] = useState('');
 
-    useEffect(() => {
-        const template = emailTemplates[selectedTemplate];
-        let bodyContent = '';
-        
-        // Use a type guard to check if the body function expects a date
-        if (selectedTemplate === 'paymentConfirmation') {
-            bodyContent = template.body(student.fullName, safeToDate(student.serviceFeePaidDate));
-        } else if (selectedTemplate === 'visaApplied' || selectedTemplate === 'visaCongratulations') {
-            bodyContent = template.body(student.fullName, safeToDate(student.visaStatusUpdateDate));
-        } else {
-            // For templates that don't need a date
-            bodyContent = template.body(student.fullName, null);
-        }
+  useEffect(() => {
+    const template = emailTemplates[selectedTemplate];
+    let bodyContent = '';
 
-        const subject = encodeURIComponent(template.subject);
-        const body = encodeURIComponent(bodyContent);
-        
-        setGmailUrl(`https://mail.google.com/mail/?view=cm&fs=1&to=${student.email}&su=${subject}&body=${body}`);
+    // Use a type guard to check if the body function expects a date
+    if (selectedTemplate === 'paymentConfirmation') {
+      bodyContent = template.body(student.fullName, safeToDate(student.serviceFeePaidDate));
+    } else if (selectedTemplate === 'visaApplied' || selectedTemplate === 'visaCongratulations') {
+      bodyContent = template.body(student.fullName, safeToDate(student.visaStatusUpdateDate));
+    } else {
+      // For templates that don't need a date
+      bodyContent = template.body(student.fullName, null);
+    }
 
-    }, [selectedTemplate, student]);
+    const subject = encodeURIComponent(template.subject);
+    const body = encodeURIComponent(bodyContent);
 
-    return (
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>Send Email to {student.fullName}</DialogTitle>
-                <DialogDescription>
-                    Select a template to generate a pre-filled email. This will open in a new Gmail tab.
-                </DialogDescription>
-            </DialogHeader>
-            <div className="py-4 space-y-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                    <Label htmlFor="template" className="text-right">Template</Label>
-                    <Select value={selectedTemplate} onValueChange={(value: TemplateKey) => setSelectedTemplate(value)}>
-                        <SelectTrigger id="template" className="col-span-3">
-                            <SelectValue placeholder="Select a template" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="welcome">Welcome Email</SelectItem>
-                            <SelectItem value="paymentConfirmation">Payment Confirmation</SelectItem>
-                            <SelectItem value="visaApplied">Visa Applied Notification</SelectItem>
-                            <SelectItem value="visaCongratulations">Visa Approval Congratulations</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-2">
-                    <Label>Email Preview</Label>
-                    <div className="p-3 border rounded-md bg-muted text-sm max-h-60 overflow-y-auto">
-                        <p className="font-semibold">Subject: <span className="font-normal">{emailTemplates[selectedTemplate].subject}</span></p>
-                        <Separator className="my-2" />
-                        <p className="whitespace-pre-wrap">
-                          {emailTemplates[selectedTemplate].body(
-                              student.fullName,
-                              selectedTemplate === 'paymentConfirmation' ? safeToDate(student.serviceFeePaidDate) : safeToDate(student.visaStatusUpdateDate)
-                          )}
-                        </p>
-                    </div>
-                </div>
-            </div>
-            <DialogFooter>
-                <Button asChild>
-                    <a href={gmailUrl} target="_blank" rel="noopener noreferrer">
-                        <Send className="mr-2 h-4 w-4" /> Compose in Gmail
-                    </a>
-                </Button>
-            </DialogFooter>
-        </DialogContent>
-    );
+    setGmailUrl(`https://mail.google.com/mail/?view=cm&fs=1&to=${student.email}&su=${subject}&body=${body}`);
+
+  }, [selectedTemplate, student]);
+
+  return (
+    <DialogContent>
+      <DialogHeader>
+        <DialogTitle>Send Email to {student.fullName}</DialogTitle>
+        <DialogDescription>
+          Select a template to generate a pre-filled email. This will open in a new Gmail tab.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="py-4 space-y-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="template" className="text-right">Template</Label>
+          <Select value={selectedTemplate} onValueChange={(value: TemplateKey) => setSelectedTemplate(value)}>
+            <SelectTrigger id="template" className="col-span-3">
+              <SelectValue placeholder="Select a template" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="welcome">Welcome Email</SelectItem>
+              <SelectItem value="paymentConfirmation">Payment Confirmation</SelectItem>
+              <SelectItem value="visaApplied">Visa Applied Notification</SelectItem>
+              <SelectItem value="visaCongratulations">Visa Approval Congratulations</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>Email Preview</Label>
+          <div className="p-3 border rounded-md bg-muted text-sm max-h-60 overflow-y-auto">
+            <p className="font-semibold">Subject: <span className="font-normal">{emailTemplates[selectedTemplate].subject}</span></p>
+            <Separator className="my-2" />
+            <p className="whitespace-pre-wrap">
+              {emailTemplates[selectedTemplate].body(
+                student.fullName,
+                selectedTemplate === 'paymentConfirmation' ? safeToDate(student.serviceFeePaidDate) : safeToDate(student.visaStatusUpdateDate)
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button asChild>
+          <a href={gmailUrl} target="_blank" rel="noopener noreferrer">
+            <Send className="mr-2 h-4 w-4" /> Compose in Gmail
+          </a>
+        </Button>
+      </DialogFooter>
+    </DialogContent>
+  );
 };
 
 export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: StudentFormProps) {
@@ -218,17 +218,17 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
   }, [student, form, isNewStudent]);
 
   useEffect(() => {
-      if (serviceFeeStatus === 'Paid' && !form.getValues('serviceFeePaidDate')) {
-        form.setValue('serviceFeePaidDate', new Date(), { shouldValidate: true, shouldDirty: true });
-      } else if (serviceFeeStatus === 'Unpaid') {
-        form.setValue('serviceFeePaidDate', null);
-      }
-      
-      if (visaStatus !== 'Not Applied' && !form.getValues('visaStatusUpdateDate')) {
-        form.setValue('visaStatusUpdateDate', new Date(), { shouldValidate: true, shouldDirty: true });
-      } else if (visaStatus === 'Not Applied') {
-        form.setValue('visaStatusUpdateDate', null);
-      }
+    if (serviceFeeStatus === 'Paid' && !form.getValues('serviceFeePaidDate')) {
+      form.setValue('serviceFeePaidDate', new Date(), { shouldValidate: true, shouldDirty: true });
+    } else if (serviceFeeStatus === 'Unpaid') {
+      form.setValue('serviceFeePaidDate', null);
+    }
+
+    if (visaStatus !== 'Not Applied' && !form.getValues('visaStatusUpdateDate')) {
+      form.setValue('visaStatusUpdateDate', new Date(), { shouldValidate: true, shouldDirty: true });
+    } else if (visaStatus === 'Not Applied') {
+      form.setValue('visaStatusUpdateDate', null);
+    }
   }, [serviceFeeStatus, visaStatus, form]);
 
   const onSubmit = async (data: StudentFormValues) => {
@@ -280,7 +280,7 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
       setIsAlertOpen(false);
     }
   };
-  
+
   const getVisaStatusBadgeVariant = (status?: Student['visaStatus']) => {
     switch (status) {
       case 'Approved': return 'default';
@@ -292,9 +292,9 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
 
   const getFeeStatusBadgeVariant = (status?: Student['serviceFeeStatus']) => {
     switch (status) {
-        case 'Paid': return 'default';
-        case 'Unpaid': return 'outline';
-        default: return 'outline';
+      case 'Paid': return 'default';
+      case 'Unpaid': return 'outline';
+      default: return 'outline';
     }
   };
 
@@ -304,30 +304,30 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
       <div className="space-y-4">
         <h4 className="font-medium text-primary border-b pb-1">Student Information</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField control={form.control} name="fullName" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><BookUser className="mr-2 h-4 w-4"/>Full Name</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-          <FormField control={form.control} name="email" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><Mail className="mr-2 h-4 w-4"/>Email</FormLabel> <FormControl><Input type="email" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+          <FormField control={form.control} name="fullName" render={({ field }) => (<FormItem> <FormLabel className="flex items-center text-xs"><BookUser className="mr-2 h-4 w-4" />Full Name</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem>)} />
+          <FormField control={form.control} name="email" render={({ field }) => (<FormItem> <FormLabel className="flex items-center text-xs"><Mail className="mr-2 h-4 w-4" />Email</FormLabel> <FormControl><Input type="email" {...field} /></FormControl> <FormMessage /> </FormItem>)} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField control={form.control} name="mobileNumber" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><Phone className="mr-2 h-4 w-4"/>Mobile Number</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-          <FormField control={form.control} name="emergencyContact" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center text-xs"><Phone className="mr-2 h-4 w-4"/>Emergency Contact</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+          <FormField control={form.control} name="mobileNumber" render={({ field }) => (<FormItem> <FormLabel className="flex items-center text-xs"><Phone className="mr-2 h-4 w-4" />Mobile Number</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem>)} />
+          <FormField control={form.control} name="emergencyContact" render={({ field }) => (<FormItem> <FormLabel className="flex items-center text-xs"><Phone className="mr-2 h-4 w-4" />Emergency Contact</FormLabel> <FormControl><Input {...field} /></FormControl> <FormMessage /> </FormItem>)} />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <FormField control={form.control} name="lastCompletedEducation" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Last Education</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger></FormControl><SelectContent>{allEducationLevels.map(l => (<SelectItem key={l.value} value={l.value}>{l.name}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem> )}/>
-          <FormField control={form.control} name="englishProficiencyTest" render={({ field }) => ( <FormItem><FormLabel className="text-xs">English Test</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{englishTestOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem> )}/>
-          <FormField control={form.control} name="preferredStudyDestination" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Destination</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger></FormControl><SelectContent>{studyDestinationOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem> )}/>
+          <FormField control={form.control} name="lastCompletedEducation" render={({ field }) => (<FormItem><FormLabel className="text-xs">Last Education</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger></FormControl><SelectContent>{allEducationLevels.map(l => (<SelectItem key={l.value} value={l.value}>{l.name}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="englishProficiencyTest" render={({ field }) => (<FormItem><FormLabel className="text-xs">English Test</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{englishTestOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)} />
+          <FormField control={form.control} name="preferredStudyDestination" render={({ field }) => (<FormItem><FormLabel className="text-xs">Destination</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger></FormControl><SelectContent>{studyDestinationOptions.map(o => (<SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>)} />
         </div>
       </div>
 
       {/* Internal Records Section */}
       <div className="p-4 bg-muted/50 rounded-lg space-y-4">
         <h4 className="font-medium text-primary border-b pb-1">Internal Records</h4>
-        
+
         <FormField
           control={form.control}
           name="collegeUniversityName"
           render={({ field }) => (
             <FormItem className="flex flex-col">
-              <FormLabel className="flex items-center text-xs"><Briefcase className="mr-2 h-4 w-4"/>College/University Name</FormLabel>
+              <FormLabel className="flex items-center text-xs"><Briefcase className="mr-2 h-4 w-4" />College/University Name</FormLabel>
               <Popover>
                 <PopoverTrigger asChild>
                   <FormControl>
@@ -341,9 +341,9 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
                     >
                       {field.value
                         ? (() => {
-                            const uni = universityList.find(u => u.value === field.value);
-                            return uni ? `${uni.label} (${uni.country})` : "Select university";
-                          })()
+                          const uni = universityList.find(u => u.value === field.value);
+                          return uni ? `${uni.label} (${uni.country})` : "Select university";
+                        })()
                         : "Select university"}
                       <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                     </Button>
@@ -381,75 +381,75 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
             </FormItem>
           )}
         />
-        
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <FormField control={form.control} name="visaStatus" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Visa Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{['Not Applied', 'Pending', 'Approved', 'Rejected'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )}/>
-          {visaStatus && visaStatus !== 'Not Applied' && <FormField control={form.control} name="visaStatusUpdateDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel className="text-xs">Visa Status Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick date</span>}<CalendarIcon className="ml-auto h-4 w-4" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)}/>}
+          <FormField control={form.control} name="visaStatus" render={({ field }) => (<FormItem><FormLabel className="text-xs">Visa Status</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{['Not Applied', 'Pending', 'Approved', 'Rejected'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+          {visaStatus && visaStatus !== 'Not Applied' && <FormField control={form.control} name="visaStatusUpdateDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel className="text-xs">Visa Status Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick date</span>}<CalendarIcon className="ml-auto h-4 w-4" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />}
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-           <FormField control={form.control} name="serviceFeeStatus" render={({ field }) => ( <FormItem><FormLabel className="text-xs">Service Fee</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{['Unpaid', 'Paid'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem> )}/>
-           {serviceFeeStatus === 'Paid' && <FormField control={form.control} name="serviceFeePaidDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel className="text-xs">Fee Paid Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick date</span>}<CalendarIcon className="ml-auto h-4 w-4" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)}/>}
+          <FormField control={form.control} name="serviceFeeStatus" render={({ field }) => (<FormItem><FormLabel className="text-xs">Service Fee</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger></FormControl><SelectContent>{['Unpaid', 'Paid'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>)} />
+          {serviceFeeStatus === 'Paid' && <FormField control={form.control} name="serviceFeePaidDate" render={({ field }) => (<FormItem className="flex flex-col"><FormLabel className="text-xs">Fee Paid Date</FormLabel><Popover><PopoverTrigger asChild><FormControl><Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>{field.value ? format(field.value, "PPP") : <span>Pick date</span>}<CalendarIcon className="ml-auto h-4 w-4" /></Button></FormControl></PopoverTrigger><PopoverContent className="w-auto p-0"><Calendar mode="single" selected={field.value || undefined} onSelect={field.onChange} /></PopoverContent></Popover><FormMessage /></FormItem>)} />}
         </div>
       </div>
 
-       <FormField control={form.control} name="additionalNotes" render={({ field }) => ( <FormItem><FormLabel className="flex items-center"><StickyNote className="mr-2 h-4 w-4"/>Additional Notes</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem> )}/>
+      <FormField control={form.control} name="additionalNotes" render={({ field }) => (<FormItem><FormLabel className="flex items-center"><StickyNote className="mr-2 h-4 w-4" />Additional Notes</FormLabel><FormControl><Textarea rows={3} {...field} /></FormControl><FormMessage /></FormItem>)} />
     </CardContent>
   );
 
   if (isEditing) {
-     return (
-        <Card className="h-full">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                    <div>
-                        <CardTitle>{isNewStudent ? 'Add New Student' : `Edit: ${student.fullName}`}</CardTitle>
-                        <CardDescription>
-                            {isNewStudent ? 'Fill in the details for a new student record.' : 'Update the details for this student.'}
-                        </CardDescription>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        {/* Moved AssignedTo form field here */}
-                        <FormField
-                            control={form.control}
-                            name="assignedTo"
-                            render={({ field }) => (
-                                <FormItem className="w-48">
-                                    <Select onValueChange={field.onChange} value={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Assign to..." />
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            {counselorNames.map(name => (
-                                                <SelectItem key={name} value={name}>{name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                        />
-                        <Button type="button" variant="ghost" size="icon" onClick={() => isNewStudent ? onFormClose() : setIsEditing(false)} disabled={isLoading}>
-                            <X className="h-4 w-4" />
-                        </Button>
-                   </div>
+    return (
+      <Card className="h-full">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col h-full">
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div>
+                  <CardTitle>{isNewStudent ? 'Add New Student' : `Edit: ${student.fullName}`}</CardTitle>
+                  <CardDescription>
+                    {isNewStudent ? 'Fill in the details for a new student record.' : 'Update the details for this student.'}
+                  </CardDescription>
                 </div>
-              </CardHeader>
-              {formContent}
-              <CardFooter className="flex justify-between mt-auto bg-background/95 sticky bottom-0 py-3">
-                <Button type="button" variant="outline" onClick={() => isNewStudent ? onFormClose() : setIsEditing(false)} disabled={isLoading}>Cancel</Button>
-                <Button type="submit" disabled={isLoading}>
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  {isNewStudent ? 'Add Student' : 'Save Changes'}
-                </Button>
-              </CardFooter>
-            </form>
-          </Form>
-        </Card>
-      );
+                <div className="flex items-center space-x-2">
+                  {/* Moved AssignedTo form field here */}
+                  <FormField
+                    control={form.control}
+                    name="assignedTo"
+                    render={({ field }) => (
+                      <FormItem className="w-48">
+                        <Select onValueChange={field.onChange} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Assign to..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {counselorNames.map(name => (
+                              <SelectItem key={name} value={name}>{name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button type="button" variant="ghost" size="icon" onClick={() => isNewStudent ? onFormClose() : setIsEditing(false)} disabled={isLoading}>
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+            {formContent}
+            <CardFooter className="flex justify-between mt-auto bg-background/95 sticky bottom-0 py-3">
+              <Button type="button" variant="outline" onClick={() => isNewStudent ? onFormClose() : setIsEditing(false)} disabled={isLoading}>Cancel</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {isNewStudent ? 'Add Student' : 'Save Changes'}
+              </Button>
+            </CardFooter>
+          </form>
+        </Form>
+      </Card>
+    );
   }
 
   // Use the safeToDate helper for display purposes as well
@@ -457,86 +457,86 @@ export function StudentForm({ student, onFormClose, onFormSubmitSuccess }: Stude
   const displayServiceFeeDate = safeToDate(student?.serviceFeePaidDate);
   const displayVisaStatusDate = safeToDate(student?.visaStatusUpdateDate);
 
-  const selectedUniversityLabel = student?.collegeUniversityName 
+  const selectedUniversityLabel = student?.collegeUniversityName
     ? (() => {
-        const uni = universityList.find(u => u.value === student.collegeUniversityName);
-        return uni ? `${uni.label} (${uni.country})` : student.collegeUniversityName;
-      })() 
+      const uni = universityList.find(u => u.value === student.collegeUniversityName);
+      return uni ? `${uni.label} (${uni.country})` : student.collegeUniversityName;
+    })()
     : 'N/A';
 
   return (
     <Card className="h-full flex flex-col">
-        <CardHeader>
-            <div className="flex justify-between items-center">
-                <div className="flex-grow">
-                    <div className="flex items-center gap-4">
-                        <CardTitle className="flex items-center"><BookUser className="mr-2 h-6 w-6 text-primary"/>{student?.fullName}</CardTitle>
-                        <Badge variant="secondary" className="flex items-center gap-2">
-                            <Users className="h-4 w-4" />
-                            {student?.assignedTo || 'Unassigned'}
-                        </Badge>
-                    </div>
-                    <CardDescription>Student Details Overview</CardDescription>
-                </div>
-                 <div className="flex items-center gap-2 flex-shrink-0 ml-4">
-                    <Dialog>
-                        <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" disabled={!student?.email}><Mail className="mr-2 h-4 w-4" /> Send Email</Button>
-                        </DialogTrigger>
-                        {student && <EmailDialog student={student} />}
-                    </Dialog>
-                    <Button variant="outline" size="icon" onClick={() => setIsEditing(true)}><FilePenLine className="h-4 w-4" /><span className="sr-only">Edit</span></Button>
-                    <Button variant="destructive" size="icon" onClick={() => setIsAlertOpen(true)}><Trash2 className="h-4 w-4" /><span className="sr-only">Delete</span></Button>
-                    <Button variant="ghost" size="icon" onClick={onFormClose}><X className="h-4 w-4" /></Button>
-                </div>
+      <CardHeader>
+        <div className="flex justify-between items-center">
+          <div className="flex-grow">
+            <div className="flex items-center gap-4">
+              <CardTitle className="flex items-center"><BookUser className="mr-2 h-6 w-6 text-primary" />{student?.fullName}</CardTitle>
+              <Badge variant="secondary" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                {student?.assignedTo || 'Unassigned'}
+              </Badge>
             </div>
-        </CardHeader>
-        <CardContent className="flex-grow space-y-6 p-6 overflow-y-auto">
-            {/* Student Information Section */}
-            <div className="space-y-4">
-                <h3 className="font-semibold text-lg text-primary border-b pb-2">Student Information</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
-                    <DetailItem icon={Mail} label="Email" value={student?.email} />
-                    <DetailItem icon={Phone} label="Mobile Number" value={student?.mobileNumber} />
-                    <DetailItem icon={Phone} label="Emergency Contact" value={student?.emergencyContact} />
-                    <DetailItem icon={GraduationCap} label="Last Completed Education" value={student?.lastCompletedEducation} />
-                    <DetailItem icon={Languages} label="English Proficiency Test" value={student?.englishProficiencyTest} />
-                    <DetailItem icon={Target} label="Preferred Study Destination" value={student?.preferredStudyDestination} />
-                </div>
-            </div>
-            
-            {/* Internal Records Section */}
-            <div className="p-4 bg-muted/50 rounded-lg space-y-4">
-                <h3 className="font-semibold text-lg text-primary border-b pb-2">Internal Records</h3>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
-                    <DetailItem icon={Briefcase} label="College/University" value={selectedUniversityLabel} />
-                    <DetailItem icon={ShieldQuestion} label="Visa Status" value={<Badge variant={getVisaStatusBadgeVariant(student?.visaStatus)}>{student?.visaStatus}</Badge>} />
-                    {displayVisaStatusDate && <DetailItem icon={CalendarDays} label="Visa Status Date" value={format(displayVisaStatusDate, 'PPP')} />}
-                    <DetailItem icon={CircleDollarSign} label="Service Fee Status" value={<Badge variant={getFeeStatusBadgeVariant(student?.serviceFeeStatus)}>{student?.serviceFeeStatus}</Badge>} />
-                    {displayServiceFeeDate && <DetailItem icon={CalendarDays} label="Fee Paid Date" value={format(displayServiceFeeDate, 'PPP')} />}
-                 </div>
-            </div>
+            <CardDescription>Student Details Overview</CardDescription>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm" disabled={!student?.email}><Mail className="mr-2 h-4 w-4" /> Send Email</Button>
+              </DialogTrigger>
+              {student && <EmailDialog student={student} />}
+            </Dialog>
+            <Button variant="outline" size="icon" onClick={() => setIsEditing(true)}><FilePenLine className="h-4 w-4" /><span className="sr-only">Edit</span></Button>
+            <Button variant="destructive" size="icon" onClick={() => setIsAlertOpen(true)}><Trash2 className="h-4 w-4" /><span className="sr-only">Delete</span></Button>
+            <Button variant="ghost" size="icon" onClick={onFormClose}><X className="h-4 w-4" /></Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="flex-grow space-y-6 p-6 overflow-y-auto">
+        {/* Student Information Section */}
+        <div className="space-y-4">
+          <h3 className="font-semibold text-lg text-primary border-b pb-2">Student Information</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
+            <DetailItem icon={Mail} label="Email" value={student?.email} />
+            <DetailItem icon={Phone} label="Mobile Number" value={student?.mobileNumber} />
+            <DetailItem icon={Phone} label="Emergency Contact" value={student?.emergencyContact} />
+            <DetailItem icon={GraduationCap} label="Last Completed Education" value={student?.lastCompletedEducation} />
+            <DetailItem icon={Languages} label="English Proficiency Test" value={student?.englishProficiencyTest} />
+            <DetailItem icon={Target} label="Preferred Study Destination" value={student?.preferredStudyDestination} />
+          </div>
+        </div>
 
-            {/* Notes and Timestamps */}
-            <div className="space-y-4 pt-4">
-                <DetailItem icon={StickyNote} label="Additional Notes" value={<p className="text-sm text-foreground/80 whitespace-pre-wrap">{student?.additionalNotes}</p>} />
-                <DetailItem icon={CalendarDays} label="Date Added" value={displayTimestamp ? format(displayTimestamp, 'PPP, p') : 'N/A'} />
-            </div>
-        </CardContent>
-         <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
-            <AlertDialogContent>
-            <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the student record for {student?.fullName}.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel onClick={() => setIsAlertOpen(false)}>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete} className={cn(buttonVariants({ variant: "destructive" }))}>Continue</AlertDialogAction>
-            </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
+        {/* Internal Records Section */}
+        <div className="p-4 bg-muted/50 rounded-lg space-y-4">
+          <h3 className="font-semibold text-lg text-primary border-b pb-2">Internal Records</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-4">
+            <DetailItem icon={Briefcase} label="College/University" value={selectedUniversityLabel} />
+            <DetailItem icon={ShieldQuestion} label="Visa Status" value={<Badge variant={getVisaStatusBadgeVariant(student?.visaStatus)}>{student?.visaStatus}</Badge>} />
+            {displayVisaStatusDate && <DetailItem icon={CalendarDays} label="Visa Status Date" value={format(displayVisaStatusDate, 'PPP')} />}
+            <DetailItem icon={CircleDollarSign} label="Service Fee Status" value={<Badge variant={getFeeStatusBadgeVariant(student?.serviceFeeStatus)}>{student?.serviceFeeStatus}</Badge>} />
+            {displayServiceFeeDate && <DetailItem icon={CalendarDays} label="Fee Paid Date" value={format(displayServiceFeeDate, 'PPP')} />}
+          </div>
+        </div>
+
+        {/* Notes and Timestamps */}
+        <div className="space-y-4 pt-4">
+          <DetailItem icon={StickyNote} label="Additional Notes" value={<p className="text-sm text-foreground/80 whitespace-pre-wrap">{student?.additionalNotes}</p>} />
+          <DetailItem icon={CalendarDays} label="Date Added" value={displayTimestamp ? format(displayTimestamp, 'PPP, p') : 'N/A'} />
+        </div>
+      </CardContent>
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the student record for {student?.fullName}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsAlertOpen(false)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className={cn(buttonVariants({ variant: "destructive" }))}>Continue</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }
