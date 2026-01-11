@@ -304,7 +304,7 @@ export default function HomePage() {
 
   const renderPathwayForm = () => (
     <Card className={cn(
-      "shadow-xl bg-card w-full",
+      "shadow-2xl bg-card/60 backdrop-blur-xl border border-white/20 w-full overflow-hidden transition-all hover:shadow-[0_20px_50px_rgba(8,_112,_184,_0.1)]",
     )}>
       <CardHeader>
         <CardTitle className="font-headline text-primary flex items-center">
@@ -479,7 +479,7 @@ export default function HomePage() {
           <h1
             ref={taglineRef}
             className={cn(
-              "text-4xl md:text-5xl font-headline font-bold text-primary-foreground mb-6 h-[5rem] md:min-h-[6rem] flex items-center justify-center"
+              "text-4xl md:text-6xl font-headline font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-100 to-white mb-8 h-[5rem] md:min-h-[7rem] flex items-center justify-center drop-shadow-md"
             )}
             style={{ opacity: 0 }}
           >
@@ -503,10 +503,10 @@ export default function HomePage() {
               `transition-all ease-out duration-700 delay-300 ${heroAnimated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`
             )}
           >
-            <Button size="lg" asChild className="w-full sm:w-auto bg-background text-primary hover:bg-background/90 shadow-lg">
+            <Button size="lg" asChild className="w-full sm:w-auto bg-background/95 backdrop-blur-sm text-primary hover:bg-white hover:scale-105 transition-all duration-300 shadow-xl border border-primary/20 h-14 px-8 text-lg rounded-full">
               <a href="#pathway-search-section">Plan Your Pathway <ArrowRight className="ml-2 h-5 w-5" /></a>
             </Button>
-            <Button size="lg" variant="outline" asChild className="w-full sm:w-auto border-primary-foreground text-primary-foreground hover:bg-primary-foreground/10 shadow-lg bg-accent text-accent-foreground hover:bg-accent/90">
+            <Button size="lg" variant="outline" asChild className="w-full sm:w-auto border-white/20 text-white hover:bg-white/10 backdrop-blur-sm shadow-xl bg-accent/80 hover:bg-accent hover:scale-105 transition-all duration-300 h-14 px-8 text-lg rounded-full">
               <Link href="/ai-assistants">Use our Smart Tools <Wand2 className="ml-2 h-5 w-5" /></Link>
             </Button>
           </div>
@@ -698,26 +698,31 @@ export default function HomePage() {
                   )}
                   style={{ transitionDelay: `${index * 100}ms` }}
                 >
-                  <Card className="bg-card shadow-lg hover:shadow-xl transition-shadow h-full flex flex-col">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="font-headline text-lg text-primary flex items-center">
-                        <span className="text-xl mr-2">{intake.flagEmoji}</span>{intake.countryName}
+                  <Card className="bg-card/80 backdrop-blur-sm border-white/20 shadow-lg group hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 h-full flex flex-col rounded-xl overflow-hidden">
+                    <CardHeader className="pb-3 bg-gradient-to-r from-primary/5 to-accent/5">
+                      <CardTitle className="font-headline text-lg text-primary flex items-center justify-between">
+                        <span className="text-2xl filter drop-shadow-sm group-hover:scale-110 transition-transform">{intake.flagEmoji}</span>
+                        <span className="font-bold tracking-tight">{intake.countryName}</span>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="flex-grow space-y-1.5 text-sm pt-0">
-                      <div className="flex items-center" title={`Specific intake period: ${intake.intakeNote}. Actual start: ${intake.nextIntakeDate ? format(new Date(intake.nextIntakeDate), "MMMM d, yyyy") : 'N/A'}`}>
-                        <CalendarDays className="h-4 w-4 text-accent mr-2 flex-shrink-0" />
-                        <span className="text-foreground/90 font-medium">{intake.intakeNote}</span>
+                    <CardContent className="flex-grow space-y-3 text-sm pt-4">
+                      <div className="flex items-start" title={`Specific intake period: ${intake.intakeNote}. Actual start: ${intake.nextIntakeDate ? format(new Date(intake.nextIntakeDate), "MMMM d, yyyy") : 'N/A'}`}>
+                        <div className="p-1.5 bg-accent/10 rounded-md mr-3">
+                          <CalendarDays className="h-4 w-4 text-accent flex-shrink-0" />
+                        </div>
+                        <span className="text-foreground/90 font-medium self-center">{intake.intakeNote}</span>
                       </div>
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 text-accent mr-2 flex-shrink-0" />
-                        <span className="text-foreground/80">{timeRemainingText}</span>
+                      <div className="flex items-start">
+                        <div className="p-1.5 bg-primary/10 rounded-md mr-3">
+                          <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+                        </div>
+                        <span className="text-foreground/80 self-center font-medium">{timeRemainingText}</span>
                       </div>
                     </CardContent>
-                    <CardFooter className="pt-2">
-                      <Button asChild variant="link" className="text-accent p-0 text-sm hover:text-primary">
+                    <CardFooter className="pt-2 pb-4 px-6 bg-muted/30">
+                      <Button asChild variant="ghost" className="w-full text-primary hover:text-primary hover:bg-primary/5 group-hover:translate-x-1 transition-all justify-between px-0">
                         <Link href={`/country-guides#${intake.countrySlug}`}>
-                          Learn more <ArrowRight className="ml-1 h-4 w-4" />
+                          Explore <ArrowRight className="ml-2 h-4 w-4 opacity-70 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
                         </Link>
                       </Button>
                     </CardFooter>
@@ -762,16 +767,18 @@ export default function HomePage() {
             {stats.map((stat, index) => {
               const Icon = stat.icon;
               return (
-                <div key={index} className="flex flex-col items-center p-4 bg-card rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300">
-                  <Icon className="h-10 w-10 md:h-12 md:w-12 text-primary mb-3" />
-                  <div className="text-3xl md:text-4xl font-bold text-accent">
+                <div key={index} className="group flex flex-col items-center p-6 bg-card/60 backdrop-blur-sm border border-white/40 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 hover:-translate-y-1">
+                  <div className="mb-4 p-4 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 group-hover:from-primary/20 group-hover:to-accent/20 transition-colors">
+                    <Icon className="h-8 w-8 md:h-10 md:w-10 text-primary group-hover:scale-110 transition-transform duration-300" />
+                  </div>
+                  <div className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-br from-primary to-accent mb-2">
                     <Counter
                       target={stat.value}
                       isInView={isWhyChooseUsSectionVisible}
                       suffix={stat.suffix || ''}
                     />
                   </div>
-                  <p className="text-sm text-muted-foreground mt-1 text-balance h-10 flex items-center">{stat.label}</p>
+                  <p className="text-sm md:text-base font-medium text-muted-foreground mt-1 text-balance h-10 flex items-center text-center">{stat.label}</p>
                 </div>
               );
             })}
@@ -793,10 +800,11 @@ export default function HomePage() {
             const [cardRef, isServiceCardVisible] = useScrollAnimation<HTMLDivElement>({ triggerOnExit: true, threshold: 0.1 });
             return (
               <div key={service.id} ref={cardRef} className={cn("transition-all duration-700 ease-out", isServiceCardVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10")} style={{ transitionDelay: `${index * 100}ms` }}>
-                <Card className="overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300 bg-card h-full flex flex-col">
+                <Card className="group overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 bg-card border-0 h-full flex flex-col rounded-2xl">
                   {service.imageUrl && (
-                    <div className="relative h-48 w-full">
-                      <Image src={service.imageUrl} alt={service.title} layout="fill" objectFit="cover" data-ai-hint={service.dataAiHint || 'education service'} />
+                    <div className="relative h-56 w-full overflow-hidden">
+                      <Image src={service.imageUrl} alt={service.title} layout="fill" objectFit="cover" className="group-hover:scale-110 transition-transform duration-700 ease-in-out" data-ai-hint={service.dataAiHint || 'education service'} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
                     </div>
                   )}
                   <CardHeader>
